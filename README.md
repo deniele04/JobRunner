@@ -1,2 +1,4 @@
 # JobRunner
-Sistema para Linux capaz de ejecutar, administrar, observar y controlar trabajos.
+# Implementación inicial del JobRunner
+Equipo: Seriedad
+Integrantes: Josue Said Delgadillo Gutierrez, Diego Armando Duran Hernandez, Juan Jose Renteria Haro, Daniel Alejandro Huerta Camberos
