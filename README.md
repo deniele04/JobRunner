@@ -24,20 +24,19 @@ Ver matriz completa de responsabilidades en [`docs/ROLES.md`](docs/ROLES.md).
 
 - [x] Repositorio creado
 - [x] Estructura mínima de carpetas
-- [ ] Primer ADR resuelto
+- [x] Primer ADR resuelto
 - [ ] Primer endpoint / módulo funcional
 - [ ] Primera verificación (tests) ejecutándose en CI
 
 ## Construcción provisional
 
-Dado que el proyecto se encuentra en la Fase de Arranque, el código fuente definitivo aún no ha sido implementado. 
-Sin embargo, al ser un sistema diseñado para entornos Linux, la construcción y ejecución del proyecto se gestionará a través de herramientas estándar de terminal (como `make`).
+Dado que el proyecto se encuentra en la Fase de Arranque y se desarrollará en **Python**, no requiere una compilación para generar binarios. La gestión del entorno virtual, la ejecución y las pruebas se automatizarán mediante scripts de shell (Bash) para asegurar la máxima compatibilidad nativa con el entorno Linux.
 
 **Comandos previstos para el flujo de trabajo:**
-* **Compilación:** `make build` (para generar los binarios o preparar el entorno).
-* **Ejecución:** `make run` (para levantar el proceso del JobRunner).
-* **Pruebas:** `make test` (para ejecutar los casos de verificación).
-* **Limpieza:** `make clean` (para eliminar archivos temporales).
+* **Configuración:** `./scripts/setup.sh` (Crea el entorno virtual e instala dependencias).
+* **Ejecución:** `./scripts/run.sh` (Levanta el proceso principal del JobRunner).
+* **Pruebas:** `./scripts/test.sh` (Ejecuta la suite de verificación).
+* **Limpieza:** `./scripts/clean.sh` (Elimina cachés de Python y archivos temporales).
 
 *(Nota: Las tecnologias y herrmaientas pueden cambiar y formalizarse mas adelante en los ADRs del proyecto).*
 
