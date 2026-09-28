@@ -1,50 +1,54 @@
-# Cronograma inicial
+# Cronograma
+
+**Versión:** 2 — actualizado el 28/09/2026
+**Responsable del documento:** Daniel Alejandro Huerta Camberos
+
+> **Control de cambios (v1 → v2):** La implementación del núcleo se adelanta a la semana del 28/09, porque en el Avance 1 se exige un núcleo local ejecutable. La resolución de los primeros 3 ADR también pasa a esta semana. Se prepara todo para la Revisión Técnica 1 (06/10) y se reorganizan los hitos según el documento propuesto.
 
 ## Hitos principales
 
-| Hito | Fecha objetivo | Responsable | Estado |
+| Hito | Descripción | Fecha objetivo | Responsable | Estado |
+|---|---|---|---|---|
+| Hito 0 | Inicio y línea base: repositorio, roles, riesgos, ADR iniciales | 11/09/2026 | Todos | Completado con acciones pendientes |
+| Hito 1 — Avance 1 | Núcleo local: enviar, ID, proceso hijo, estados, consultar, listar, cancelar, código de salida | 02/10/2026 | Todos | En progreso |
+| RT-1 | Revisión técnica presencial (asistencia obligatoria de todos) | 06/10/2026 | Todos | Pendiente |
+| Hito 2 — Avance 2 | Concurrencia y persistencia: límite, cancelación robusta, persistencia, recuperación, bitácora | 30/10/2026 | Josué Said Delgadillo Gutiérrez | Pendiente |
+| Hito 3 | Operación remota privada: protocolo TCP, cliente remoto, restricción LAN/VPN | 13/11/2026 (tentativa) | Juan José Rentería Haro | Pendiente |
+| Hito 4 | Candidato de entrega: documentación completa, matriz sin huecos, verificación cruzada | 20/11/2026 (tentativa) | Daniel Alejandro Huerta Camberos  | Pendiente |
+| Hito 5 | Aceptación final: versión etiquetada, release notes, resultados finales | 01/12/2026 | Todos | Pendiente |
+
+## Plan detallado — Hito 1 (semana del 28/09 al 06/10)
+
+Los números corresponden a los Issues del milestone "Avance 1 — Núcleo local".
+
+| Día | Actividades | Issues | Responsables |
 |---|---|---|---|
-| Arranque del proyecto (este entregable) | 11/09/2026 | Todos | En progreso |
-| Avance 1 | 02/10/2026 | Josué Said Delgadillo Gutiérrez, Juan José Rentería Haro | Pendiente |
-| Primeros 3 ADR resueltos | 09/10/2026 | Daniel Alejandro Huerta Camberos | Pendiente |
-| Primera verificación / pruebas automatizadas | 16/10/2026 | Diego Armando Durán Hernández | Pendiente |
-| Avance 2 | 30/10/2026 | Josué Said Delgadillo Gutiérrez, Daniel Alejandro Huerta Camberos | Pendiente |
-| Entrega final | 01/12/2026 | Todos | Pendiente |
-
-## Distribución de trabajo por semana (provisional)
-
-| Semana | Foco principal | Integrantes involucrados |
-|---|---|---|
-| Semana 1 (11–17 sep) | Organización del equipo, repositorio, ADRs iniciales | Todos |
-| Semana 2 (18–24 sep) | Definición de alcance y criterios de aceptación | Daniel Alejandro Huerta Camberos, Josué Said Delgadillo Gutiérrez |
-| Semana 3 (25 sep–1 oct) | Diseño de arquitectura base (rumbo a Avance 1) | Josué Said Delgadillo Gutiérrez, Juan José Rentería Haro |
-| Semana 4 (2–8 oct) | Resolución de los primeros 3 ADR | Daniel Alejandro Huerta Camberos, Josué Said Delgadillo Gutiérrez |
-| Semana 5 (9–15 oct) | Preparación de verificación y pruebas automatizadas | Juan José Rentería Haro, Diego Armando Durán Hernández |
-| Semana 6 (16–22 oct) | Ejecución de la primera verificación / pruebas automatizadas | Diego Armando Durán Hernández, Juan José Rentería Haro |
-| Semana 7 (23–29 oct) | Implementación del núcleo del JobRunner (rumbo a Avance 2) | Josué Said Delgadillo Gutiérrez, Daniel Alejandro Huerta Camberos |
-| Semana 8 (30 oct–5 nov) | Cierre de Avance 2 y ajustes de producto | Daniel Alejandro Huerta Camberos, Josué Said Delgadillo Gutiérrez |
-| Semana 9 (6–12 nov) | Continuación de implementación e integración | Josué Said Delgadillo Gutiérrez, Diego Armando Durán Hernández |
-| Semana 10 (13–19 nov) | Verificación final y pruebas de regresión | Juan José Rentería Haro, Diego Armando Durán Hernández |
-| Semana 11 (20–26 nov) | Revisión general, documentación y criterios de aceptación finales | Daniel Alejandro Huerta Camberos, Diego Armando Durán Hernández |
-| Semana 12 (27 nov–1 dic) | Cierre y entrega final | Todos |
+| Lun 28/09 | Reunión de decisiones y minuta; reestructura del repositorio; plantillas, labels y milestone; creación de Issues | #1, #2, #3, #4 | Daniel |
+| Mar 29/09 | Reescritura de ADR-001 a 003; construcción reproducible; daemon con socket Unix; modelo de trabajo y ejecución en proceso hijo; borrador de casos TC y matriz | #5, #7, #11, #12, #17, #19, #20 | Diego (#5, #20), Daniel (#7), Josué (#11, #12), Juan José (#17, #19) |
+| Mié 30/09 | Operaciones del protocolo y validación; recolección de código de salida y cancelación; pruebas unitarias; `verify.sh`; formato y análisis estático; arquitectura y modelo de estados | #6, #8, #10, #13, #14, #16, #18, #21 | Daniel (#8, #10), Josué (#13, #14), Juan José (#16, #18), Diego (#6, #21) |
+| Jue 01/10 | Integración de servidor y executor; CLI; cola con límite; primera ejecución completa de `verify.sh`; registros de uso de IA | #9, #15, #22 | Daniel (#9), Josué (#15), Juan José (ejecución y reporte de defectos), Diego (#22 y revisión de PRs) |
+| Vie 02/10 | Corrección de defectos; README final; matriz actualizada; verificación formal desde un clon limpio (TC-014); tag `v0.1.0` y release notes; **entrega del Avance 1** | #19, #23, #24 | Todos |
+| Sáb 03/10 – Lun 05/10 | `main` congelada (solo correcciones); guion del recorrido de una solicitud; ensayo en el que cada integrante explica procesos, señales y códigos de salida | #25 | Todos |
+| Mar 06/10 | **RT-1 presencial** | — | Todos |
 
 ## Riesgos identificados
 
 | # | Riesgo | Probabilidad | Impacto | Mitigación | Dueño |
 |---|---|---|---|---|---|
-| 1 | Falta de experiencia previa con el stack elegido | Media | Alto | Capacitación inicial y prueba de concepto temprana en la Semana 1 | Josué Said Delgadillo Gutiérrez |
-| 2 | Dependencia de una librería externa poco documentada | Media | Medio | Evaluar alternativas antes de comprometerse; documentar decisión en un ADR | Josué Said Delgadillo Gutiérrez |
-| 3 | Disponibilidad limitada de algún integrante en ciertas fechas | Media | Medio | Redistribuir tareas con anticipación y avisar con al menos 3 días de margen | Diego Armando Durán Hernández |
-| 4 | Criterios de aceptación ambiguos o cambiantes | Baja | Alto | Validar alcance y criterios de "hecho" con el responsable de producto antes de iniciar cada hito | Daniel Alejandro Huerta Camberos |
-| 5 | Cobertura de pruebas insuficiente antes de la entrega | Media | Alto | Definir criterios de "hecho" desde el inicio y correr verificación incremental por semana | Juan José Rentería Haro |
+| 1 | Tiempo insuficiente para el Avance 1 (4 días hábiles) | Alta | Alto | Alcance mínimo fijo; Issues de prioridad media recortables (cola, análisis estático) y documentados como limitación | Daniel Alejandro Huerta Camberos |
+| 2 | Falla la integración entre servidor y executor el jueves | Media | Alto | Interfaz entre módulos acordada el lunes; executor probado con pruebas unitarias antes de integrar | Josué Said Delgadillo Gutiérrez |
+| 3 | Procesos huérfanos o zombis por mal manejo de señales | Media | Alto | Grupos de procesos (`start_new_session`), `waitpid` sistemático y prueba de cancelación en `verify.sh` | Josué Said Delgadillo Gutiérrez |
+| 4 | Un integrante no puede explicar código generado con IA durante la revisión | Media | Alto | Revisión cruzada obligatoria en cada PR; registro en `docs/ai-usage/`; ensayo de defensa individual antes de cada RT | Diego Armando Durán Hernández |
+| 5 | Entornos de desarrollo distintos (Windows, macOS, Linux) | Media | Medio | Distribución Linux declarada; uso de WSL o VM; verificación formal siempre desde un clon limpio en Linux | Diego Armando Durán Hernández |
+| 6 | Cobertura de pruebas insuficiente antes de cada hito | Media | Alto | Criterios de aceptación ejecutables en cada Issue; `verify.sh` corrido antes de cada integración a `main` | Juan José Rentería Haro |
+| 7 | Disponibilidad limitada de algún integrante | Media | Medio | Redistribuir tareas con al menos 3 días de aviso; ningún módulo con un solo conocedor | Diego Armando Durán Hernández |
+| 8 | El Change Request del cliente llega en un momento de alta carga | Media | Medio | Reservar capacidad en las semanas 9 y 10; análisis de impacto antes de implementar | Daniel Alejandro Huerta Camberos |
 
 ## Dependencias conocidas
 
-- El módulo de ejecución de jobs depende de que se resuelva el ADR sobre el modelo de persistencia.
-- La API pública depende de que se defina el mecanismo de autenticación.
-- La primera verificación (Semana 6) depende de que el diseño de arquitectura (Semana 3) y los ADR (Semana 4) estén resueltos.
-- El Avance 2 depende de que la implementación del núcleo (Semana 7) esté funcionalmente completa.
-- Agregar más según se identifiquen.
-- La primera verificación (Semana 6) depende de que el diseño de arquitectura (Semana 3) y los ADR (Semana 4) estén resueltos.
-- El Avance 2 depende de que la implementación del núcleo (Semana 7) esté funcionalmente completa.
-- Agregar más según se identifiquen.
+- Las operaciones del protocolo (#8) dependen del daemon (#7) y del modelo de trabajo (#11).
+- La cancelación (#14) y la cola (#15) dependen de la ejecución en proceso hijo (#12).
+- `verify.sh` (#18) depende de que el CLI (#9) funcione de extremo a extremo.
+- El tag `v0.1.0` (#24) depende de una verificación formal PASS desde un clon limpio.
+- La persistencia del Hito 2 depende de ADR-004, pendiente de resolver en la semana 5.
+- La operación remota del Hito 3 depende de que el protocolo local ya esté versionado y documentado.
