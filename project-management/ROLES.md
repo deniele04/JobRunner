@@ -9,8 +9,8 @@ en próximos avances.
 |Área|Responsable principal|Revisor|Notas|
 |-|-|-|-|
 |**Producto** (alcance, prioridades, criterios de aceptación)|Daniel Alejandro Huerta Camberos|Diego Armando Durán Hernández||
-|**Verificación** (pruebas, calidad, criterios de "hecho")|Juan José Rentería Haro|Diego Armando Durán Hernández||
-|**Ingeniería** (arquitectura, implementación, ADRs)|Josué Said Delgadillo Gutiérrez y Juan José Rentería Haro |Diego Armando Durán Hernández||
+|**Verificación** (pruebas, calidad, criterios de "hecho")|Josué Said Delgadillo Gutiérrez|Diego Armando Durán Hernández||
+|**Ingeniería** (arquitectura, implementación, ADRs)|Juan José Rentería Haro |Diego Armando Durán Hernández||
 
 ## Contacto institucional del equipo
 
