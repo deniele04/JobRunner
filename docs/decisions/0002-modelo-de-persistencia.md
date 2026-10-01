@@ -1,43 +1,112 @@
-# ADR-0002: Modelo de persistencia del JobRunner
+\# ADR-0002: Modelo de persistencia del JobRunner
 
-**Estado:** Propuesto
-**Fecha:** 11/09/2026
-**Responsable(s):** Josué Said Delgadillo Gutiérrez
 
-## Contexto
 
-El JobRunner necesita almacenar el estado de los jobs (pendiente, en
-ejecución, completado, fallido), sus resultados y metadatos de ejecución. Se
-requiere un mecanismo de persistencia confiable que permita consultar el
-historial y el estado actual de cada job.
+\*\*Estado:\*\* Aceptado
 
-## Opciones consideradas
+\*\*Fecha:\*\* 01/10/2026
 
-1. **Base de datos SQL (ej. PostgreSQL/SQLite)** — Modelo relacional claro
-   para relacionar jobs, ejecuciones y resultados; transacciones ACID
-   garantizan consistencia en cambios de estado; buen soporte en Python.
-2. **Base de datos NoSQL (ej. MongoDB)** — Más flexible para metadatos
-   variables por tipo de job, pero menos natural para relaciones y consultas
-   estructuradas sobre el historial de ejecuciones.
-3. **Archivos planos / JSON local** — Simplicidad inicial sin dependencias
-   externas, pero no escala ni soporta concurrencia segura entre múltiples
-   jobs ejecutándose a la vez.
+\*\*Responsable(s):\*\* Josué Said Delgadillo Gutiérrez
 
-## Decisión
+\*\*Issue relacionado:\*\* #8
 
-Se elige una **base de datos SQL** para la persistencia del JobRunner, dado
-que el estado y las relaciones entre jobs y ejecuciones se modelan de forma
-natural en tablas relacionales, y se necesita consistencia transaccional al
-actualizar el estado de un job.
+\*\*Aprobado en:\*\* PR #13
 
-## Consecuencias
+\*\*Historial:\*\* v1 (10/09/2026): propuesta inicial con base de datos SQL genérica (PostgreSQL). v2 (01/10/2026): corregido a SQLite por decisión del equipo, al no requerir servidor aparte.
 
-- **Positivas:** consultas estructuradas sobre historial y estado, integridad
-  garantizada por transacciones, buen soporte de librerías ORM en Python
-  (SQLAlchemy).
-- **Negativas / trade-offs:** requiere definir y mantener un esquema desde el
-  inicio; menor flexibilidad si el formato de metadatos de los jobs varía
-  mucho entre tipos.
-- **Impacto en otras áreas:** depende del lenguaje elegido (ADR-0001) para la
-  librería de acceso a datos; afecta el diseño de la API de consulta de
-  estado (ADR-0003).
+
+
+\## Contexto
+
+
+
+El JobRunner necesita almacenar el estado de los jobs (pendiente, en ejecución, completado, fallido), sus resultados y metadatos de ejecución. Se requiere un mecanismo de persistencia confiable, simple de desplegar y sin infraestructura adicional (sin servidor aparte, sin privilegios de administrador), dado el tiempo disponible del curso.
+
+
+
+\## Alternativas consideradas
+
+
+
+1\. \*\*PostgreSQL\*\*
+
+&#x20;  - A favor: motor relacional robusto, pensado para producción real.
+
+&#x20;  - En contra: requiere levantar y mantener un servidor de base de datos aparte; complejidad de infraestructura innecesaria para el alcance y tiempo del proyecto.
+
+2\. \*\*SQLite\*\*
+
+&#x20;  - A favor: motor relacional embebido, incluido en la librería estándar de Python (`sqlite3`), sin servidor aparte; soporta transacciones y SQL estándar.
+
+&#x20;  - En contra: menor capacidad de concurrencia de escritura que un servidor dedicado.
+
+3\. \*\*Archivos planos / JSON local\*\*
+
+&#x20;  - A favor: simplicidad inicial, sin dependencias.
+
+&#x20;  - En contra: no garantiza consistencia ni concurrencia segura entre jobs.
+
+
+
+\## Decisión
+
+
+
+Se elige \*\*SQLite\*\*.
+
+
+
+Razones técnicas:
+
+\- No requiere servidor de base de datos independiente, a diferencia de PostgreSQL, lo que simplifica el despliegue dentro del tiempo del curso.
+
+\- Viene integrado en la librería estándar de Python (ADR-0001), sin dependencias externas.
+
+
+
+\## Consecuencias
+
+
+
+\*\*Positivas\*\*
+
+\- Cero infraestructura adicional; despliegue en un solo archivo de base de datos.
+
+\- Consultas SQL estructuradas sobre el historial de jobs.
+
+
+
+\*\*Negativas\*\*
+
+\- Menor capacidad de concurrencia de escritura frente a un servidor dedicado como PostgreSQL.
+
+
+
+\*\*Riesgos\*\*
+
+\- Escrituras concurrentes desde múltiples procesos podrían bloquear la base de datos — Mitigación: solo el daemon (ADR-0003) escribe en SQLite, evitando escrituras concurrentes de varios procesos — Prueba: TC-002 (pendiente de definir en Avance 1).
+
+
+
+\## Decisiones abiertas
+
+
+
+Ninguna.
+
+
+
+\## Requisitos afectados
+
+
+
+\[Pendiente — completar con los códigos RF-XX/RNF-XX del documento de requisitos del equipo]
+
+
+
+\## Evidencia
+
+
+
+\[Pendiente — se documentará con el resultado de `verif/results/` una vez exista código ejecutable en Avance 1]
+
