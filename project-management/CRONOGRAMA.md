@@ -46,9 +46,9 @@ Los números corresponden a los Issues del milestone "Avance 1 — Núcleo local
 
 ## Dependencias conocidas
 
-- Las operaciones del protocolo (#8) dependen del daemon (#7) y del modelo de trabajo (#11).
-- La cancelación (#14) y la cola (#15) dependen de la ejecución en proceso hijo (#12).
-- `verify.sh` (#18) depende de que el CLI (#9) funcione de extremo a extremo.
-- El tag `v0.1.0` (#24) depende de una verificación formal PASS desde un clon limpio.
-- La persistencia del Hito 2 depende de ADR-004, pendiente de resolver en la semana 5.
+- Las operaciones del protocolo dependen del daemon y del modelo de trabajo.
+- La cancelación y la cola dependen de la ejecución en proceso hijo.
+- El script de verificación (`verify.sh`) depende de que el CLI funcione de extremo a extremo.
+- El tag `v0.1.0` depende de una verificación formal PASS desde un clon limpio.
+- La persistencia del Hito 2 depende de definir el esquema de datos y la política de recuperación (decisiones abiertas de ADR-002).
 - La operación remota del Hito 3 depende de que el protocolo local ya esté versionado y documentado.
