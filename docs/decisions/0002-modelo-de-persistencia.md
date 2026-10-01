@@ -1,43 +1,90 @@
-# ADR-0002: Modelo de persistencia del JobRunner
+\# ADR-0002: Modelo de persistencia del JobRunner
 
-**Estado:** Propuesto
-**Fecha:** 11/09/2026
-**Responsable(s):** Josué Said Delgadillo Gutiérrez
 
-## Contexto
+
+\*\*Estado:\*\* Aceptado
+
+\*\*Fecha:\*\* 01/10/2026
+
+\*\*Responsable(s):\*\* Josué Said Delgadillo Gutiérrez
+
+
+
+\## Contexto
+
+
 
 El JobRunner necesita almacenar el estado de los jobs (pendiente, en
+
 ejecución, completado, fallido), sus resultados y metadatos de ejecución. Se
-requiere un mecanismo de persistencia confiable que permita consultar el
-historial y el estado actual de cada job.
 
-## Opciones consideradas
+requiere un mecanismo de persistencia confiable, simple de desplegar y sin
 
-1. **Base de datos SQL (ej. PostgreSQL/SQLite)** — Modelo relacional claro
-   para relacionar jobs, ejecuciones y resultados; transacciones ACID
-   garantizan consistencia en cambios de estado; buen soporte en Python.
-2. **Base de datos NoSQL (ej. MongoDB)** — Más flexible para metadatos
-   variables por tipo de job, pero menos natural para relaciones y consultas
-   estructuradas sobre el historial de ejecuciones.
-3. **Archivos planos / JSON local** — Simplicidad inicial sin dependencias
-   externas, pero no escala ni soporta concurrencia segura entre múltiples
-   jobs ejecutándose a la vez.
+infraestructura adicional, dado el tiempo disponible del curso.
 
-## Decisión
 
-Se elige una **base de datos SQL** para la persistencia del JobRunner, dado
-que el estado y las relaciones entre jobs y ejecuciones se modelan de forma
-natural en tablas relacionales, y se necesita consistencia transaccional al
-actualizar el estado de un job.
 
-## Consecuencias
+\## Opciones consideradas
 
-- **Positivas:** consultas estructuradas sobre historial y estado, integridad
-  garantizada por transacciones, buen soporte de librerías ORM en Python
-  (SQLAlchemy).
-- **Negativas / trade-offs:** requiere definir y mantener un esquema desde el
-  inicio; menor flexibilidad si el formato de metadatos de los jobs varía
-  mucho entre tipos.
-- **Impacto en otras áreas:** depende del lenguaje elegido (ADR-0001) para la
-  librería de acceso a datos; afecta el diseño de la API de consulta de
-  estado (ADR-0003).
+
+
+1\. \*\*PostgreSQL\*\* — Motor relacional robusto para producción real, pero
+
+&#x20;  requiere levantar y mantener un servidor de base de datos aparte, lo cual
+
+&#x20;  añade complejidad de infraestructura innecesaria para el alcance del
+
+&#x20;  proyecto y el tiempo disponible.
+
+2\. \*\*SQLite\*\* — Motor relacional embebido, viene incluido en la librería
+
+&#x20;  estándar de Python (`sqlite3`), sin servidor aparte que instalar o
+
+&#x20;  mantener; soporta transacciones y SQL estándar, suficiente para el volumen
+
+&#x20;  de jobs esperado en el proyecto.
+
+3\. \*\*Archivos planos / JSON local\*\* — Simplicidad inicial, pero no garantiza
+
+&#x20;  consistencia ni concurrencia segura entre múltiples jobs.
+
+
+
+\## Decisión
+
+
+
+Se elige \*\*SQLite\*\* para la persistencia del JobRunner. A diferencia de
+
+PostgreSQL, no requiere un servidor de base de datos independiente: viene
+
+integrado en Python, lo que simplifica el despliegue y reduce el tiempo de
+
+configuración, manteniendo transacciones y consultas SQL estructuradas sobre
+
+el estado de los jobs.
+
+
+
+\## Consecuencias
+
+
+
+\- \*\*Positivas:\*\* cero infraestructura adicional, despliegue simplificado
+
+&#x20; (un solo archivo de base de datos), consultas SQL estructuradas sobre el
+
+&#x20; historial de jobs, integración directa vía `sqlite3` de Python.
+
+\- \*\*Negativas / trade-offs:\*\* menor capacidad de concurrencia de escritura
+
+&#x20; que un servidor dedicado como PostgreSQL; no apto si el proyecto creciera a
+
+&#x20; múltiples instancias del JobRunner escribiendo simultáneamente.
+
+\- \*\*Impacto en otras áreas:\*\* depende del lenguaje elegido (ADR-0001); el
+
+&#x20; daemon (ADR-0003) es el único proceso que escribe en la base de datos,
+
+&#x20; evitando problemas de concurrencia de SQLite.
+
