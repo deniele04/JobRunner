@@ -6,11 +6,11 @@ en próximos avances.
 
 ## Áreas de responsabilidad
 
-|Área|Responsable principal|Revisor|Notas|
+|Área|Responsable principal|Notas|
 |-|-|-|-|
-|**Producto** (alcance, prioridades, criterios de aceptación)|Daniel Alejandro Huerta Camberos|Diego Armando Durán Hernández||
-|**Verificación** (pruebas, calidad, criterios de "hecho")|Josué Said Delgadillo Gutiérrez|Diego Armando Durán Hernández||
-|**Ingeniería** (arquitectura, implementación, ADRs)|Juan José Rentería Haro |Diego Armando Durán Hernández||
+|**Producto** (alcance, prioridades, criterios de aceptación)|Daniel Alejandro Huerta Camberos||
+|**Verificación** (pruebas, calidad, criterios de "hecho")|Josué Said Delgadillo Gutiérrez||
+|**Ingeniería** (arquitectura, implementación, ADRs)|Juan José Rentería Haro||
 
 ## Contacto institucional del equipo
 
@@ -23,12 +23,8 @@ en próximos avances.
 
 ## Reglas de trabajo acordadas
 
-* Todo cambio a `main`/`master` se realiza mediante Pull Request, revisado por
-al menos una persona distinta al autor.
-* El responsable de **Verificación** debe aprobar cualquier PR que modifique
-criterios de aceptación o pruebas.
-* El responsable de **Ingeniería** debe aprobar cualquier PR que modifique
-decisiones de arquitectura (ver ADRs).
+* Todo cambio a `main`/`master` se realiza mediante Pull Requestr.
+* No hay revisor ni integrador fijo; el autor del PR hace el merge después de las 3 aprobaciones.
 * Reuniones de sincronización: \[frecuencia, ej. "dos veces por semana, lunes y
 jueves"].
 * Canal de comunicación del equipo: \[ej. WhatsApp / Discord / correo].
