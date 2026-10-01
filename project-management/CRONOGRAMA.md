@@ -1,9 +1,9 @@
 # Cronograma
 
-**Versión:** 2 — actualizado el 28/09/2026
+**Versión:** 3 — actualizado el 1/10/2026
 **Responsable del documento:** Daniel Alejandro Huerta Camberos
 
-> **Control de cambios (v1 → v2):** La implementación del núcleo se adelanta a la semana del 28/09, porque en el Avance 1 se exige un núcleo local ejecutable. La resolución de los primeros 3 ADR también pasa a esta semana. Se prepara todo para la Revisión Técnica 1 (06/10) y se reorganizan los hitos según el documento propuesto.
+> **Control de cambios (v2 → v3):** Se actualizan los roles del equipo. Los responsables por actividad se registran en las Issues del GitHub Project y ya no en este documento. Se corrige la referencia de persistencia. Se agrega el riesgo por integración con 3 aprobaciones por PR.
 
 ## Hitos principales
 
@@ -37,10 +37,10 @@ Los números corresponden a los Issues del milestone "Avance 1 — Núcleo local
 |---|---|---|---|---|---|
 | 1 | Tiempo insuficiente para el Avance 1 (4 días hábiles) | Alta | Alto | Alcance mínimo fijo; Issues de prioridad media recortables (cola, análisis estático) y documentados como limitación | Daniel Alejandro Huerta Camberos |
 | 2 | Falla la integración entre servidor y executor el jueves | Media | Alto | Interfaz entre módulos acordada el lunes; executor probado con pruebas unitarias antes de integrar | Josué Said Delgadillo Gutiérrez |
-| 3 | Procesos huérfanos o zombis por mal manejo de señales | Media | Alto | Grupos de procesos (`start_new_session`), `waitpid` sistemático y prueba de cancelación en `verify.sh` | Josué Said Delgadillo Gutiérrez |
+| 3 | Procesos huérfanos o zombis por mal manejo de señales | Media | Alto | Grupos de procesos (`start_new_session`), `waitpid` sistemático y prueba de cancelación en `verify.sh` | Juan José Rentería Haro |
 | 4 | Un integrante no puede explicar código generado con IA durante la revisión | Media | Alto | Revisión cruzada obligatoria en cada PR; registro en `docs/ai-usage/`; ensayo de defensa individual antes de cada RT | Diego Armando Durán Hernández |
 | 5 | Entornos de desarrollo distintos (Windows, macOS, Linux) | Media | Medio | Distribución Linux declarada; uso de WSL o VM; verificación formal siempre desde un clon limpio en Linux | Diego Armando Durán Hernández |
-| 6 | Cobertura de pruebas insuficiente antes de cada hito | Media | Alto | Criterios de aceptación ejecutables en cada Issue; `verify.sh` corrido antes de cada integración a `main` | Juan José Rentería Haro |
+| 6 | Cobertura de pruebas insuficiente antes de cada hito | Media | Alto | Criterios de aceptación ejecutables en cada Issue; `verify.sh` corrido antes de cada integración a `main` | Diego Armando Durán Hernández |
 | 7 | Disponibilidad limitada de algún integrante | Media | Medio | Redistribuir tareas con al menos 3 días de aviso; ningún módulo con un solo conocedor | Diego Armando Durán Hernández |
 | 8 | El Change Request del cliente llega en un momento de alta carga | Media | Medio | Reservar capacidad en las semanas 9 y 10; análisis de impacto antes de implementar | Daniel Alejandro Huerta Camberos |
 
