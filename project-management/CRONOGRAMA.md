@@ -21,15 +21,15 @@
 
 Los números corresponden a los Issues del milestone "Avance 1 — Núcleo local".
 
-| Día | Actividades | Issues | Responsables |
-|---|---|---|---|
-| Lun 28/09 | Reunión de decisiones y minuta; reestructura del repositorio; plantillas, labels y milestone; creación de Issues | #1, #2, #3, #4 | Daniel |
-| Mar 29/09 | Reescritura de ADR-001 a 003; construcción reproducible; daemon con socket Unix; modelo de trabajo y ejecución en proceso hijo; borrador de casos TC y matriz | #5, #7, #11, #12, #17, #19, #20 | Diego (#5, #20), Daniel (#7), Josué (#11, #12), Juan José (#17, #19) |
-| Mié 30/09 | Operaciones del protocolo y validación; recolección de código de salida y cancelación; pruebas unitarias; `verify.sh`; formato y análisis estático; arquitectura y modelo de estados | #6, #8, #10, #13, #14, #16, #18, #21 | Daniel (#8, #10), Josué (#13, #14), Juan José (#16, #18), Diego (#6, #21) |
-| Jue 01/10 | Integración de servidor y executor; CLI; cola con límite; primera ejecución completa de `verify.sh`; registros de uso de IA | #9, #15, #22 | Daniel (#9), Josué (#15), Juan José (ejecución y reporte de defectos), Diego (#22 y revisión de PRs) |
-| Vie 02/10 | Corrección de defectos; README final; matriz actualizada; verificación formal desde un clon limpio (TC-014); tag `v0.1.0` y release notes; **entrega del Avance 1** | #19, #23, #24 | Todos |
-| Sáb 03/10 – Lun 05/10 | `main` congelada (solo correcciones); guion del recorrido de una solicitud; ensayo en el que cada integrante explica procesos, señales y códigos de salida | #25 | Todos |
-| Mar 06/10 | **RT-1 presencial** | — | Todos |
+| Día | Actividades |
+|---|---|
+| Lun 28/09 | Reunión de decisiones y minuta; reestructura del repositorio; plantillas, labels y milestone; creación de Issues |
+| Mar 29/09 | Reescritura de ADR-001 a 003; construcción reproducible; daemon con socket Unix; modelo de trabajo y ejecución en proceso hijo; borrador de casos TC y matriz |
+| Mié 30/09 | Operaciones del protocolo y validación; recolección de código de salida y cancelación; pruebas unitarias; `verify.sh`; formato y análisis estático; arquitectura y modelo de estados |
+| Jue 01/10 | Integración de servidor y executor; CLI; cola con límite; primera ejecución completa de `verify.sh`; registros de uso de IA |
+| Vie 02/10 | Corrección de defectos; README final; matriz actualizada; verificación formal desde un clon limpio (TC-014); tag `v0.1.0` y release notes; **entrega del Avance 1** |
+| Sáb 03/10 – Lun 05/10 | `main` congelada (solo correcciones); guion del recorrido de una solicitud; ensayo en el que cada integrante explica procesos, señales y códigos de salida |
+| Mar 06/10 | **RT-1 presencial** |
 
 ## Riesgos identificados
 
