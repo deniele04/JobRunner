@@ -3,24 +3,55 @@
 **Estado:** Propuesto | Aceptado | Rechazado | Reemplazado por ADR-[NNNN]
 **Fecha:** [DD/MM/AAAA]
 **Responsable(s):** [Nombre(s)]
+**Issue relacionado:** #[N]
+**Aprobado en:** PR #[N]
+**Historial:** [vN (DD/MM/AAAA): qué cambió y por qué. Omitir si es la primera versión.]
 
 ## Contexto
 
-[Describir el problema o la pregunta de diseño que requiere una decisión.
-¿Qué fuerzas están en juego? ¿Qué restricciones existen?]
+[Problema o pregunta de diseño que requiere una decisión. Qué requisitos la provocan, qué restricciones existen (tiempo, plataforma, sin root, sin dependencias, etc.) y qué pasa si no se decide.]
 
-## Opciones consideradas
+## Alternativas consideradas
 
-1. **[Opción A]** — [breve descripción]
-2. **[Opción B]** — [breve descripción]
-3. **[Opción C]** — [breve descripción, si aplica]
+[Mínimo dos alternativas viables.]
+
+1. **[Alternativa A]**
+   - A favor: [ventajas]
+   - En contra: [desventajas]
+2. **[Alternativa B]**
+   - A favor: [ventajas]
+   - En contra: [desventajas]
+3. **[Alternativa C, si aplica]**
+   - A favor: [ventajas]
+   - En contra: [desventajas]
 
 ## Decisión
 
-[Cuál opción se eligió y por qué, en una o dos frases.]
+Se elige **[alternativa]**.
+
+Razones técnicas:
+- [razón ligada a un requisito o restricción]
+- [razón ligada a un requisito o restricción]
 
 ## Consecuencias
 
-- **Positivas:** [ventajas de esta decisión]
-- **Negativas / trade-offs:** [qué se sacrifica o qué riesgo se asume]
-- **Impacto en otras áreas:** [qué otros módulos o decisiones se ven afectados]
+**Positivas**
+- [qué se gana]
+
+**Negativas**
+- [qué se sacrifica]
+
+**Riesgos**
+- [riesgo] — Mitigación: [cómo se controla] — Prueba: [TC-XXX]
+
+## Decisiones abiertas
+
+[Aspectos que esta decisión deja pendientes y en qué hito se resuelven. Escribir "Ninguna" si no aplica.]
+
+## Requisitos afectados
+
+[RF-XX, RNF-XX]
+
+## Evidencia
+
+[Prototipo, comando ejecutado con su salida, prueba (TC-XXX) o resultado en verif/results/<run-id>/ que respalda la decisión.]
