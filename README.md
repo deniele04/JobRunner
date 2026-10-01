@@ -6,9 +6,6 @@ Seriedad TaskOps  es la implementación de un JobRunner (motor de ejecución y
 orquestación de tareas/jobs) desarrollada por el equipo **[Seriedad]**
 como proveedor de este servicio dentro del curso **[Sistemas Avanzados]**.
 
-El objetivo del producto es permitir a clientes encolar, programar y monitorear la
-ejecución de tareas asíncronas mediante una API HTTP".
-
 ## Integrantes
 
 | Integrante | Rol | GitHub |
