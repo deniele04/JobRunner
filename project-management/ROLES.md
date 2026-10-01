@@ -1,7 +1,6 @@
 # Matriz de roles y responsabilidades
 
-Este documento define quién es responsable principal (R) y quién actúa como
-revisor (V) en cada área del proyecto. Se actualizará si hay rotación de roles
+Este documento define quién es responsable principal (R) en cada área del proyecto. Se actualizará si hay rotación de roles
 en próximos avances.
 
 ## Áreas de responsabilidad
@@ -9,8 +8,8 @@ en próximos avances.
 |Área|Responsable principal|Notas|
 |-|-|-|
 |**Producto** (alcance, prioridades, criterios de aceptación)|Daniel Alejandro Huerta Camberos||
-|**Verificación** (pruebas, calidad, criterios de "hecho")|Josué Said Delgadillo Gutiérrez||
-|**Ingeniería** (arquitectura, implementación, ADRs)|Juan José Rentería Haro||
+|**Verificación** (pruebas, calidad, criterios de "hecho")|Diego Armando Duran Hernandez||
+|**Ingeniería** (arquitectura, implementación, ADRs)|Juan José Rentería Haro y Josue Said Delgadillo Gutierrez||
 
 ## Contacto institucional del equipo
 
@@ -23,7 +22,8 @@ en próximos avances.
 
 ## Reglas de trabajo acordadas
 
-* Todo cambio a `main`/`master` se realiza mediante Pull Requestr.
+* Todo cambio a `main`/`master` se realiza mediante Pull Request.
+* Cada integrante trabaja en su propia rama: rama-daniel, rama-juan, rama-josue, rama-diego.
 * No hay revisor ni integrador fijo; el autor del PR hace el merge después de las 3 aprobaciones.
 * Reuniones de sincronización: \[frecuencia, ej. "dos veces por semana, lunes y
 jueves"].
