@@ -8,8 +8,8 @@ en próximos avances.
 |Área|Responsable principal|Notas|
 |-|-|-|
 |**Producto** (alcance, prioridades, criterios de aceptación)|Daniel Alejandro Huerta Camberos||
-|**Verificación** (pruebas, calidad, criterios de "hecho")|Diego Armando Duran Hernandez||
-|**Ingeniería** (arquitectura, implementación, ADRs)|Juan José Rentería Haro y Josue Said Delgadillo Gutierrez||
+|**Verificación** (pruebas, calidad, criterios de "hecho")|Diego Armando Dúran Hernandez||
+|**Ingeniería** (arquitectura, implementación, ADRs)|Juan José Rentería Haro y Josué Said Delgadillo Gutierrez||
 
 ## Contacto institucional del equipo
 
@@ -25,7 +25,6 @@ en próximos avances.
 * Todo cambio a `main`/`master` se realiza mediante Pull Request.
 * Cada integrante trabaja en su propia rama: rama-daniel, rama-juan, rama-josue, rama-diego.
 * No hay revisor ni integrador fijo; el autor del PR hace el merge después de las 3 aprobaciones.
-* Reuniones de sincronización: \[frecuencia, ej. "dos veces por semana, lunes y
-jueves"].
-* Canal de comunicación del equipo: \[ej. WhatsApp / Discord / correo].
+* Reuniones de sincronización: lunes y jueves, más una ventana diaria de revisión de PR en semanas de entrega.
+* Canal de comunicación del equipo: WhatsApp o Discord.
 
