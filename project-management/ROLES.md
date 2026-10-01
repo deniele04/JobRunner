@@ -7,7 +7,7 @@ en próximos avances.
 ## Áreas de responsabilidad
 
 |Área|Responsable principal|Notas|
-|-|-|-|-|
+|-|-|-|
 |**Producto** (alcance, prioridades, criterios de aceptación)|Daniel Alejandro Huerta Camberos||
 |**Verificación** (pruebas, calidad, criterios de "hecho")|Josué Said Delgadillo Gutiérrez||
 |**Ingeniería** (arquitectura, implementación, ADRs)|Juan José Rentería Haro||
