@@ -41,3 +41,15 @@ class JobManager:
         if state is not None:
             jobs = [j for j in jobs if j.state == state]
         return [j.to_dict() for j in jobs]
+
+    def poll(self):
+        for job_id, proc in list(self._procs.items()):
+            code = proc.poll()
+            if code is None:
+                continue
+            job = self._jobs[job_id]
+            del self._procs[job_id]
+            job.exit_code = code
+            job.finished_at = now_iso()
+            if job.state == RUNNING:
+                job.transition(SUCCEEDED if code == 0 else FAILED)
