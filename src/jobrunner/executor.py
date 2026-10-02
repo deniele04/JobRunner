@@ -53,3 +53,35 @@ class JobManager:
             job.finished_at = now_iso()
             if job.state == RUNNING:
                 job.transition(SUCCEEDED if code == 0 else FAILED)
+
+    def cancel(self, job_id):
+        job = self._jobs.get(job_id)
+        if job is None:
+            raise KeyError(f"No existe el trabajo {job_id}")
+        if job.state in FINAL_STATES:
+            raise ValueError(
+                f"El trabajo {job_id} ya terminó en estado {job.state}; no se puede cancelar"
+            )
+
+        if job.state == QUEUED:
+            job.transition(CANCELED)
+            job.finished_at = now_iso()
+            return job.to_dict()
+
+        # RUNNING: SIGTERM al grupo, y SIGKILL si sigue vivo tras 5 s
+        proc = self._procs[job_id]
+        try:
+            os.killpg(proc.pid, signal.SIGTERM)
+        except ProcessLookupError:
+            pass
+        try:
+            proc.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            os.kill(proc.pid, signal.SIGKILL)
+            proc.wait()
+
+        del self._procs[job_id]
+        job.exit_code = proc.returncode
+        job.finished_at = now_iso()
+        job.transition(CANCELED)
+        return job.to_dict()
