@@ -16,6 +16,9 @@ class JobManager:
         self._procs = {}   # id -> subprocess.Popen
 
     def submit(self, argv):
+        if not argv:
+            raise ValueError("argv vacío: indica un comando, p. ej. ['sleep', '5']")
+
         job = Job.new(argv)
         job.stdout_path = str(self.data_dir / f"{job.id}.out")
         job.stderr_path = str(self.data_dir / f"{job.id}.err")
@@ -26,10 +29,15 @@ class JobManager:
 
         out = open(job.stdout_path, "wb")
         err = open(job.stderr_path, "wb")
-        proc = subprocess.Popen(
-            argv, shell=False, stdout=out, stderr=err, start_new_session=True
-        )
-        self._procs[job.id] = proc
+        try:
+            proc = subprocess.Popen(
+                argv, shell=False, stdout=out, stderr=err, start_new_session=True
+            )
+            self._procs[job.id] = proc
+        except OSError as e:
+            job.error = f"No se pudo ejecutar {argv[0]!r}: {e}"
+            job.finished_at = now_iso()
+            job.transition(FAILED)
         return job.to_dict()
 
     def get(self, job_id):
