@@ -1,22 +1,22 @@
-\# ADR-0002: Modelo de persistencia del JobRunner
+﻿# ADR-0002: Modelo de persistencia del JobRunner
 
 
 
-\*\*Estado:\*\* Aceptado
+**Estado:** Aceptado
 
-\*\*Fecha:\*\* 01/10/2026
+**Fecha:** 01/10/2026
 
-\*\*Responsable(s):\*\* Josué Said Delgadillo Gutiérrez
+**Responsable(s):** Josué Said Delgadillo Gutiérrez
 
-\*\*Issue relacionado:\*\* #8
+**Issue relacionado:** #8
 
-\*\*Aprobado en:\*\* PR #13
+**Aprobado en:** PR #13
 
-\*\*Historial:\*\* v1 (10/09/2026): propuesta inicial con base de datos SQL genérica (PostgreSQL). v2 (01/10/2026): corregido a SQLite por decisión del equipo, al no requerir servidor aparte.
+**Historial:** v1 (10/09/2026): propuesta inicial con base de datos SQL genérica (PostgreSQL). v2 (01/10/2026): corregido a SQLite por decisión del equipo, al no requerir servidor aparte.
 
 
 
-\## Contexto
+## Contexto
 
 
 
@@ -24,23 +24,23 @@ El JobRunner necesita almacenar el estado de los jobs (pendiente, en ejecución,
 
 
 
-\## Alternativas consideradas
+## Alternativas consideradas
 
 
 
-1\. \*\*PostgreSQL\*\*
+1\. **PostgreSQL**
 
 &#x20;  - A favor: motor relacional robusto, pensado para producción real.
 
 &#x20;  - En contra: requiere levantar y mantener un servidor de base de datos aparte; complejidad de infraestructura innecesaria para el alcance y tiempo del proyecto.
 
-2\. \*\*SQLite\*\*
+2\. **SQLite**
 
 &#x20;  - A favor: motor relacional embebido, incluido en la librería estándar de Python (`sqlite3`), sin servidor aparte; soporta transacciones y SQL estándar.
 
 &#x20;  - En contra: menor capacidad de concurrencia de escritura que un servidor dedicado.
 
-3\. \*\*Archivos planos / JSON local\*\*
+3\. **Archivos planos / JSON local**
 
 &#x20;  - A favor: simplicidad inicial, sin dependencias.
 
@@ -48,11 +48,11 @@ El JobRunner necesita almacenar el estado de los jobs (pendiente, en ejecución,
 
 
 
-\## Decisión
+## Decisión
 
 
 
-Se elige \*\*SQLite\*\*.
+Se elige **SQLite**.
 
 
 
@@ -64,11 +64,11 @@ Razones técnicas:
 
 
 
-\## Consecuencias
+## Consecuencias
 
 
 
-\*\*Positivas\*\*
+**Positivas**
 
 \- Cero infraestructura adicional; despliegue en un solo archivo de base de datos.
 
@@ -76,19 +76,19 @@ Razones técnicas:
 
 
 
-\*\*Negativas\*\*
+**Negativas**
 
 \- Menor capacidad de concurrencia de escritura frente a un servidor dedicado como PostgreSQL.
 
 
 
-\*\*Riesgos\*\*
+**Riesgos**
 
 \- Escrituras concurrentes desde múltiples procesos podrían bloquear la base de datos — Mitigación: solo el daemon (ADR-0003) escribe en SQLite, evitando escrituras concurrentes de varios procesos — Prueba: TC-002 (pendiente de definir en Avance 1).
 
 
 
-\## Decisiones abiertas
+## Decisiones abiertas
 
 
 
@@ -96,7 +96,7 @@ Ninguna.
 
 
 
-\## Requisitos afectados
+## Requisitos afectados
 
 
 
@@ -104,7 +104,7 @@ Ninguna.
 
 
 
-\## Evidencia
+## Evidencia
 
 
 

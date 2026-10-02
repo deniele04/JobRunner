@@ -1,22 +1,22 @@
-\# ADR-0001: Lenguaje y runtime del JobRunner
+﻿# ADR-0001: Lenguaje y runtime del JobRunner
 
 
 
-\*\*Estado:\*\* Aceptado
+**Estado:** Aceptado
 
-\*\*Fecha:\*\* 01/10/2026
+**Fecha:** 01/10/2026
 
-\*\*Responsable(s):\*\* Josué Said Delgadillo Gutiérrez
+**Responsable(s):** Josué Said Delgadillo Gutiérrez
 
-\*\*Issue relacionado:\*\* #3
+**Issue relacionado:** #3
 
-\*\*Aprobado en:\*\* PR #13
+**Aprobado en:** PR #13
 
-\*\*Historial:\*\* Omitir, es la primera versión aprobada.
+**Historial:** Omitir, es la primera versión aprobada.
 
 
 
-\## Contexto
+## Contexto
 
 
 
@@ -24,23 +24,23 @@ Es necesario definir el lenguaje de programación y runtime principal en el que 
 
 
 
-\## Alternativas consideradas
+## Alternativas consideradas
 
 
 
-1\. \*\*Python\*\*
+1\. **Python**
 
 &#x20;  - A favor: curva de aprendizaje baja para el equipo, librería estándar incluye `sqlite3` y `socket`, sin dependencias externas que instalar.
 
 &#x20;  - En contra: paralelismo real limitado por el GIL en cargas CPU-intensivas.
 
-2\. \*\*Node.js\*\*
+2\. **Node.js**
 
 &#x20;  - A favor: buen desempeño en operaciones I/O-bound.
 
 &#x20;  - En contra: el equipo tiene menos experiencia; manejo de procesos de larga duración menos maduro.
 
-3\. \*\*Go\*\*
+3\. **Go**
 
 &#x20;  - A favor: excelente concurrencia real y rendimiento.
 
@@ -48,11 +48,11 @@ Es necesario definir el lenguaje de programación y runtime principal en el que 
 
 
 
-\## Decisión
+## Decisión
 
 
 
-Se elige \*\*Python\*\*.
+Se elige **Python**.
 
 
 
@@ -64,11 +64,11 @@ Razones técnicas:
 
 
 
-\## Consecuencias
+## Consecuencias
 
 
 
-\*\*Positivas\*\*
+**Positivas**
 
 \- Desarrollo más rápido con módulos estándar ya probados.
 
@@ -76,19 +76,19 @@ Razones técnicas:
 
 
 
-\*\*Negativas\*\*
+**Negativas**
 
 \- Rendimiento limitado en tareas CPU-intensivas concurrentes.
 
 
 
-\*\*Riesgos\*\*
+**Riesgos**
 
 \- El GIL limita el paralelismo real — Mitigación: usar procesos separados (`multiprocessing`) si el volumen de jobs concurrentes lo exige — Prueba: TC-001 (pendiente de definir en Avance 1).
 
 
 
-\## Decisiones abiertas
+## Decisiones abiertas
 
 
 
@@ -96,7 +96,7 @@ Ninguna.
 
 
 
-\## Requisitos afectados
+## Requisitos afectados
 
 
 
@@ -104,7 +104,7 @@ Ninguna.
 
 
 
-\## Evidencia
+## Evidencia
 
 
 
