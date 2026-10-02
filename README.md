@@ -6,62 +6,85 @@ Seriedad TaskOps  es la implementación de un JobRunner (motor de ejecución y
 orquestación de tareas/jobs) desarrollada por el equipo **[Seriedad]**
 como proveedor de este servicio dentro del curso **[Sistemas Avanzados]**.
 
-El objetivo del producto es permitir a clientes encolar, programar y monitorear la
-ejecución de tareas asíncronas mediante una API HTTP".
-
 ## Integrantes
 
-* Josue Said Delgadillo Gutierrez - josue.delgadillo6668@alumnos.udg.mx
-* Diego Armando Duran Hernandez - diego.duran5597@alumnos.udg.mx
-* Juan Jose Renteria Haro - juan.renteria6723@alumnos.udg.mx
-* Daniel Alejandro Huerta Camberos - daniel.huerta7939@alumnos.udg.mx
+| Integrante | Rol | GitHub |
+|---|---|---|
+| Daniel Alejandro Huerta Camberos | Producto | [@deniele04](https://github.com/deniele04) |
+| Diego Armando Durán Hernández | Verificación | [@DiegoDuran07](https://github.com/DiegoDuran07) |
+| Juan José Rentería Haro | Ingeniería | [@JJRNTH](https://github.com/JJRNTH) |
+| Josué Said Delgadillo Gutiérrez | Ingeniería | [@josuesdg7105](https://github.com/josuesdg7105) |
 
-Ver matriz completa de responsabilidades en [`docs/ROLES.md`](docs/ROLES.md).
+Detalle de responsabilidades en [`project-management/ROLES.md`](project-management/ROLES.md).
 
-## Estado del proyecto
+## Arquitectura (resumen)
 
-**Fase actual:** Arranque / Avance 0 — organización del equipo y del repositorio.
+- **Servicio (`jobrunner.server`)**: proceso que recibe solicitudes, valida, asigna un ID a cada trabajo, lo ejecuta como proceso hijo y controla su ciclo de vida.
+- **Cliente (`jobrunner.cli`)**: comandos `submit`, `status`, `list` y `cancel`.
+- **Comunicación**: socket Unix con mensajes JSON de una línea ([ADR-0003](docs/decisions/0003-mecanismo-de-comunicacion.md)).
+- **Estados de un trabajo**: `QUEUED → RUNNING → SUCCEEDED | FAILED | CANCELED`.
+- **Persistencia**: SQLite, a partir del Hito 2 ([ADR-0002](docs/decisions/0002-modelo-de-persistencia.md)).
 
-- [x] Repositorio creado
-- [x] Estructura mínima de carpetas
-- [x] Primer ADR resuelto
-- [ ] Primer endpoint / módulo funcional
-- [ ] Primera verificación (tests) ejecutándose en CI
+## Requisitos del entorno
 
-## Construcción provisional
+- Linux (Ubuntu 22.04 / 24.04) o WSL2.
+- Python 3.10 o superior.
+- Sin dependencias externas: solo la biblioteca estándar de Python ([ADR-0001](docs/decisions/0001-lenguaje-y-runtime.md)).
+- No requiere privilegios de root.
 
-Dado que el proyecto se encuentra en la Fase de Arranque y se desarrollará en **Python**, no requiere una compilación para generar binarios. La gestión del entorno virtual, la ejecución y las pruebas se automatizarán mediante scripts de shell (Bash) para asegurar la máxima compatibilidad nativa con el entorno Linux.
+## Alcance actual
 
-**Comandos previstos para el flujo de trabajo:**
-* **Configuración:** `./scripts/setup.sh` (Crea el entorno virtual e instala dependencias).
-* **Ejecución:** `./scripts/run.sh` (Levanta el proceso principal del JobRunner).
-* **Pruebas:** `./scripts/test.sh` (Ejecuta la suite de verificación).
-* **Limpieza:** `./scripts/clean.sh` (Elimina cachés de Python y archivos temporales).
+**Avance 1 — Núcleo local (en progreso):**
+- [x] Repositorio, estructura, roles y cronograma
+- [x] Plantillas de ADR e Issues
+- [ ] ADR 0001–0003 aceptados
+- [ ] Enviar un trabajo y obtener ID único
+- [ ] Ejecutar como proceso separado
+- [ ] Consultar estado, listar y cancelar
+- [ ] Obtener código de salida
+- [ ] Manejo de comandos inválidos sin terminar el servicio
+- [ ] Pruebas y script de verificación
 
-*(Nota: Las tecnologias y herrmaientas pueden cambiar y formalizarse mas adelante en los ADRs del proyecto).*
+**Próximos hitos:** concurrencia, persistencia y recuperación (Hito 2); operación remota en LAN/VPN (Hito 3).
+**Fuera de alcance:** interfaz web, acceso por Internet público y ejecución distribuida (ver Project Brief).
 
-
-## Estructura del repositorio (sujeto a cambios)
+## Estructura del repositorio
 
 ```
 .
 ├── README.md
+├── src/                      # Código de producción
+├── scripts/                  # setup.sh, run.sh, test.sh
 ├── docs/
-│   ├── ROLES.md            # Matriz de responsables/revisores
-│   ├── CRONOGRAMA.md       # Cronograma inicial y riesgos/dependencias
-│   └── adr/                # Architectural Decision Records
-├── src/                    # Código fuente del JobRunner
-├── tests/                  # Pruebas de verificación
-├── scripts/                # Scripts de utilidad, build, despliegue
-└── .github/ISSUE_TEMPLATE/ # Plantillas de Issues
+│   ├── user-guide/           # Instalación y operación
+│   ├── technical-guide/      # Arquitectura, protocolo, estados
+│   ├── decisions/            # ADR (registros de decisiones)
+│   ├── ai-usage/             # Registros de uso de IA
+│   ├── change-requests/      # Solicitudes de cambio del cliente
+│   └── incidents/            # Incidentes y su resolución
+├── verif/
+│   ├── verification-plan/    # Plan y matriz de trazabilidad
+│   ├── test-cases/           # Casos TC-XXX
+│   ├── scripts/              # Automatización de pruebas
+│   ├── test-data/            # Datos controlados
+│   └── results/              # Evidencia por ejecución
+├── project-management/       # Roles, cronograma y minutas
+└── .github/ISSUE_TEMPLATE/   # Plantillas de Issues
 ```
 
-## Documentación relacionada
+## Flujo de trabajo
 
-- Matriz de roles: [`docs/ROLES.md`](docs/ROLES.md)
-- Cronograma y riesgos: [`docs/CRONOGRAMA.md`](docs/CRONOGRAMA.md)
-- Decisiones de arquitectura: [`docs/adr/`](docs/adr/)
+- Cada integrante trabaja en su propia rama (`rama-<nombre>`).
+- Todo cambio a `main` entra por Pull Request aprobado por los otros 3 integrantes.
+- El trabajo se organiza en Issues conectados al GitHub Project del repositorio.
 
-## Licencia / Uso académico
+## Documentación
 
-Proyecto desarrollado con fines académicos para [Sistemas Avanzados / Centro Universitario de Ciencias Exactas e Ingenierías].
+- Roles: [`project-management/ROLES.md`](project-management/ROLES.md)
+- Cronograma y riesgos: [`project-management/CRONOGRAMA.md`](project-management/CRONOGRAMA.md)
+- Decisiones de arquitectura: [`docs/decisions/`](docs/decisions/)
+- Uso de IA: [`docs/ai-usage/`](docs/ai-usage/)
+
+## Uso académico
+
+Proyecto desarrollado con fines académicos para Programación de Sistemas Avanzados, Centro Universitario de Ciencias Exactas e Ingenierías (CUCEI), Universidad de Guadalajara.

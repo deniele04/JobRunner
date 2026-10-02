@@ -1,9 +1,9 @@
 # Cronograma
 
-**Versión:** 2 — actualizado el 28/09/2026
+**Versión:** 3 — actualizado el 1/10/2026
 **Responsable del documento:** Daniel Alejandro Huerta Camberos
 
-> **Control de cambios (v1 → v2):** La implementación del núcleo se adelanta a la semana del 28/09, porque en el Avance 1 se exige un núcleo local ejecutable. La resolución de los primeros 3 ADR también pasa a esta semana. Se prepara todo para la Revisión Técnica 1 (06/10) y se reorganizan los hitos según el documento propuesto.
+> **Control de cambios (v2 → v3):** Se actualizan los roles del equipo. Los responsables por actividad se registran en las Issues del GitHub Project y ya no en este documento. Se corrige la referencia de persistencia. Se agrega el riesgo por integración con 3 aprobaciones por PR.
 
 ## Hitos principales
 
@@ -21,15 +21,15 @@
 
 Los números corresponden a los Issues del milestone "Avance 1 — Núcleo local".
 
-| Día | Actividades | Issues | Responsables |
-|---|---|---|---|
-| Lun 28/09 | Reunión de decisiones y minuta; reestructura del repositorio; plantillas, labels y milestone; creación de Issues | #1, #2, #3, #4 | Daniel |
-| Mar 29/09 | Reescritura de ADR-001 a 003; construcción reproducible; daemon con socket Unix; modelo de trabajo y ejecución en proceso hijo; borrador de casos TC y matriz | #5, #7, #11, #12, #17, #19, #20 | Diego (#5, #20), Daniel (#7), Josué (#11, #12), Juan José (#17, #19) |
-| Mié 30/09 | Operaciones del protocolo y validación; recolección de código de salida y cancelación; pruebas unitarias; `verify.sh`; formato y análisis estático; arquitectura y modelo de estados | #6, #8, #10, #13, #14, #16, #18, #21 | Daniel (#8, #10), Josué (#13, #14), Juan José (#16, #18), Diego (#6, #21) |
-| Jue 01/10 | Integración de servidor y executor; CLI; cola con límite; primera ejecución completa de `verify.sh`; registros de uso de IA | #9, #15, #22 | Daniel (#9), Josué (#15), Juan José (ejecución y reporte de defectos), Diego (#22 y revisión de PRs) |
-| Vie 02/10 | Corrección de defectos; README final; matriz actualizada; verificación formal desde un clon limpio (TC-014); tag `v0.1.0` y release notes; **entrega del Avance 1** | #19, #23, #24 | Todos |
-| Sáb 03/10 – Lun 05/10 | `main` congelada (solo correcciones); guion del recorrido de una solicitud; ensayo en el que cada integrante explica procesos, señales y códigos de salida | #25 | Todos |
-| Mar 06/10 | **RT-1 presencial** | — | Todos |
+| Día | Actividades |
+|---|---|
+| Lun 28/09 | Reunión de decisiones y minuta; reestructura del repositorio; plantillas, labels y milestone; creación de Issues |
+| Mar 29/09 | Reescritura de ADR-001 a 003; construcción reproducible; daemon con socket Unix; modelo de trabajo y ejecución en proceso hijo; borrador de casos TC y matriz |
+| Mié 30/09 | Operaciones del protocolo y validación; recolección de código de salida y cancelación; pruebas unitarias; `verify.sh`; formato y análisis estático; arquitectura y modelo de estados |
+| Jue 01/10 | Integración de servidor y executor; CLI; cola con límite; primera ejecución completa de `verify.sh`; registros de uso de IA |
+| Vie 02/10 | Corrección de defectos; README final; matriz actualizada; verificación formal desde un clon limpio (TC-014); tag `v0.1.0` y release notes; **entrega del Avance 1** |
+| Sáb 03/10 – Lun 05/10 | `main` congelada (solo correcciones); guion del recorrido de una solicitud; ensayo en el que cada integrante explica procesos, señales y códigos de salida |
+| Mar 06/10 | **RT-1 presencial** |
 
 ## Riesgos identificados
 
@@ -37,18 +37,18 @@ Los números corresponden a los Issues del milestone "Avance 1 — Núcleo local
 |---|---|---|---|---|---|
 | 1 | Tiempo insuficiente para el Avance 1 (4 días hábiles) | Alta | Alto | Alcance mínimo fijo; Issues de prioridad media recortables (cola, análisis estático) y documentados como limitación | Daniel Alejandro Huerta Camberos |
 | 2 | Falla la integración entre servidor y executor el jueves | Media | Alto | Interfaz entre módulos acordada el lunes; executor probado con pruebas unitarias antes de integrar | Josué Said Delgadillo Gutiérrez |
-| 3 | Procesos huérfanos o zombis por mal manejo de señales | Media | Alto | Grupos de procesos (`start_new_session`), `waitpid` sistemático y prueba de cancelación en `verify.sh` | Josué Said Delgadillo Gutiérrez |
+| 3 | Procesos huérfanos o zombis por mal manejo de señales | Media | Alto | Grupos de procesos (`start_new_session`), `waitpid` sistemático y prueba de cancelación en `verify.sh` | Juan José Rentería Haro |
 | 4 | Un integrante no puede explicar código generado con IA durante la revisión | Media | Alto | Revisión cruzada obligatoria en cada PR; registro en `docs/ai-usage/`; ensayo de defensa individual antes de cada RT | Diego Armando Durán Hernández |
 | 5 | Entornos de desarrollo distintos (Windows, macOS, Linux) | Media | Medio | Distribución Linux declarada; uso de WSL o VM; verificación formal siempre desde un clon limpio en Linux | Diego Armando Durán Hernández |
-| 6 | Cobertura de pruebas insuficiente antes de cada hito | Media | Alto | Criterios de aceptación ejecutables en cada Issue; `verify.sh` corrido antes de cada integración a `main` | Juan José Rentería Haro |
+| 6 | Cobertura de pruebas insuficiente antes de cada hito | Media | Alto | Criterios de aceptación ejecutables en cada Issue; `verify.sh` corrido antes de cada integración a `main` | Diego Armando Durán Hernández |
 | 7 | Disponibilidad limitada de algún integrante | Media | Medio | Redistribuir tareas con al menos 3 días de aviso; ningún módulo con un solo conocedor | Diego Armando Durán Hernández |
 | 8 | El Change Request del cliente llega en un momento de alta carga | Media | Medio | Reservar capacidad en las semanas 9 y 10; análisis de impacto antes de implementar | Daniel Alejandro Huerta Camberos |
 
 ## Dependencias conocidas
 
-- Las operaciones del protocolo (#8) dependen del daemon (#7) y del modelo de trabajo (#11).
-- La cancelación (#14) y la cola (#15) dependen de la ejecución en proceso hijo (#12).
-- `verify.sh` (#18) depende de que el CLI (#9) funcione de extremo a extremo.
-- El tag `v0.1.0` (#24) depende de una verificación formal PASS desde un clon limpio.
-- La persistencia del Hito 2 depende de ADR-004, pendiente de resolver en la semana 5.
+- Las operaciones del protocolo dependen del daemon y del modelo de trabajo.
+- La cancelación y la cola dependen de la ejecución en proceso hijo.
+- El script de verificación (`verify.sh`) depende de que el CLI funcione de extremo a extremo.
+- El tag `v0.1.0` depende de una verificación formal PASS desde un clon limpio.
+- La persistencia del Hito 2 depende de definir el esquema de datos y la política de recuperación (decisiones abiertas de ADR-002).
 - La operación remota del Hito 3 depende de que el protocolo local ya esté versionado y documentado.
