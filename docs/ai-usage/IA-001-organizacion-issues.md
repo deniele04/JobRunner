@@ -84,7 +84,7 @@ Como el resultado es organizativo, la verificación es un cotejo de cada entrega
 | Registros del uso de IA | Este documento | Cumple |
 | Evidencia de la versión demostrada | — | Pendiente |
 
-**Verificó:** [Otro integrante ademas del autor]
+**Verificó:** [Juan José Renteria Haro]
 
 ## 8. Aprendizaje
 
