@@ -1,14 +1,8 @@
-﻿# Arquitectura de JobRunner
-
-
+# Arquitectura de JobRunner
 
 ## Componentes
 
-
-
 JobRunner está compuesto por tres piezas:
-
-
 
 1. **CLI (cli.py)** — cliente de línea de comandos que el usuario invoca directamente. Traduce cada comando (submit, status, list, cancel) en una petición JSON y la envía al servidor por un socket Unix.
 
@@ -16,15 +10,9 @@ JobRunner está compuesto por tres piezas:
 
 3. **Executor (executor.py, clase JobManager)** — lógica central que crea, ejecuta, consulta y cancela trabajos, lanzándolos como subprocesos del sistema operativo.
 
-
-
 ## Recorrido de una solicitud
 
-
-
 El flujo completo de un comando submit es el siguiente:
-
-
 
 1. El usuario corre python3 -m jobrunner.cli submit -- sleep 5.
 
@@ -42,11 +30,7 @@ El flujo completo de un comando submit es el siguiente:
 
 8. El CLI recibe la respuesta y la imprime en pantalla.
 
-
-
 ## Diagrama resumido
-
-
 
 CLI -> socket Unix -> Servidor -> JobManager.submit() -> Popen (fork+exec) -> RUNNING -> poll() -> codigo de salida -> respuesta JSON -> socket Unix -> CLI
 
