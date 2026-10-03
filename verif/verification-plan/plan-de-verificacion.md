@@ -84,7 +84,7 @@ Sin `run-id` se usa la fecha y hora (`AAAAMMDD-HHMMSS`). Para una ejecución for
 
 | TC | Título | Nivel | Automatización |
 |---|---|---|---|
-| [TC-001](../test-cases/TC-001.md) | Enviar un trabajo y obtener un ID único | Extremo a extremo + unitario | `test_ids_unicos.py`; falta la parte con el CLI |
+| [TC-001](../test-cases/TC-001.md) | Enviar un trabajo y obtener un ID único | Extremo a extremo | Pendiente (requiere CLI). Verificación unitaria complementaria: `test_ids_unicos.py` (falla, DEF-001) |
 | [TC-003](../test-cases/TC-003.md) | Estados y transiciones de un trabajo | Unitario | `test_ciclo_vida.py` |
 | [TC-004](../test-cases/TC-004.md) | Consultar estado y listar trabajos desde el CLI | Extremo a extremo | Pendiente (requiere CLI) |
 | [TC-005](../test-cases/TC-005.md) | Ejecución como proceso separado y código de salida | Unitario | `test_ciclo_vida.py` |

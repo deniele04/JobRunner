@@ -1,0 +1,22 @@
+$ git clone <repositorio> JobRunner
+Note: switching to '0a35b6e26ed975522b02f4e892f13fbef2059b40'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+$ git log -1 --oneline
+0a35b6e Agregar verify.sh, plan de verificación, matriz y pruebas de IDs únicos
+$ ./scripts/setup.sh
+Construcción OK: Python 3.13.16, sin dependencias externas.
