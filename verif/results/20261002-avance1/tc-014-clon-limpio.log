@@ -1,0 +1,5 @@
+$ git clone <repositorio> JobRunner
+$ git log -1 --oneline
+76b808d Alinear numeración de TC con el PDF 05 y completar la matriz de trazabilidad
+$ ./scripts/setup.sh
+Construcción OK: Python 3.13.16, sin dependencias externas.

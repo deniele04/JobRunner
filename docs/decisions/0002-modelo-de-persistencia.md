@@ -9,7 +9,7 @@
 
 ## Contexto
 
-El JobRunner necesita almacenar el estado de los jobs (pendiente, en ejecución, completado, fallido), sus resultados y metadatos de ejecución. Se requiere un mecanismo de persistencia confiable, simple de desplegar y sin infraestructura adicional (sin servidor aparte, sin privilegios de administrador), dado el tiempo disponible del curso.
+El JobRunner necesita almacenar el estado de los jobs (QUEUED, RUNNING, SUCCEEDED, FAILED o CANCELED, los mismos estados que usa el código en `src/jobrunner/jobs.py`), sus resultados y metadatos de ejecución. Se requiere un mecanismo de persistencia confiable, simple de desplegar y sin infraestructura adicional (sin servidor aparte, sin privilegios de administrador), dado el tiempo disponible del curso.
 
 ## Alternativas consideradas
 

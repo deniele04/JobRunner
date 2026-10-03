@@ -34,15 +34,28 @@ Detalle de responsabilidades en [`project-management/ROLES.md`](project-manageme
 
 ## Construcción
 
-Requiere Linux (o WSL2) y Python 3.10 o superior. No hay dependencias externas que instalar.
+Requiere Linux (o WSL2) y Python 3.10 o superior. No hay dependencias externas que instalar ([ADR-0001](docs/decisions/0001-lenguaje-y-runtime.md)).
 
-```bash
-git clone https://github.com/deniele04/JobRunner.git
-cd JobRunner
-./scripts/setup.sh
-```
+1. Verificar la versión de Python (debe ser 3.10 o superior):
 
-`setup.sh` verifica la versión de Python y compila el código para detectar errores.
+   ```bash
+   python3 --version
+   ```
+
+2. Clonar el repositorio:
+
+   ```bash
+   git clone https://github.com/deniele04/JobRunner.git
+   cd JobRunner
+   ```
+
+3. Preparar el proyecto:
+
+   ```bash
+   ./scripts/setup.sh
+   ```
+
+   `setup.sh` verifica la versión de Python y compila el código para detectar errores.
 
 ## Ejecución
 
@@ -52,7 +65,7 @@ En una terminal, iniciar el servicio:
 ./scripts/run.sh
 ```
 
-En otra terminal, usar el cliente:
+En otra terminal, desde la raíz del repositorio, usar el cliente:
 
 ```bash
 export PYTHONPATH=src
@@ -73,14 +86,14 @@ Para detener el servicio: `Ctrl+C`.
 ./scripts/test.sh
 ```
 
-Ejecuta las pruebas unitarias (`verif/unit/`) y el script de verificación (`verif/scripts/verify.sh`). La evidencia de cada ejecución se guarda en `verif/results/<run-id>/`.
+Ejecuta las pruebas unitarias (`verif/unit/`, con `unittest`) y el script de verificación (`verif/scripts/verify.sh`). La evidencia de cada ejecución se guarda en `verif/results/<run-id>/`.
 
 ## Alcance actual
 
 **Avance 1 — Núcleo local (en progreso):**
 - [x] Repositorio, estructura, roles y cronograma
 - [x] Plantillas de ADR e Issues
-- [ ] ADR 0001–0003 aceptados
+- [x] ADR 0001–0003 aceptados
 - [ ] Enviar un trabajo y obtener ID único
 - [ ] Ejecutar como proceso separado
 - [ ] Consultar estado, listar y cancelar
