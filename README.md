@@ -1,10 +1,10 @@
-#  Seriedad TaskOps — JobRunner
+# Seriedad TaskOps — JobRunner
 
 ## Propósito
 
-Seriedad TaskOps  es la implementación de un JobRunner (motor de ejecución y
-orquestación de tareas/jobs) desarrollada por el equipo **[Seriedad]**
-como proveedor de este servicio dentro del curso **[Sistemas Avanzados]**.
+JobRunner es una plataforma ligera para **enviar, ejecutar, supervisar y controlar trabajos del sistema operativo en Linux**. Cada trabajo (un comando o programa con sus argumentos) se ejecuta como un proceso separado, controlado por un servicio local, y el usuario lo opera desde un cliente de línea de comandos.
+
+Proyecto del equipo **Seriedad** para la materia **Programación de Sistemas Avanzados 2026B** (CUCEI, Universidad de Guadalajara).
 
 ## Integrantes
 
@@ -31,6 +31,49 @@ Detalle de responsabilidades en [`project-management/ROLES.md`](project-manageme
 - Python 3.10 o superior.
 - Sin dependencias externas: solo la biblioteca estándar de Python ([ADR-0001](docs/decisions/0001-lenguaje-y-runtime.md)).
 - No requiere privilegios de root.
+
+## Construcción
+
+Requiere Linux (o WSL2) y Python 3.10 o superior. No hay dependencias externas que instalar.
+
+```bash
+git clone https://github.com/deniele04/JobRunner.git
+cd JobRunner
+./scripts/setup.sh
+```
+
+`setup.sh` verifica la versión de Python y compila el código para detectar errores.
+
+## Ejecución
+
+En una terminal, iniciar el servicio:
+
+```bash
+./scripts/run.sh
+```
+
+En otra terminal, usar el cliente:
+
+```bash
+export PYTHONPATH=src
+python3 -m jobrunner.cli submit -- sleep 10
+python3 -m jobrunner.cli status <id>
+python3 -m jobrunner.cli list
+python3 -m jobrunner.cli cancel <id>
+python3 -m jobrunner.cli --help
+```
+
+Para detener el servicio: `Ctrl+C`.
+
+> El servicio y el cliente están en desarrollo; los comandos se confirmarán al integrar su código.
+
+## Pruebas
+
+```bash
+./scripts/test.sh
+```
+
+Ejecuta las pruebas unitarias (`verif/unit/`) y el script de verificación (`verif/scripts/verify.sh`). La evidencia de cada ejecución se guarda en `verif/results/<run-id>/`.
 
 ## Alcance actual
 
