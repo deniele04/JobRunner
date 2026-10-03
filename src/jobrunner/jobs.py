@@ -1,6 +1,6 @@
 import uuid
 from dataclasses import dataclass, asdict
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 QUEUED = "QUEUED"
@@ -21,7 +21,7 @@ VALID_TRANSITIONS = {
 
 
 def now_iso() -> str:
-    return datetime.now().isoformat()
+    return datetime.now(timezone.utc).isoformat()
 
 
 @dataclass
@@ -39,11 +39,11 @@ class Job:
 
     @classmethod
     def new(cls, argv):
-        return cls(id=uuid.uuid4().hex[:4], argv=list(argv), created_at=now_iso())
+        return cls(id=str(uuid.uuid4()), argv=list(argv), created_at=now_iso())
 
     def transition(self, new_state: str) -> None:
         if new_state not in VALID_TRANSITIONS[self.state]:
-            raise ValueError(f"Transición inválida: {self.state} -> {new_state}")
+            raise ValueError("Transicion invalida: " + self.state + " -> " + new_state)
         self.state = new_state
 
     def to_dict(self) -> dict:
