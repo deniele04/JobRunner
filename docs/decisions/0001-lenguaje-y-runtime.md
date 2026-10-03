@@ -1,42 +1,56 @@
-# ADR-0001: Lenguaje y runtime del JobRunner
+﻿# ADR-0001: Lenguaje y runtime del JobRunner
 
-**Estado:** Propuesto
-**Fecha:** 11/09/2026
+**Estado:** Aceptado
+**Fecha:** 01/10/2026
 **Responsable(s):** Josué Said Delgadillo Gutiérrez
+**Issue relacionado:** #3
+**Aprobado en:** PR #14
+**Historial:** v1 (11/09/2026): Python con Celery y SQL. v2 (01/10/2026): solo biblioteca estándar.
 
 ## Contexto
 
-Es necesario definir el lenguaje de programación y runtime principal en el que
-se implementará el JobRunner, considerando la experiencia del equipo, el
-soporte para concurrencia/paralelismo (necesario para ejecutar jobs), y la
-facilidad de despliegue.
+Es necesario definir el lenguaje de programación y runtime principal en el que se implementará el JobRunner, considerando la experiencia del equipo, el soporte para concurrencia (necesario para ejecutar jobs), el tiempo disponible del curso y la ausencia de infraestructura adicional (sin servidores externos, sin privilegios de administrador en las máquinas del equipo).
 
-## Opciones consideradas
+## Alternativas consideradas
 
-1. **Python** — Curva de aprendizaje baja para el equipo, amplio ecosistema de
-   librerías para tareas asíncronas y colas (asyncio, Celery, RQ), buena
-   integración con bases de datos SQL. Como desventaja, el paralelismo real
-   está limitado por el GIL en cargas CPU-intensivas.
-2. **Node.js** — Buen desempeño en operaciones I/O-bound y concurrencia
-   asíncrona nativa, pero el equipo tiene menos experiencia y el manejo de
-   errores en jobs largos es menos maduro que en Python.
-3. **Go** — Excelente concurrencia real y rendimiento, pero curva de
-   aprendizaje alta para el equipo y menor velocidad de desarrollo dado el
-   tiempo disponible del curso.
+1. **Python**
+   - A favor: curva de aprendizaje baja para el equipo, librería estándar incluye sqlite3 y socket, sin dependencias externas que instalar.
+   - En contra: paralelismo real limitado por el GIL en cargas CPU-intensivas.
+2. **Node.js**
+   - A favor: buen desempeño en operaciones I/O-bound.
+   - En contra: el equipo tiene menos experiencia; manejo de procesos de larga duración menos maduro.
+3. **Go**
+   - A favor: excelente concurrencia real y rendimiento.
+   - En contra: curva de aprendizaje alta para el equipo; menor velocidad de desarrollo dado el tiempo del curso.
 
 ## Decisión
 
-Se elige **Python** como lenguaje y runtime principal del JobRunner, por la
-experiencia previa del equipo, la velocidad de desarrollo que permite dentro
-del tiempo del curso, y su compatibilidad directa con el motor de persistencia
-elegido (ver ADR-0002).
+Se elige **Python**.
+
+Razones técnicas:
+- Permite usar sqlite3 y socket de la librería estándar sin dependencias externas, ligado directamente a ADR-0002 y ADR-0003.
+- Maximiza la velocidad de desarrollo del equipo dentro del tiempo disponible del curso.
 
 ## Consecuencias
 
-- **Positivas:** desarrollo más rápido, mejor documentación y soporte de la
-  comunidad, integración sencilla con librerías de manejo de jobs y con SQL.
-- **Negativas / trade-offs:** rendimiento limitado en tareas CPU-intensivas
-  concurrentes; puede requerir procesos separados o librerías externas
-  (multiprocessing, Celery) si el volumen de jobs crece.
-- **Impacto en otras áreas:** afecta directamente el mecanismo de persistencia
-  (ADR-0002) y el modelo de comunicación con clientes (ADR-0003).
+**Positivas**
+- Desarrollo más rápido con módulos estándar ya probados.
+- Sin dependencias externas que instalar en las máquinas del equipo.
+
+**Negativas**
+- Rendimiento limitado en tareas CPU-intensivas concurrentes.
+
+**Riesgos**
+- El GIL limita el paralelismo real — Mitigación: usar procesos separados (multiprocessing) si el volumen de jobs concurrentes lo exige — Prueba: TC-002.
+
+## Decisiones abiertas
+
+Ninguna.
+
+## Requisitos afectados
+
+RF-04, RF-10, RNF-01, RNF-02, RNF-03, RNF-17, RNF-19
+
+## Evidencia
+
+Ver src/jobrunner/executor.py (Juan José Rentería Haro) como implementación de referencia construida únicamente con la librería estándar de Python.
