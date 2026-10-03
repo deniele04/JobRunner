@@ -106,7 +106,7 @@ Ejecuta las pruebas unitarias (`verif/unit/`, con `unittest` de la biblioteca es
 **Avance 1 — Núcleo local (en progreso):**
 - [x] Repositorio, estructura, roles y cronograma
 - [x] Plantillas de ADR e Issues
-- [ ] ADR 0001–0003 aceptados
+- [x] ADR 0001–0003 aceptados
 - [ ] Enviar un trabajo y obtener ID único
 - [ ] Ejecutar como proceso separado
 - [ ] Consultar estado, listar y cancelar
