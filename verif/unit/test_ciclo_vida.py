@@ -53,6 +53,14 @@ class CicloDeVidaTest(unittest.TestCase):
         self.assertEqual(final["exit_code"], 0)
         self.assertIsNotNone(final["finished_at"])
 
+    def test_trabajo_corre_en_proceso_separado(self):
+        job = self.mgr.submit(["sleep", "30"])
+        proc = self.mgr._procs[job["id"]]
+        # Proceso distinto al del gestor y en su propio grupo de procesos.
+        self.assertNotEqual(proc.pid, os.getpid())
+        self.assertEqual(os.getpgid(proc.pid), proc.pid)
+        self.assertNotEqual(os.getpgid(proc.pid), os.getpgid(0))
+
     # --- fallos controlados ---------------------------------------------
 
     def test_codigo_de_salida_distinto_de_cero_termina_en_failed(self):
