@@ -8,7 +8,7 @@
 | **Revisado por** | Juan José Rentería Haro |
 | **Hito** | Hito 1 — Núcleo local (Avance 1) |
 | **Artefactos afectados** | Issues |
-| **Clasificación** | Terminado |
+| **Clasificación** | Mixto: un resultado aceptado, uno modificado y uno rechazado (ver sección 5) | |
 
 ## 1. Objetivo
 

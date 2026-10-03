@@ -10,7 +10,7 @@
 | Hito | Descripción | Fecha objetivo | Responsable | Estado |
 |---|---|---|---|---|
 | Hito 0 | Inicio y línea base: repositorio, roles, riesgos, ADR iniciales | 11/09/2026 | Todos | Completado con acciones pendientes |
-| Hito 1 — Avance 1 | Núcleo local: enviar, ID, proceso hijo, estados, consultar, listar, cancelar, código de salida | 02/10/2026 | Todos | En progreso |
+| Hito 1 — Avance 1 | Núcleo local: enviar, ID, proceso hijo, estados, consultar, listar, cancelar, código de salida | 02/10/2026 | Todos | Completado |
 | RT-1 | Revisión técnica presencial (asistencia obligatoria de todos) | 06/10/2026 | Todos | Pendiente |
 | Hito 2 — Avance 2 | Concurrencia y persistencia: límite, cancelación robusta, persistencia, recuperación, bitácora | 30/10/2026 | Josué Said Delgadillo Gutiérrez | Pendiente |
 | Hito 3 | Operación remota privada: protocolo TCP, cliente remoto, restricción LAN/VPN | 13/11/2026 (tentativa) | Juan José Rentería Haro | Pendiente |
