@@ -34,7 +34,7 @@ Detalle de responsabilidades en [`project-management/ROLES.md`](project-manageme
 
 ## Construcción
 
-Requiere Linux (o WSL2) y Python 3.10 o superior. El proyecto usa solo la biblioteca estándar de Python, por lo que **no hay `requirements.txt` ni paquetes que instalar con `pip`** ([ADR-0001](docs/decisions/0001-lenguaje-y-runtime.md)).
+Requiere Linux (o WSL2) y Python 3.10 o superior. No hay dependencias externas que instalar ([ADR-0001](docs/decisions/0001-lenguaje-y-runtime.md)).
 
 1. Verificar la versión de Python (debe ser 3.10 o superior):
 
@@ -49,16 +49,7 @@ Requiere Linux (o WSL2) y Python 3.10 o superior. El proyecto usa solo la biblio
    cd JobRunner
    ```
 
-3. *(Opcional)* Crear y activar un entorno virtual para aislar el intérprete. No es necesario para ejecutar el proyecto:
-
-   ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate
-   ```
-
-   En Ubuntu puede hacer falta instalar antes `python3-venv` (`sudo apt install python3-venv`).
-
-4. Preparar el proyecto:
+3. Preparar el proyecto:
 
    ```bash
    ./scripts/setup.sh
@@ -66,19 +57,15 @@ Requiere Linux (o WSL2) y Python 3.10 o superior. El proyecto usa solo la biblio
 
    `setup.sh` verifica la versión de Python y compila el código para detectar errores.
 
-Los scripts `setup.sh`, `run.sh` y `test.sh` reemplazan a los antiguos comandos `make build / make run / make test`, que ya no se usan.
-
 ## Ejecución
 
-El servicio es un proceso propio de JobRunner (`jobrunner.server`), no un servidor web: no se usa `uvicorn` ni `flask run`. Se comunica con el cliente por un socket Unix ([ADR-0003](docs/decisions/0003-mecanismo-de-comunicacion.md)).
-
-En una terminal (con el entorno virtual activado, si lo creaste), iniciar el servicio:
+En una terminal, iniciar el servicio:
 
 ```bash
 ./scripts/run.sh
 ```
 
-En otra terminal (activando también el entorno virtual, si lo usas), desde la raíz del repositorio, usar el cliente:
+En otra terminal, desde la raíz del repositorio, usar el cliente:
 
 ```bash
 export PYTHONPATH=src
@@ -99,7 +86,7 @@ Para detener el servicio: `Ctrl+C`.
 ./scripts/test.sh
 ```
 
-Ejecuta las pruebas unitarias (`verif/unit/`, con `unittest` de la biblioteca estándar; no se usa `pytest`) y el script de verificación (`verif/scripts/verify.sh`). La evidencia de cada ejecución se guarda en `verif/results/<run-id>/`.
+Ejecuta las pruebas unitarias (`verif/unit/`, con `unittest`) y el script de verificación (`verif/scripts/verify.sh`). La evidencia de cada ejecución se guarda en `verif/results/<run-id>/`.
 
 ## Alcance actual
 
