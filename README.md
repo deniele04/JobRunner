@@ -94,12 +94,12 @@ Ejecuta las pruebas unitarias (`verif/unit/`, con `unittest`) y el script de ver
 - [x] Repositorio, estructura, roles y cronograma
 - [x] Plantillas de ADR e Issues
 - [x] ADR 0001–0003 aceptados
-- [ ] Enviar un trabajo y obtener ID único
-- [ ] Ejecutar como proceso separado
-- [ ] Consultar estado, listar y cancelar
-- [ ] Obtener código de salida
-- [ ] Manejo de comandos inválidos sin terminar el servicio
-- [ ] Pruebas y script de verificación
+- [x] Enviar un trabajo y obtener ID único
+- [x] Ejecutar como proceso separado
+- [x] Consultar estado, listar y cancelar
+- [x] Obtener código de salida
+- [x] Manejo de comandos inválidos sin terminar el servicio
+- [x] Pruebas y script de verificación
 
 **Próximos hitos:** concurrencia, persistencia y recuperación (Hito 2); operación remota en LAN/VPN (Hito 3).
 **Fuera de alcance:** interfaz web, acceso por Internet público y ejecución distribuida (ver Project Brief).
