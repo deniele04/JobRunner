@@ -28,16 +28,6 @@ El issue #3 pedia aprobar o corregir las 3 ADR del equipo (lenguaje/runtime, per
 
 - El codigo fuente real de jobs.py y executor.py (de Juan Jose Renteria Haro), leido antes de disenar el servidor y el cliente.
 
-Prompts utilizados (resumen):
-
-> "Tengo que corregir esto en base a lo que tenemos, Juan dejo errores a proposito para hacer correcciones"
-
-> "Dime que hacer comando por comando para asegurarnos, tengo que hacerlo con pull request"
-
-> Pegado directo de los comentarios de revision de GitHub para cada ronda de correcciones
-
-> "Veamos" / confirmaciones paso a paso durante la construccion de server.py y cli.py
-
 ## 3. Resultado recibido
 
 1. Las 3 ADR corregidas con todos los campos del template: Estado, Fecha, Responsable(s), Issue relacionado, Aprobado en, Historial, Contexto, Alternativas consideradas, Decision, Consecuencias (Positivas/Negativas/Riesgos con referencias a casos de prueba), Decisiones abiertas, Requisitos afectados, Evidencia.
