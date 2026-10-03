@@ -1,4 +1,4 @@
-﻿import json
+import json
 import os
 import socket
 import sys
@@ -66,12 +66,16 @@ def serve(socket_path=DEFAULT_SOCKET_PATH):
         while True:
             conn, _ = server.accept()
             with conn:
+                conn.settimeout(5)
                 data = b""
-                while not data.endswith(b"\n"):
-                    chunk = conn.recv(4096)
-                    if not chunk:
-                        break
-                    data += chunk
+                try:
+                    while not data.endswith(b"\n"):
+                        chunk = conn.recv(4096)
+                        if not chunk:
+                            break
+                        data += chunk
+                except socket.timeout:
+                    continue
                 if not data.strip():
                     continue
                 try:
