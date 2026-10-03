@@ -29,7 +29,7 @@ Fuera del alcance de esta versión: concurrencia, persistencia con SQLite y oper
 |---|---|---|
 | Unitario | `Job` y `JobManager` (estados, transiciones, ejecución, cancelación, entradas inválidas, unicidad de IDs) | `unittest` en `verif/unit/` |
 | Clon limpio | Que un externo pueda clonar y construir siguiendo el README | `verif/scripts/verify.sh` clona el repositorio y ejecuta `./scripts/setup.sh` |
-| Extremo a extremo | Servidor y CLI comunicándose por socket Unix | Casos TC-001 y TC-004. Quedan BLOCKED hasta que el servidor y el CLI estén integrados en `main` (hoy existen en la rama `feature/docs-server-cli`) |
+| Extremo a extremo | Servidor y CLI comunicándose por socket Unix | Casos TC-001 y TC-004. Quedan BLOCKED hasta que el servidor y el CLI estén integrados en `main` (hoy están en el PR #32) |
 
 ## 4. Entorno de verificación
 
@@ -87,8 +87,8 @@ Sin `run-id` se usa la fecha y hora (`AAAAMMDD-HHMMSS`). Para una ejecución for
 | [TC-001](../test-cases/TC-001.md) | Enviar un trabajo y obtener un ID único | Extremo a extremo | Pendiente (requiere CLI). Verificación unitaria complementaria: `test_ids_unicos.py` (falla, DEF-001) |
 | [TC-003](../test-cases/TC-003.md) | Estados y transiciones de un trabajo | Unitario | `test_ciclo_vida.py` |
 | [TC-004](../test-cases/TC-004.md) | Consultar estado y listar trabajos desde el CLI | Extremo a extremo | Pendiente (requiere CLI) |
-| [TC-005](../test-cases/TC-005.md) | Ejecución como proceso separado y código de salida | Unitario | `test_ciclo_vida.py` |
-| [TC-006](../test-cases/TC-006.md) | Cancelación de un trabajo | Unitario | `test_ciclo_vida.py` |
+| [TC-005](../test-cases/TC-005.md) | Cancelación de un trabajo | Unitario | `test_ciclo_vida.py` |
+| [TC-006](../test-cases/TC-006.md) | Ejecución como proceso separado y código de salida | Unitario | `test_ciclo_vida.py` |
 | [TC-008](../test-cases/TC-008.md) | Entradas inválidas sin tumbar el gestor | Unitario | `test_ciclo_vida.py` |
 | [TC-014](../test-cases/TC-014.md) | Construcción desde un clon limpio | Clon limpio | `verify.sh` |
 
@@ -104,6 +104,6 @@ Un FAIL se registra con la plantilla de Issue "defecto" (`.github/ISSUE_TEMPLATE
 
 ## 10. Pendientes por confirmar con el equipo
 
-- **Requisitos RF/RNF:** el repositorio no contiene el texto de los requisitos, solo sus códigos en los ADR. La columna RF/RNF de la matriz queda por asignar con el Project Brief.
+- **Requisitos RF/RNF:** la matriz lista RF-01 a RF-24 y RNF-01 a RNF-26, pero el texto de cada requisito y su TC faltan: están en los PDF y el repositorio solo tiene los códigos citados en los ADR. Además, los ADR citan RNF-28, RNF-31 y RNF-32, fuera del rango.
 - **Otros TC citados en los ADR:** TC-002 (ADR-0001, concurrencia), TC-007 y TC-022 (ADR-0002, escrituras en SQLite) y TC-023 (ADR-0003). Corresponden a los Hitos 2 y 3 y no se definen aquí.
-- **TC-008:** el ADR-0003 lo cita como prueba del contrato de mensajes JSON; en este plan cubre las entradas inválidas. Hay que reasignar el contrato a otro TC (por ejemplo TC-023) o ajustar el ADR.
+- **Numeración de TC:** TC-005 (cancelación) y TC-006 (código de salida) siguen el PDF 05. El resto de la numeración, en particular TC-008, hay que confirmarla contra ese PDF: el ADR-0003 cita TC-008 como prueba del contrato de mensajes JSON, y aquí cubre las entradas inválidas.

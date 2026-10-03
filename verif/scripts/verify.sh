@@ -69,12 +69,12 @@ tc003="$(estado_pruebas \
   test_codigo_de_salida_distinto_de_cero_termina_en_failed \
   test_transiciones_validas \
   test_transiciones_invalidas_lanzan_error)"
-tc005="$(estado_pruebas \
+tc006="$(estado_pruebas \
   test_trabajo_corre_en_proceso_separado \
   test_exito_termina_en_succeeded_con_codigo_0 \
   test_codigo_de_salida_distinto_de_cero_termina_en_failed \
   test_stderr_del_trabajo_se_guarda_en_archivo)"
-tc006="$(estado_pruebas \
+tc005="$(estado_pruebas \
   test_cancelar_trabajo_en_ejecucion \
   test_cancelar_trabajo_inexistente \
   test_trabajo_cancelado_no_cambia_de_estado_en_poll)"

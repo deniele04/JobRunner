@@ -1,57 +1,57 @@
 test_argv_vacio_se_rechaza_y_no_registra_trabajo (test_ciclo_vida.CicloDeVidaTest.test_argv_vacio_se_rechaza_y_no_registra_trabajo) ... ok
-test_cancelar_trabajo_en_ejecucion (test_ciclo_vida.CicloDeVidaTest.test_cancelar_trabajo_en_ejecucion) ... /tmp/JobRunner/verif/unit/test_ciclo_vida.py:124: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmpn9b4o3vd/4327.out'>
+test_cancelar_trabajo_en_ejecucion (test_ciclo_vida.CicloDeVidaTest.test_cancelar_trabajo_en_ejecucion) ... /tmp/JobRunner/verif/unit/test_ciclo_vida.py:124: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmp4xaff9tf/f19c.out'>
   job = self.mgr.submit(["sleep", "30"])
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/tmp/JobRunner/verif/unit/test_ciclo_vida.py:124: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmpn9b4o3vd/4327.err'>
+/tmp/JobRunner/verif/unit/test_ciclo_vida.py:124: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmp4xaff9tf/f19c.err'>
   job = self.mgr.submit(["sleep", "30"])
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
 ok
 test_cancelar_trabajo_inexistente (test_ciclo_vida.CicloDeVidaTest.test_cancelar_trabajo_inexistente) ... ok
-test_codigo_de_salida_distinto_de_cero_termina_en_failed (test_ciclo_vida.CicloDeVidaTest.test_codigo_de_salida_distinto_de_cero_termina_en_failed) ... /tmp/JobRunner/verif/unit/test_ciclo_vida.py:67: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmpzr43v3_j/3b99.out'>
+test_codigo_de_salida_distinto_de_cero_termina_en_failed (test_ciclo_vida.CicloDeVidaTest.test_codigo_de_salida_distinto_de_cero_termina_en_failed) ... /tmp/JobRunner/verif/unit/test_ciclo_vida.py:67: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmpsx2oe5m6/4df6.out'>
   job = self.mgr.submit(["sh", "-c", "exit 3"])
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/tmp/JobRunner/verif/unit/test_ciclo_vida.py:67: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmpzr43v3_j/3b99.err'>
+/tmp/JobRunner/verif/unit/test_ciclo_vida.py:67: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmpsx2oe5m6/4df6.err'>
   job = self.mgr.submit(["sh", "-c", "exit 3"])
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
 ok
-test_comando_inexistente_falla_sin_tumbar_el_gestor (test_ciclo_vida.CicloDeVidaTest.test_comando_inexistente_falla_sin_tumbar_el_gestor) ... /tmp/JobRunner/verif/unit/test_ciclo_vida.py:80: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmplf76_ahs/a024.out'>
+test_comando_inexistente_falla_sin_tumbar_el_gestor (test_ciclo_vida.CicloDeVidaTest.test_comando_inexistente_falla_sin_tumbar_el_gestor) ... /tmp/JobRunner/verif/unit/test_ciclo_vida.py:80: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmpmkqf1ls_/690e.out'>
   job = self.mgr.submit(["comando-que-no-existe-jobrunner"])
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/tmp/JobRunner/verif/unit/test_ciclo_vida.py:80: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmplf76_ahs/a024.err'>
+/tmp/JobRunner/verif/unit/test_ciclo_vida.py:80: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmpmkqf1ls_/690e.err'>
   job = self.mgr.submit(["comando-que-no-existe-jobrunner"])
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/tmp/JobRunner/verif/unit/test_ciclo_vida.py:87: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmplf76_ahs/7445.out'>
+/tmp/JobRunner/verif/unit/test_ciclo_vida.py:87: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmpmkqf1ls_/e1b5.out'>
   siguiente = self.mgr.submit(["true"])
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/tmp/JobRunner/verif/unit/test_ciclo_vida.py:87: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmplf76_ahs/7445.err'>
+/tmp/JobRunner/verif/unit/test_ciclo_vida.py:87: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmpmkqf1ls_/e1b5.err'>
   siguiente = self.mgr.submit(["true"])
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
 ok
-test_exito_termina_en_succeeded_con_codigo_0 (test_ciclo_vida.CicloDeVidaTest.test_exito_termina_en_succeeded_con_codigo_0) ... /tmp/JobRunner/verif/unit/test_ciclo_vida.py:47: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmpfa9s2wu6/977a.out'>
+test_exito_termina_en_succeeded_con_codigo_0 (test_ciclo_vida.CicloDeVidaTest.test_exito_termina_en_succeeded_con_codigo_0) ... /tmp/JobRunner/verif/unit/test_ciclo_vida.py:47: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmp7gpou372/4c57.out'>
   job = self.mgr.submit(["true"])
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/tmp/JobRunner/verif/unit/test_ciclo_vida.py:47: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmpfa9s2wu6/977a.err'>
+/tmp/JobRunner/verif/unit/test_ciclo_vida.py:47: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmp7gpou372/4c57.err'>
   job = self.mgr.submit(["true"])
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
 ok
-test_stderr_del_trabajo_se_guarda_en_archivo (test_ciclo_vida.CicloDeVidaTest.test_stderr_del_trabajo_se_guarda_en_archivo) ... /tmp/JobRunner/verif/unit/test_ciclo_vida.py:73: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmp56wltg9z/0874.out'>
+test_stderr_del_trabajo_se_guarda_en_archivo (test_ciclo_vida.CicloDeVidaTest.test_stderr_del_trabajo_se_guarda_en_archivo) ... /tmp/JobRunner/verif/unit/test_ciclo_vida.py:73: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmp788zqa14/5525.out'>
   job = self.mgr.submit(["sh", "-c", "echo fallo-simulado >&2; exit 1"])
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/tmp/JobRunner/verif/unit/test_ciclo_vida.py:73: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmp56wltg9z/0874.err'>
+/tmp/JobRunner/verif/unit/test_ciclo_vida.py:73: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmp788zqa14/5525.err'>
   job = self.mgr.submit(["sh", "-c", "echo fallo-simulado >&2; exit 1"])
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
 ok
-test_trabajo_cancelado_no_cambia_de_estado_en_poll (test_ciclo_vida.CicloDeVidaTest.test_trabajo_cancelado_no_cambia_de_estado_en_poll) ... /tmp/JobRunner/verif/unit/test_ciclo_vida.py:138: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmp_wj8ejux/5741.out'>
+test_trabajo_cancelado_no_cambia_de_estado_en_poll (test_ciclo_vida.CicloDeVidaTest.test_trabajo_cancelado_no_cambia_de_estado_en_poll) ... /tmp/JobRunner/verif/unit/test_ciclo_vida.py:138: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmpxi_pgd8s/b59b.out'>
   job = self.mgr.submit(["sleep", "30"])
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/tmp/JobRunner/verif/unit/test_ciclo_vida.py:138: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmp_wj8ejux/5741.err'>
+/tmp/JobRunner/verif/unit/test_ciclo_vida.py:138: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmpxi_pgd8s/b59b.err'>
   job = self.mgr.submit(["sleep", "30"])
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
 ok
-test_trabajo_corre_en_proceso_separado (test_ciclo_vida.CicloDeVidaTest.test_trabajo_corre_en_proceso_separado) ... /tmp/JobRunner/verif/unit/test_ciclo_vida.py:57: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmpwg45pmg7/4b43.out'>
+test_trabajo_corre_en_proceso_separado (test_ciclo_vida.CicloDeVidaTest.test_trabajo_corre_en_proceso_separado) ... /tmp/JobRunner/verif/unit/test_ciclo_vida.py:57: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmp0dznqvu_/2479.out'>
   job = self.mgr.submit(["sleep", "30"])
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/tmp/JobRunner/verif/unit/test_ciclo_vida.py:57: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmpwg45pmg7/4b43.err'>
+/tmp/JobRunner/verif/unit/test_ciclo_vida.py:57: ResourceWarning: unclosed file <_io.BufferedWriter name='/tmp/tmp0dznqvu_/2479.err'>
   job = self.mgr.submit(["sleep", "30"])
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
 ok
@@ -73,9 +73,9 @@ Traceback (most recent call last):
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     )
     ^
-AssertionError: 33 != 0 : 33 IDs repetidos entre 2000 trabajos (longitud de cada ID: 4 caracteres)
+AssertionError: 28 != 0 : 28 IDs repetidos entre 2000 trabajos (longitud de cada ID: 4 caracteres)
 
 ----------------------------------------------------------------------
-Ran 12 tests in 0.252s
+Ran 12 tests in 0.237s
 
 FAILED (failures=1)
