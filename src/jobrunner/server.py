@@ -106,11 +106,3 @@ def serve(socket_path=DEFAULT_SOCKET_PATH):
 if __name__ == "__main__":
     path = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_SOCKET_PATH
     serve(path)
-        server.close()
-        if socket_path.exists():
-            socket_path.unlink()
-
-
-if __name__ == "__main__":
-    path = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_SOCKET_PATH
-    serve(path)
