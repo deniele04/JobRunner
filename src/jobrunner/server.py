@@ -4,6 +4,7 @@ import socket
 import sys
 from pathlib import Path
 
+from . import bitacora
 from .executor import JobManager
 
 DEFAULT_SOCKET_PATH = os.environ.get("JOBRUNNER_SOCKET", "data/jobrunner.sock")
@@ -56,11 +57,13 @@ def serve(socket_path=DEFAULT_SOCKET_PATH):
         socket_path.unlink()
 
     manager = JobManager(data_dir=str(socket_path.parent))
+    bitacora.configurar(socket_path.parent)
 
     server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     server.bind(str(socket_path))
     server.listen(5)
     print("JobRunner escuchando en " + str(socket_path))
+    bitacora.evento("servicio_iniciado", socket=socket_path)
 
     try:
         while True:
@@ -82,15 +85,27 @@ def serve(socket_path=DEFAULT_SOCKET_PATH):
                     request = json.loads(data.decode("utf-8"))
                 except json.JSONDecodeError:
                     response = {"error": "JSON invalido"}
+                    bitacora.error("solicitud_invalida", motivo="JSON invalido")
                 else:
                     try:
                         response = handle_request(manager, request)
                     except Exception as e:
                         response = {"error": "error interno: " + str(e)}
+                        bitacora.error("error_interno", motivo=e)
                 conn.sendall((json.dumps(response) + "\n").encode("utf-8"))
     except KeyboardInterrupt:
         print("\nDeteniendo JobRunner...")
+        bitacora.evento("servicio_detenido")
     finally:
+        server.close()
+        bitacora.cerrar()
+        if socket_path.exists():
+            socket_path.unlink()
+
+
+if __name__ == "__main__":
+    path = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_SOCKET_PATH
+    serve(path)
         server.close()
         if socket_path.exists():
             socket_path.unlink()
