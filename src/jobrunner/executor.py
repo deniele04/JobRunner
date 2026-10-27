@@ -3,6 +3,7 @@ import signal
 import subprocess
 from pathlib import Path
 
+from . import bitacora
 from .jobs import (
     Job, QUEUED, RUNNING, SUCCEEDED, FAILED, CANCELED, FINAL_STATES, now_iso,
 )
@@ -27,6 +28,7 @@ class JobManager:
         job.stdout_path = str(self.data_dir / (job.id + ".out"))
         job.stderr_path = str(self.data_dir / (job.id + ".err"))
         self._jobs[job.id] = job
+        bitacora.evento("recibido", job.id, programa=argv[0])
 
         job.transition(RUNNING)
         job.started_at = now_iso()
@@ -37,10 +39,12 @@ class JobManager:
                     argv, shell=False, stdout=out, stderr=err, start_new_session=True
                 )
             self._procs[job.id] = proc
+            bitacora.evento("iniciado", job.id, pid=proc.pid)
         except OSError as e:
             job.error = "No se pudo ejecutar " + repr(argv[0]) + ": " + str(e)
             job.finished_at = now_iso()
             job.transition(FAILED)
+            bitacora.error("no_se_pudo_iniciar", job.id, motivo=e.strerror or str(e))
         return job.to_dict()
 
     def get(self, job_id):
@@ -69,6 +73,7 @@ class JobManager:
                 job.error = signal.Signals(-code).name
             if job.state == RUNNING:
                 job.transition(SUCCEEDED if code == 0 else FAILED)
+                bitacora.evento("terminado", job_id, estado=job.state, codigo=code)
 
     def cancel(self, job_id):
         job = self._jobs.get(job_id)
@@ -80,6 +85,7 @@ class JobManager:
         if job.state == QUEUED:
             job.transition(CANCELED)
             job.finished_at = now_iso()
+            bitacora.evento("cancelado", job_id, estado_previo=QUEUED)
             return job.to_dict()
 
         proc = self._procs[job_id]
@@ -100,4 +106,5 @@ class JobManager:
         job.exit_code = proc.returncode
         job.finished_at = now_iso()
         job.transition(CANCELED)
+        bitacora.evento("cancelado", job_id, codigo=job.exit_code)
         return job.to_dict()
