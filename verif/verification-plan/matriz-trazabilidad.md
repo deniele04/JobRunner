@@ -2,7 +2,7 @@
 
 Relaciona cada criterio del Avance 1 con sus casos de prueba, sus pruebas automatizadas y su último resultado, y cada requisito RF/RNF con los TC que lo cubren. Plan: [plan-de-verificacion.md](plan-de-verificacion.md).
 
-**Última ejecución formal:** `verif/results/20261002-avance1/` (ver [resumen](../results/20261002-avance1/resumen.md))
+**Última ejecución formal:** `verif/results/20261028-integracion/` (ver [resumen](../results/20261028-integracion/resumen.md))
 
 **Numeración de TC:** alineada con el PDF 05 del Plan de Verificación: TC-005 es cancelar un trabajo y TC-006 es el código de salida.
 
@@ -10,9 +10,9 @@ Relaciona cada criterio del Avance 1 con sus casos de prueba, sus pruebas automa
 
 | Criterio del Avance 1 | TC | Pruebas automatizadas | Estado |
 |---|---|---|---|
-| Enviar un trabajo y obtener un ID único | [TC-001](../test-cases/TC-001.md) | Extremo a extremo pendiente: requiere el CLI (PR #32). Verificación unitaria complementaria: `test_ids_unicos_en_2000_trabajos` (FAIL, ver DEF-001) | BLOCKED |
+| Enviar un trabajo y obtener un ID único | [TC-001](../test-cases/TC-001.md) | `verif/integration/test_tc001_enviar_trabajo.py` (6 pruebas, servidor y CLI reales); unitaria complementaria `test_ids_unicos_en_2000_trabajos` | FAIL (DEF-003) |
 | Estados y transiciones del modelo | [TC-003](../test-cases/TC-003.md) | `test_exito_termina_en_succeeded_con_codigo_0`, `test_codigo_de_salida_distinto_de_cero_termina_en_failed`, `test_transiciones_validas`, `test_transiciones_invalidas_lanzan_error` | PASS |
-| Consultar estado y listar trabajos | [TC-004](../test-cases/TC-004.md) | Pendiente: requiere el CLI (PR #32) | BLOCKED |
+| Consultar estado y listar trabajos | [TC-004](../test-cases/TC-004.md) | `verif/integration/test_tc004_consultar_listar.py` (8 pruebas, servidor y CLI reales) | FAIL (DEF-003) |
 | Cancelar un trabajo | [TC-005](../test-cases/TC-005.md) | `test_cancelar_trabajo_en_ejecucion`, `test_cancelar_trabajo_inexistente`, `test_trabajo_cancelado_no_cambia_de_estado_en_poll` | PASS |
 | Ejecutar como proceso separado | [TC-006](../test-cases/TC-006.md) | `test_trabajo_corre_en_proceso_separado` | PASS |
 | Obtener el código de salida | [TC-006](../test-cases/TC-006.md) | `test_exito_termina_en_succeeded_con_codigo_0`, `test_codigo_de_salida_distinto_de_cero_termina_en_failed`, `test_stderr_del_trabajo_se_guarda_en_archivo` | PASS |
@@ -98,17 +98,25 @@ Los siguientes códigos no existen entre RF-01 a RF-24 ni RNF-01 a RNF-26. Hay q
 
 | ID | Descripción | TC afectado | Estado |
 |---|---|---|---|
-| DEF-001 | **IDs de trabajo con colisiones.** `Job.new()` (`src/jobrunner/jobs.py`) genera el ID con `uuid.uuid4().hex[:4]`: solo 65 536 valores posibles. Al crear 2000 trabajos la prueba encuentra decenas de IDs repetidos (28 IDs repetidos en la ejecución formal `20261002-avance1`; entre 18 y 39 en cinco corridas locales). Además, `JobManager.submit()` guarda el trabajo en `self._jobs[job.id]`, por lo que un ID repetido sobrescribe en silencio al trabajo anterior. | TC-001 | Abierto. Lo corrige el PR #34 |
-| DEF-002 | **Archivos de salida sin cerrar.** `JobManager.submit()` abre los archivos de salida y de errores con `open()` y nunca los cierra en el proceso padre. Python lo reporta como `ResourceWarning` en `unittest.log`. Con muchos trabajos puede agotar descriptores de archivo. | TC-006 | Abierto. Lo corrige el PR #34 |
+| DEF-001 | **IDs de trabajo con colisiones.** `Job.new()` generaba el ID con `uuid.uuid4().hex[:4]` (65 536 valores). | TC-001 | Cerrado. `Job.new()` usa el UUID completo; `test_ids_unicos_en_2000_trabajos` pasa en `20261028-integracion` |
+| DEF-002 | **Archivos de salida sin cerrar** en `JobManager.submit()`. | TC-006 | Cerrado. `submit()` abre los archivos con `with`; `unittest.log` de `20261028-integracion` no contiene `ResourceWarning` |
+| DEF-003 | **El CLI devuelve código de salida 1 en consultas exitosas.** `print_response()` (`src/jobrunner/cli.py`) evalúa `"error" in response`; el JSON de todo trabajo trae la clave `error` (con valor `null`), así que `submit` y `status` de un trabajo existente terminan con código 1 aunque no haya error. `list` no se ve afectado. Incumple RF-17. Corrección sugerida: `response.get("error")`. | TC-001, TC-004 | Abierto. Pruebas que lo detectan: `test_submit_exitoso_termina_con_codigo_0`, `test_status_y_list_exitosos_terminan_con_codigo_0` |
+| DEF-004 | **Zombis de trabajos terminados que nadie consulta.** `JobManager.poll()` solo se llama desde `status`, `list` y `cancel`; un trabajo que termina y no se consulta queda como proceso zombi (`[true] <defunct>`) hasta la siguiente consulta. Afecta RF-29 y RNF-33. La corrección prevista es el ciclo de 0,5 s del servidor (minuta 20/10, ADR-0004). | TC-020, TC-024 | Abierto. Prueba (`expectedFailure`): `test_servidor_inactivo_no_deja_zombis` |
 
-Al integrarse el PR #34: volver a correr `verif/scripts/verify.sh`, comprobar que `test_ids_unicos_en_2000_trabajos` pasa y que `unittest.log` ya no contiene `ResourceWarning`, y entonces pasar DEF-001 y DEF-002 a **Cerrado**.
+## Comportamiento aún no implementado (fallos esperados)
+
+| Prueba (`expectedFailure`) | Motivo | Cuándo se quita la marca |
+|---|---|---|
+| `test_cierre_ordenado_no_deja_huerfanos` | Al recibir Ctrl+C el servidor no cancela los trabajos `RUNNING` y el hijo queda huérfano (RF-15, RNF-25, RNF-30; TC-009). Lo resuelve el cierre controlado de ADR-0006. | Al implementar ADR-0006: la prueba pasará y `unittest` avisará de un «unexpected success» |
 
 ## Pendiente de integración
 
-| PR | Contenido | Efecto en la verificación |
-|---|---|---|
-| #32 | Servidor y CLI | TC-001 y TC-004 pasan de BLOCKED a ejecutables. `verify.sh` todavía no automatiza la prueba extremo a extremo: hay que agregarla antes de que esos casos puedan pasar a PASS con evidencia. |
-| #34 | Corrección de DEF-001 y DEF-002 | Ver sección Defectos. |
+Los PR #32 (servidor y CLI) y #34 (corrección de DEF-001 y DEF-002) ya están en `main`.
+
+| Pendiente | Efecto en la verificación |
+|---|---|
+| Corregir DEF-003 | TC-001 y TC-004 pasan a PASS al repetir `verify.sh`. |
+| Ciclo de 0,5 s del servidor (DEF-004) y cierre controlado (ADR-0006) | Se quitan las dos marcas `expectedFailure` de `verif/integration/test_procesos.py`. |
 
 ## TC citados en los ADR y fuera del Avance 1
 

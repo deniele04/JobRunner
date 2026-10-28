@@ -133,6 +133,10 @@ conocidos="$(awk -F'\t' '$1 == "XFAIL" { n++ } END { print n + 0 }' "$OUT/unit-r
 } > "$OUT/resumen.md"
 cat "$OUT/resumen.md"
 
+# La evidencia no debe llevar la ruta personal de quien ejecuta: se sustituye la
+# ruta del repositorio por <repo> en los registros (no cambia ningún resultado).
+sed -i "s|$ROOT|<repo>|g" "$OUT"/*.log "$OUT"/*.tsv "$OUT"/*.md 2>/dev/null
+
 status=0
 [ "$unit_rc" -ne 0 ] && status=1
 [ "$tc014" = "FAIL" ] && status=1
