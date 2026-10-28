@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Ejecuta las pruebas unitarias y el script de verificación.
+# Ejecuta las pruebas unitarias, las de integración y el script de verificación.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 export PYTHONPATH=src
@@ -14,6 +14,10 @@ if [ -d verif/unit ]; then
   python3 -m unittest discover -s verif/unit -v || estado=1
 else
   echo "Aviso: todavía no hay pruebas unitarias en verif/unit/."
+fi
+
+if [ -d verif/integration ]; then
+  python3 -m unittest discover -s verif/integration -v || estado=1
 fi
 
 if [ -x verif/scripts/verify.sh ]; then
