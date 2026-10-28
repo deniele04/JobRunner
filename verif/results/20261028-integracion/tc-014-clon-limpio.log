@@ -1,0 +1,5 @@
+$ git clone <repositorio> JobRunner
+$ git log -1 --oneline
+7e96478 docs(verif): TC-001/TC-004 con resultado observado, defectos DEF-003/DEF-004
+$ ./scripts/setup.sh
+Construcción OK: Python 3.13.16, sin dependencias externas.
