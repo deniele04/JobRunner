@@ -194,6 +194,10 @@ class JobManager:
             raise ValueError("El trabajo " + str(job_id) + " ya termino en estado " + job.state + "; no se puede cancelar")
 
         if job.state == QUEUED:
+            try:
+                self._cola.remove(job_id)   # libera su lugar en la cola
+            except ValueError:
+                pass
             job.transition(CANCELED)
             job.finished_at = now_iso()
             bitacora.evento("cancelado", job_id, estado_previo=QUEUED)

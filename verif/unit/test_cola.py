@@ -199,5 +199,54 @@ class OrdenFifoTest(ColaBase):
         self.assertEqual(self.mgr.get(nuevo)["state"], QUEUED)
 
 
+class CancelarEnColaTest(ColaBase):
+    def test_cancelar_en_cola_pasa_a_canceled_y_nunca_arranca(self):  # TC-005
+        self.nuevo(max_jobs=1, queue_size=2)
+        self.mgr.submit(["sleep", "30"])
+        b = self.mgr.submit(["sleep", "30"])["id"]
+        cancelado = self.mgr.cancel(b)
+        self.assertEqual(cancelado["state"], CANCELED)
+        self.assertIsNone(cancelado["started_at"])
+        self.assertIsNotNone(cancelado["finished_at"])
+        self.assertNotIn(b, self.mgr._cola)
+        self.mgr.tick()
+        self.assertEqual(self.mgr.get(b)["state"], CANCELED)
+        self.assertNotIn(b, self.mgr._procs)
+
+    def test_cancelar_en_cola_libera_su_lugar(self):
+        self.nuevo(max_jobs=1, queue_size=1)
+        self.mgr.submit(["sleep", "30"])
+        b = self.mgr.submit(["sleep", "30"])["id"]
+        with self.assertRaises(ColaLlena):
+            self.mgr.submit(["sleep", "30"])
+        self.mgr.cancel(b)
+        self.assertEqual(self.mgr.submit(["sleep", "30"])["state"], QUEUED)
+
+    def test_el_cancelado_en_cola_no_se_salta_a_los_demas(self):
+        self.nuevo(max_jobs=1, queue_size=3)
+        a = self.mgr.submit(["sleep", "0.3"])["id"]
+        b = self.mgr.submit(["sleep", "30"])["id"]
+        c = self.mgr.submit(["sleep", "30"])["id"]
+        self.mgr.cancel(b)
+        self.assertTrue(self.esperar(lambda: self.mgr.get(a)["state"] == SUCCEEDED))
+        self.assertEqual(self.mgr.get(b)["state"], CANCELED)
+        self.assertEqual(self.mgr.get(c)["state"], RUNNING)
+
+    def test_la_cancelacion_en_cola_queda_guardada(self):
+        ruta_db = os.path.join(self.dir, "jobrunner.db")
+        store = Store(ruta_db)
+        try:
+            self.mgr = JobManager(data_dir=self.dir, store=store, max_jobs=1, queue_size=2)
+            self.mgr.submit(["sleep", "30"])
+            b = self.mgr.submit(["sleep", "30"])["id"]
+            self.assertEqual(store.get(b).state, QUEUED)   # guardado al encolar
+            self.mgr.cancel(b)
+            self.assertEqual(store.get(b).state, CANCELED)
+            self.limpiar(self.mgr)
+        finally:
+            self.mgr = None
+            store.close()
+
+
 if __name__ == "__main__":
     unittest.main()
