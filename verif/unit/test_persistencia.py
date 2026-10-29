@@ -81,6 +81,7 @@ class PersistenciaTest(unittest.TestCase):
     def test_la_cancelacion_queda_guardada(self):
         job = self.mgr.submit(["sleep", "30"])
         self.mgr.cancel(job["id"])
+        self.esperar_final(self.mgr, job["id"])
         self.assertEqual(self.leer_db(job["id"]).state, CANCELED)
 
     def test_reinicio_conserva_el_historial_de_trabajos_terminados(self):

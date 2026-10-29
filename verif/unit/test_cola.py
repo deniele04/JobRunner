@@ -287,5 +287,36 @@ class RecuperacionColaTest(ColaBase):
             store.close()
 
 
+class CancelarSinBloqueoTest(ColaBase):
+    def test_cancel_responde_de_inmediato_y_el_trabajo_termina_en_canceled(self):
+        self.nuevo()
+        job = self.mgr.submit(["sleep", "30"])["id"]
+        inicio = time.monotonic()
+        respuesta = self.mgr.cancel(job)
+        self.assertLess(time.monotonic() - inicio, 1.0)
+        self.assertEqual(respuesta["state"], RUNNING)      # aun no se recoge el proceso
+        self.assertTrue(self.esperar(lambda: self.mgr.get(job)["state"] == CANCELED, timeout=3))
+        final = self.mgr.get(job)
+        self.assertEqual(final["exit_code"], -15)
+        self.assertIsNotNone(final["finished_at"])
+        self.assertNotIn(job, self.mgr._cancelando)
+
+    def test_cancelar_libera_el_lugar_para_el_siguiente_de_la_cola(self):
+        self.nuevo(max_jobs=1, queue_size=2)
+        a = self.mgr.submit(["sleep", "30"])["id"]
+        b = self.mgr.submit(["sleep", "30"])["id"]
+        self.mgr.cancel(a)
+        self.assertTrue(self.esperar(lambda: self.mgr.get(b)["state"] == RUNNING, timeout=3))
+        self.assertEqual(self.mgr.get(a)["state"], CANCELED)
+
+    def test_un_trabajo_que_termino_solo_no_se_marca_canceled(self):
+        self.nuevo()
+        job = self.mgr.submit(["true"])["id"]
+        time.sleep(0.3)   # termino, pero nadie lo ha recogido
+        with self.assertRaises(ValueError):
+            self.mgr.cancel(job)
+        self.assertEqual(self.mgr.get(job)["state"], SUCCEEDED)
+
+
 if __name__ == "__main__":
     unittest.main()
