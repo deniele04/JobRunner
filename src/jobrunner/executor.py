@@ -1,3 +1,4 @@
+import collections
 import os
 import signal
 import subprocess
@@ -11,13 +12,28 @@ from .jobs import (
 
 VALID_STATES = {QUEUED, RUNNING, SUCCEEDED, FAILED, CANCELED}
 
+DEFAULT_MAX_JOBS = 3      # trabajos corriendo a la vez (ADR-0004)
+DEFAULT_QUEUE_SIZE = 10   # trabajos esperando en la cola (ADR-0004)
+
+
+class ColaLlena(Exception):
+    """No hay lugar para correr ni para esperar: la solicitud se rechaza."""
+
 
 class JobManager:
-    def __init__(self, data_dir="data", store=None):
+    def __init__(self, data_dir="data", store=None,
+                 max_jobs=DEFAULT_MAX_JOBS, queue_size=DEFAULT_QUEUE_SIZE):
+        if not isinstance(max_jobs, int) or max_jobs < 1:
+            raise ValueError("max_jobs debe ser un entero de al menos 1")
+        if not isinstance(queue_size, int) or queue_size < 0:
+            raise ValueError("queue_size debe ser un entero no negativo")
+        self.max_jobs = max_jobs
+        self.queue_size = queue_size
         self.data_dir = Path(data_dir)
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self._jobs = {}    # id -> Job
         self._procs = {}   # id -> subprocess.Popen
+        self._cola = collections.deque()   # ids en QUEUED, en orden de llegada
         self._store = store
 
     def _guardar(self, job):
