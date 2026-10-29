@@ -83,7 +83,7 @@ def serve(socket_path=DEFAULT_SOCKET_PATH):
                     continue
                 try:
                     request = json.loads(data.decode("utf-8"))
-                except json.JSONDecodeError:
+                except (UnicodeDecodeError, json.JSONDecodeError):
                     response = {"error": "JSON invalido"}
                     bitacora.error("solicitud_invalida", motivo="JSON invalido")
                 else:
@@ -92,7 +92,10 @@ def serve(socket_path=DEFAULT_SOCKET_PATH):
                     except Exception as e:
                         response = {"error": "error interno: " + str(e)}
                         bitacora.error("error_interno", motivo=e)
-                conn.sendall((json.dumps(response) + "\n").encode("utf-8"))
+                try:
+                    conn.sendall((json.dumps(response) + "\n").encode("utf-8"))
+                except (BrokenPipeError, ConnectionResetError):
+                    bitacora.error("cliente_desconectado", motivo="el cliente cerro antes de recibir la respuesta")
     except KeyboardInterrupt:
         print("\nDeteniendo JobRunner...")
         bitacora.evento("servicio_detenido")
