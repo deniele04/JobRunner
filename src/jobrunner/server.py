@@ -5,10 +5,11 @@ import sys
 from pathlib import Path
 
 from . import bitacora
-from .executor import JobManager
+from .executor import ColaLlena, JobManager
 from .store import Store
 
 DEFAULT_SOCKET_PATH = os.environ.get("JOBRUNNER_SOCKET", "data/jobrunner.sock")
+INTERVALO_TICK = 0.5   # segundos entre revisiones de procesos
 
 
 def handle_request(manager, request):
@@ -23,13 +24,16 @@ def handle_request(manager, request):
         request_id = request.get("request_id")
         if request_id is not None and not (isinstance(request_id, str) and request_id):
             return {"error": "request_id debe ser un string no vacio"}
-        return manager.submit(list(argv), request_id=request_id)
+        try:
+            return manager.submit(list(argv), request_id=request_id)
+        except ColaLlena:
+            return {"error": "cola llena (capacidad " + str(manager.queue_size) + "); intenta más tarde"}
 
     if cmd == "status":
         job_id = request.get("id")
         if not job_id:
             return {"error": "falta id"}
-        manager.poll()
+        manager.tick()
         job = manager.get(job_id)
         if job is None:
             return {"error": "no existe el trabajo " + str(job_id)}
@@ -37,7 +41,7 @@ def handle_request(manager, request):
 
     if cmd == "list":
         state = request.get("state")
-        manager.poll()
+        manager.tick()
         return {"jobs": manager.list(state=state)}
 
     if cmd == "cancel":
@@ -71,9 +75,15 @@ def serve(socket_path=DEFAULT_SOCKET_PATH):
     print("JobRunner escuchando en " + str(socket_path))
     bitacora.evento("servicio_iniciado", socket=socket_path)
 
+    server.settimeout(INTERVALO_TICK)   # accept() despierta cada 0.5 s (ADR-0004)
+
     try:
         while True:
-            conn, _ = server.accept()
+            manager.tick()   # recoge terminados, arranca la cola, aplica escalamiento
+            try:
+                conn, _ = server.accept()
+            except socket.timeout:
+                continue
             with conn:
                 conn.settimeout(5)
                 data = b""
