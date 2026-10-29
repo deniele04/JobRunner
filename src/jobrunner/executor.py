@@ -188,10 +188,28 @@ class JobManager:
         """Ciclo del servidor, cada 0.5 s (ADR-0004). Nunca bloquea.
 
         1. poll(): recoge los procesos que terminaron.
-        2. arranca trabajos de la cola mientras haya lugar.
+        2. escalamiento: SIGKILL a los cancelados que siguen vivos tras 5 s.
+        3. arranca trabajos de la cola mientras haya lugar.
         """
         self.poll()
+        self._escalar()
         self._arrancar_de_la_cola()
+
+    def _escalar(self):
+        """SIGKILL al grupo de los trabajos cancelados que ignoraron SIGTERM (ADR-0006)."""
+        ahora = time.monotonic()
+        for job_id, limite in list(self._cancelando.items()):
+            if ahora < limite:
+                continue
+            proc = self._procs.get(job_id)
+            if proc is None or proc.poll() is not None:
+                continue
+            try:
+                os.killpg(proc.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            self._cancelando[job_id] = float("inf")   # se envia una sola vez
+            bitacora.evento("escalamiento", job_id, senal="SIGKILL")
 
     def cancel(self, job_id):
         job = self._jobs.get(job_id)
