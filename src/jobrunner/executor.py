@@ -95,14 +95,38 @@ class JobManager:
                     bitacora.evento("duplicado", existente.id, request_id=request_id)
                     return existente.to_dict()
 
+        # Primero se da su lugar a los que ya esperan: asi nadie se salta la cola.
+        self._arrancar_de_la_cola()
+        hay_lugar = len(self._procs) < self.max_jobs
+        if not hay_lugar and len(self._cola) >= self.queue_size:
+            # Sin lugar para correr ni para esperar: se rechaza y NO se crea el
+            # trabajo (ADR-0004).
+            bitacora.error("rechazado", motivo="cola llena", programa=argv[0])
+            raise ColaLlena(
+                "cola llena (capacidad " + str(self.queue_size) + "); intenta mas tarde"
+            )
+
         job = Job.new(argv)
         job.request_id = request_id
         job.stdout_path = str(self.data_dir / (job.id + ".out"))
         job.stderr_path = str(self.data_dir / (job.id + ".err"))
         self._jobs[job.id] = job
         bitacora.evento("recibido", job.id, programa=argv[0])
-        self._iniciar(job)
+        if hay_lugar:
+            self._iniciar(job)
+        else:
+            self._cola.append(job.id)
+            self._guardar(job)   # queda como QUEUED y sobrevive a un reinicio
+            bitacora.evento("en_cola", job.id, posicion=len(self._cola))
         return job.to_dict()
+
+    def _arrancar_de_la_cola(self):
+        """Saca de la cola, en orden, mientras haya lugar para correr."""
+        while self._cola and len(self._procs) < self.max_jobs:
+            job = self._jobs[self._cola.popleft()]
+            if job.state != QUEUED:   # se cancelo mientras esperaba
+                continue
+            self._iniciar(job)
 
     def _iniciar(self, job):
         job.transition(RUNNING)
