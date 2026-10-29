@@ -28,7 +28,7 @@ def send_request(request, socket_path=DEFAULT_SOCKET_PATH):
 
 def print_response(response):
     print(json.dumps(response, indent=2))
-    if isinstance(response, dict) and "error" in response:
+    if isinstance(response, dict) and list(response) == ["error"]:
         sys.exit(1)
 
 
