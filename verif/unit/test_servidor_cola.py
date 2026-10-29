@@ -9,7 +9,7 @@ import unittest
 
 from jobrunner.executor import JobManager
 from jobrunner.jobs import QUEUED, RUNNING
-from jobrunner.server import INTERVALO_TICK, handle_request
+from jobrunner.server import DEFAULT_SOCKET_PATH, INTERVALO_TICK, handle_request, parse_args
 
 
 class ServidorColaTest(unittest.TestCase):
@@ -52,6 +52,27 @@ class ServidorColaTest(unittest.TestCase):
         time.sleep(0.5)
         handle_request(self.mgr, {"cmd": "status", "id": a["id"]})
         self.assertEqual(handle_request(self.mgr, {"cmd": "status", "id": b["id"]})["state"], RUNNING)
+
+
+class OpcionesDelServicioTest(unittest.TestCase):
+    def test_valores_por_defecto(self):
+        args = parse_args([])
+        self.assertEqual((args.max_jobs, args.queue_size), (3, 10))
+        self.assertEqual(args.socket, DEFAULT_SOCKET_PATH)
+
+    def test_opciones_max_jobs_y_queue_size(self):
+        args = parse_args(["--max-jobs", "2", "--queue-size", "3"])
+        self.assertEqual((args.max_jobs, args.queue_size), (2, 3))
+
+    def test_el_socket_sigue_siendo_posicional_opcional(self):
+        args = parse_args(["/tmp/x/jobrunner.sock", "--max-jobs", "1"])
+        self.assertEqual(args.socket, "/tmp/x/jobrunner.sock")
+        self.assertEqual(args.max_jobs, 1)
+
+    def test_valores_invalidos_se_rechazan(self):
+        for opciones in (["--max-jobs", "0"], ["--queue-size", "-1"], ["--max-jobs", "x"]):
+            with self.subTest(opciones=opciones), self.assertRaises(SystemExit):
+                parse_args(opciones)
 
 
 if __name__ == "__main__":

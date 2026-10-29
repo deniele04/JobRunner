@@ -1,11 +1,11 @@
+import argparse
 import json
 import os
 import socket
-import sys
 from pathlib import Path
 
 from . import bitacora
-from .executor import ColaLlena, JobManager
+from .executor import DEFAULT_MAX_JOBS, DEFAULT_QUEUE_SIZE, ColaLlena, JobManager
 from .store import Store
 
 DEFAULT_SOCKET_PATH = os.environ.get("JOBRUNNER_SOCKET", "data/jobrunner.sock")
@@ -58,14 +58,15 @@ def handle_request(manager, request):
     return {"error": "comando desconocido: " + str(cmd)}
 
 
-def serve(socket_path=DEFAULT_SOCKET_PATH):
+def serve(socket_path=DEFAULT_SOCKET_PATH, max_jobs=DEFAULT_MAX_JOBS, queue_size=DEFAULT_QUEUE_SIZE):
     socket_path = Path(socket_path)
     socket_path.parent.mkdir(parents=True, exist_ok=True)
     if socket_path.exists():
         socket_path.unlink()
 
     store = Store(str(socket_path.parent / "jobrunner.db"))
-    manager = JobManager(data_dir=str(socket_path.parent), store=store)
+    manager = JobManager(data_dir=str(socket_path.parent), store=store,
+                         max_jobs=max_jobs, queue_size=queue_size)
     bitacora.configurar(socket_path.parent)
     manager.recuperar()
 
@@ -123,6 +124,31 @@ def serve(socket_path=DEFAULT_SOCKET_PATH):
             socket_path.unlink()
 
 
+def parse_args(argv=None):
+    parser = argparse.ArgumentParser(
+        prog="jobrunner.server",
+        description="Servicio JobRunner: ejecuta trabajos con cola y limite de concurrencia.",
+    )
+    parser.add_argument(
+        "socket", nargs="?", default=DEFAULT_SOCKET_PATH,
+        help="Ruta del socket Unix (default: " + DEFAULT_SOCKET_PATH + ")",
+    )
+    parser.add_argument(
+        "--max-jobs", type=int, default=DEFAULT_MAX_JOBS,
+        help="Trabajos simultaneos (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--queue-size", type=int, default=DEFAULT_QUEUE_SIZE,
+        help="Trabajos que pueden esperar en la cola (default: %(default)s)",
+    )
+    args = parser.parse_args(argv)
+    if args.max_jobs < 1:
+        parser.error("--max-jobs debe ser al menos 1")
+    if args.queue_size < 0:
+        parser.error("--queue-size no puede ser negativo")
+    return args
+
+
 if __name__ == "__main__":
-    path = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_SOCKET_PATH
-    serve(path)
+    args = parse_args()
+    serve(args.socket, max_jobs=args.max_jobs, queue_size=args.queue_size)
