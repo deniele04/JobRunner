@@ -176,6 +176,15 @@ class JobManager:
                 bitacora.evento("terminado", job_id, estado=job.state, codigo=code)
             self._guardar(job)
 
+    def tick(self):
+        """Ciclo del servidor, cada 0.5 s (ADR-0004). Nunca bloquea.
+
+        1. poll(): recoge los procesos que terminaron.
+        2. arranca trabajos de la cola mientras haya lugar.
+        """
+        self.poll()
+        self._arrancar_de_la_cola()
+
     def cancel(self, job_id):
         job = self._jobs.get(job_id)
         if job is None:

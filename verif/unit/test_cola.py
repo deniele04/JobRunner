@@ -42,7 +42,7 @@ class ColaBase(unittest.TestCase):
     def esperar(self, condicion, timeout=10.0):
         limite = time.monotonic() + timeout
         while time.monotonic() < limite:
-            self.mgr.poll()
+            self.mgr.tick()
             if condicion():
                 return True
             time.sleep(0.05)
@@ -56,7 +56,7 @@ class ColaBase(unittest.TestCase):
                 pass
         limite = time.monotonic() + 15
         while time.monotonic() < limite:
-            mgr.poll()
+            mgr.tick()
             if all(s in FINAL_STATES for s in self.estados(mgr)):
                 return
             time.sleep(0.05)
@@ -146,6 +146,57 @@ class SaturacionTest(ColaBase):
         primero = self.mgr.submit(["sleep", "30"], request_id="r1")
         repetido = self.mgr.submit(["sleep", "30"], request_id="r1")
         self.assertEqual(repetido["id"], primero["id"])
+
+
+class OrdenFifoTest(ColaBase):
+    def test_al_terminar_uno_tick_arranca_el_que_estaba_en_cola(self):
+        self.nuevo(max_jobs=1, queue_size=3)
+        a = self.mgr.submit(["sleep", "0.3"])["id"]
+        b = self.mgr.submit(["sleep", "30"])["id"]
+        c = self.mgr.submit(["sleep", "30"])["id"]
+        self.assertTrue(self.esperar(lambda: self.mgr.get(a)["state"] == SUCCEEDED))
+        self.assertEqual(self.mgr.get(b)["state"], RUNNING)    # el primero en llegar
+        self.assertEqual(self.mgr.get(c)["state"], QUEUED)
+        self.assertIsNotNone(self.mgr.get(b)["started_at"])    # se marca al salir de la cola
+
+    def test_sin_tick_la_cola_no_avanza_sola(self):
+        self.nuevo(max_jobs=1, queue_size=3)
+        self.mgr.submit(["sleep", "0.2"])
+        b = self.mgr.submit(["sleep", "30"])["id"]
+        time.sleep(0.5)
+        self.assertEqual(self.mgr.get(b)["state"], QUEUED)
+        self.mgr.tick()
+        self.assertEqual(self.mgr.get(b)["state"], RUNNING)
+
+    def test_la_cola_se_vacia_sola_con_tick(self):
+        self.nuevo(max_jobs=2, queue_size=4)
+        for _ in range(6):
+            self.mgr.submit(["sleep", "0.2"])
+        self.assertTrue(self.esperar(
+            lambda: all(s == SUCCEEDED for s in self.estados()), timeout=15))
+
+    def test_nunca_hay_mas_de_max_jobs_en_ejecucion(self):
+        self.nuevo(max_jobs=2, queue_size=6)
+        for _ in range(8):
+            self.mgr.submit(["sleep", "0.2"])
+        limite = time.monotonic() + 15
+        while time.monotonic() < limite:
+            self.mgr.tick()
+            self.assertLessEqual(self.estados().count(RUNNING), 2)
+            if all(s == SUCCEEDED for s in self.estados()):
+                break
+            time.sleep(0.05)
+        self.assertTrue(all(s == SUCCEEDED for s in self.estados()))
+
+    def test_un_submit_nuevo_no_se_salta_a_los_que_esperan(self):
+        self.nuevo(max_jobs=1, queue_size=3)
+        self.mgr.submit(["sleep", "0.2"])
+        esperando = self.mgr.submit(["sleep", "30"])["id"]
+        time.sleep(0.4)
+        self.mgr.poll()   # el primero termino y libero su lugar, pero la cola no avanzo
+        nuevo = self.mgr.submit(["sleep", "30"])["id"]
+        self.assertEqual(self.mgr.get(esperando)["state"], RUNNING)
+        self.assertEqual(self.mgr.get(nuevo)["state"], QUEUED)
 
 
 if __name__ == "__main__":
