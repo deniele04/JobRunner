@@ -248,5 +248,44 @@ class CancelarEnColaTest(ColaBase):
             store.close()
 
 
+class RecuperacionColaTest(ColaBase):
+    def _guardar_queued(self, store, cantidad):
+        ids = []
+        for _ in range(cantidad):
+            job = Job.new(["sleep", "30"])
+            job.stdout_path = os.path.join(self.dir, job.id + ".out")
+            job.stderr_path = os.path.join(self.dir, job.id + ".err")
+            store.save(job)
+            ids.append(job.id)
+        return ids
+
+    def test_los_queued_reanudan_respetando_max_jobs_y_el_orden(self):
+        store = Store(os.path.join(self.dir, "jobrunner.db"))
+        try:
+            ids = self._guardar_queued(store, 4)
+            self.mgr = JobManager(data_dir=self.dir, store=store, max_jobs=2, queue_size=5)
+            self.mgr.recuperar()
+            self.assertEqual([self.mgr.get(i)["state"] for i in ids],
+                             [RUNNING, RUNNING, QUEUED, QUEUED])
+            self.limpiar(self.mgr)
+        finally:
+            self.mgr = None
+            store.close()
+
+    def test_los_queued_recuperados_siguen_avanzando_con_tick(self):
+        store = Store(os.path.join(self.dir, "jobrunner.db"))
+        try:
+            ids = self._guardar_queued(store, 3)
+            self.mgr = JobManager(data_dir=self.dir, store=store, max_jobs=1, queue_size=5)
+            self.mgr.recuperar()
+            self.mgr.cancel(ids[0])
+            self.assertTrue(self.esperar(lambda: self.mgr.get(ids[1])["state"] == RUNNING))
+            self.assertEqual(self.mgr.get(ids[2])["state"], QUEUED)
+            self.limpiar(self.mgr)
+        finally:
+            self.mgr = None
+            store.close()
+
+
 if __name__ == "__main__":
     unittest.main()

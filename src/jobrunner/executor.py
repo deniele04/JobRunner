@@ -43,7 +43,7 @@ class JobManager:
     def recuperar(self):
         """Carga el historial guardado y reconcilia lo que quedo a medias (ADR-0005).
 
-        Los QUEUED se inician de nuevo; los RUNNING pasan a FAILED y, si su grupo
+        Los QUEUED vuelven a la cola, en su orden original; los RUNNING pasan a FAILED y, si su grupo
         de procesos sigue vivo, se termina. Los estados finales no se tocan.
         """
         if self._store is None:
@@ -59,7 +59,8 @@ class JobManager:
                 bitacora.evento("recuperado", job.id, estado=FAILED, motivo="interrumpido por reinicio")
             elif job.state == QUEUED:
                 bitacora.evento("recuperado", job.id, estado=QUEUED)
-                self._iniciar(job)
+                self._cola.append(job.id)   # mismo orden y mismo limite (ADR-0004)
+        self.tick()   # arranca de la cola solo lo que quepa en max_jobs
 
     @staticmethod
     def _terminar_grupo(pid, espera=5.0):
