@@ -3,6 +3,8 @@
 handle_request debe responder con un error legible cuando la cola esta llena,
 sin tumbar al servidor, y status/list deben dejar avanzar la cola.
 """
+import contextlib
+import io
 import tempfile
 import time
 import unittest
@@ -71,7 +73,8 @@ class OpcionesDelServicioTest(unittest.TestCase):
 
     def test_valores_invalidos_se_rechazan(self):
         for opciones in (["--max-jobs", "0"], ["--queue-size", "-1"], ["--max-jobs", "x"]):
-            with self.subTest(opciones=opciones), self.assertRaises(SystemExit):
+            with self.subTest(opciones=opciones), self.assertRaises(SystemExit), \
+                    contextlib.redirect_stderr(io.StringIO()):
                 parse_args(opciones)
 
 
