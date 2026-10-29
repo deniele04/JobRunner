@@ -33,7 +33,10 @@ def print_response(response):
 
 
 def cmd_submit(args):
-    response = send_request({"cmd": "submit", "argv": args.argv}, args.socket)
+    request = {"cmd": "submit", "argv": args.argv}
+    if args.request_id:
+        request["request_id"] = args.request_id
+    response = send_request(request, args.socket)
     print_response(response)
 
 
@@ -65,6 +68,7 @@ def build_parser():
 
     p_submit = sub.add_parser("submit", help="Encola un nuevo trabajo")
     p_submit.add_argument("argv", nargs="+", help="Comando a ejecutar, p. ej. sleep 5")
+    p_submit.add_argument("--request-id", default=None, help="Identificador opcional: si se repite, se devuelve el mismo trabajo")
     p_submit.set_defaults(func=cmd_submit)
 
     p_status = sub.add_parser("status", help="Consulta el estado de un trabajo")
