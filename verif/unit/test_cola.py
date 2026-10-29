@@ -318,5 +318,43 @@ class CancelarSinBloqueoTest(ColaBase):
         self.assertEqual(self.mgr.get(job)["state"], SUCCEEDED)
 
 
+class DobleCancelacionTest(ColaBase):
+    def test_la_segunda_cancelacion_no_cambia_nada(self):            # TC-017
+        self.nuevo()
+        job = self.mgr.submit(["sleep", "30"])["id"]
+        primera = self.mgr.cancel(job)
+        limite = self.mgr._cancelando[job]
+        segunda = self.mgr.cancel(job)
+        self.assertEqual(primera["state"], RUNNING)
+        self.assertEqual(segunda, primera)                          # mismo estado real
+        self.assertEqual(self.mgr._cancelando[job], limite)         # no se reinicia el plazo
+        self.assertTrue(self.esperar(lambda: self.mgr.get(job)["state"] == CANCELED, timeout=3))
+
+    def test_dos_cancelaciones_seguidas_dejan_un_solo_estado_final(self):   # TC-017
+        self.nuevo()
+        job = self.mgr.submit(["sleep", "30"])["id"]
+        self.mgr.cancel(job)
+        self.mgr.cancel(job)
+        self.assertTrue(self.esperar(lambda: self.mgr.get(job)["state"] == CANCELED, timeout=3))
+        self.assertEqual(self.mgr.get(job)["exit_code"], -15)
+
+    def test_cancelar_un_trabajo_ya_cancelado_da_error_y_no_lo_cambia(self):  # TC-017
+        self.nuevo()
+        job = self.mgr.submit(["sleep", "30"])["id"]
+        self.mgr.cancel(job)
+        self.assertTrue(self.esperar(lambda: self.mgr.get(job)["state"] == CANCELED, timeout=3))
+        antes = self.mgr.get(job)
+        with self.assertRaises(ValueError):
+            self.mgr.cancel(job)
+        self.assertEqual(self.mgr.get(job), antes)
+
+    def test_cancelar_un_id_inexistente_no_afecta_a_los_demas(self):          # TC-017
+        self.nuevo()
+        job = self.mgr.submit(["sleep", "30"])["id"]
+        with self.assertRaises(KeyError):
+            self.mgr.cancel("no-existe")
+        self.assertEqual(self.mgr.get(job)["state"], RUNNING)
+
+
 if __name__ == "__main__":
     unittest.main()

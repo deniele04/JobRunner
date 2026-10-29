@@ -212,6 +212,11 @@ class JobManager:
             self._guardar(job)
             return job.to_dict()
 
+        # Segunda cancelacion: devuelve el estado real, sin reenviar la senal
+        # ni mover el plazo del SIGKILL (RF-26).
+        if job_id in self._cancelando:
+            return job.to_dict()
+
         # RUNNING: SIGTERM al grupo y se responde de inmediato (ADR-0006). El
         # trabajo sigue en RUNNING hasta que poll() recoja su proceso; entonces
         # pasa a CANCELED.
