@@ -6,6 +6,7 @@ from pathlib import Path
 
 from . import bitacora
 from .executor import JobManager
+from .store import Store
 
 DEFAULT_SOCKET_PATH = os.environ.get("JOBRUNNER_SOCKET", "data/jobrunner.sock")
 
@@ -19,7 +20,10 @@ def handle_request(manager, request):
             return {"error": "argv debe ser una lista no vacia de strings"}
         if not all(isinstance(a, str) and a for a in argv):
             return {"error": "argv debe contener solo strings no vacios"}
-        return manager.submit(list(argv))
+        request_id = request.get("request_id")
+        if request_id is not None and not (isinstance(request_id, str) and request_id):
+            return {"error": "request_id debe ser un string no vacio"}
+        return manager.submit(list(argv), request_id=request_id)
 
     if cmd == "status":
         job_id = request.get("id")
@@ -56,8 +60,10 @@ def serve(socket_path=DEFAULT_SOCKET_PATH):
     if socket_path.exists():
         socket_path.unlink()
 
-    manager = JobManager(data_dir=str(socket_path.parent))
+    store = Store(str(socket_path.parent / "jobrunner.db"))
+    manager = JobManager(data_dir=str(socket_path.parent), store=store)
     bitacora.configurar(socket_path.parent)
+    manager.recuperar()
 
     server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     server.bind(str(socket_path))
@@ -98,6 +104,7 @@ def serve(socket_path=DEFAULT_SOCKET_PATH):
         bitacora.evento("servicio_detenido")
     finally:
         server.close()
+        store.close()
         bitacora.cerrar()
         if socket_path.exists():
             socket_path.unlink()

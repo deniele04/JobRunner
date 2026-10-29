@@ -1,6 +1,7 @@
 import os
 import signal
 import subprocess
+import time
 from pathlib import Path
 
 from . import bitacora
@@ -12,40 +13,99 @@ VALID_STATES = {QUEUED, RUNNING, SUCCEEDED, FAILED, CANCELED}
 
 
 class JobManager:
-    def __init__(self, data_dir="data"):
+    def __init__(self, data_dir="data", store=None):
         self.data_dir = Path(data_dir)
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self._jobs = {}    # id -> Job
         self._procs = {}   # id -> subprocess.Popen
+        self._store = store
 
-    def submit(self, argv):
+    def _guardar(self, job):
+        if self._store is not None:
+            self._store.save(job)
+
+    def recuperar(self):
+        """Carga el historial guardado y reconcilia lo que quedo a medias (ADR-0005).
+
+        Los QUEUED se inician de nuevo; los RUNNING pasan a FAILED y, si su grupo
+        de procesos sigue vivo, se termina. Los estados finales no se tocan.
+        """
+        if self._store is None:
+            return
+        for job in self._store.list():
+            self._jobs[job.id] = job
+            if job.state == RUNNING:
+                self._terminar_grupo(job.pid)
+                job.error = "interrumpido por reinicio"
+                job.finished_at = now_iso()
+                job.transition(FAILED)
+                self._guardar(job)
+                bitacora.evento("recuperado", job.id, estado=FAILED, motivo="interrumpido por reinicio")
+            elif job.state == QUEUED:
+                bitacora.evento("recuperado", job.id, estado=QUEUED)
+                self._iniciar(job)
+
+    @staticmethod
+    def _terminar_grupo(pid, espera=5.0):
+        if not pid:
+            return
+        try:
+            os.killpg(pid, signal.SIGTERM)
+        except (ProcessLookupError, PermissionError):
+            return
+        limite = time.monotonic() + espera
+        while time.monotonic() < limite:
+            try:
+                os.killpg(pid, 0)
+            except ProcessLookupError:
+                return
+            time.sleep(0.1)
+        try:
+            os.killpg(pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+
+    def submit(self, argv, request_id=None):
         if not isinstance(argv, (list, tuple)) or not argv:
             raise ValueError("argv debe ser una lista no vacia de strings, p. ej. ['sleep', '5']")
         if not all(isinstance(a, str) and a for a in argv):
             raise ValueError("argv debe contener solo strings no vacios")
 
+        if request_id is not None and not (isinstance(request_id, str) and request_id):
+            raise ValueError("request_id debe ser un string no vacio")
+        if request_id is not None:
+            for existente in self._jobs.values():
+                if existente.request_id == request_id:
+                    bitacora.evento("duplicado", existente.id, request_id=request_id)
+                    return existente.to_dict()
+
         job = Job.new(argv)
+        job.request_id = request_id
         job.stdout_path = str(self.data_dir / (job.id + ".out"))
         job.stderr_path = str(self.data_dir / (job.id + ".err"))
         self._jobs[job.id] = job
         bitacora.evento("recibido", job.id, programa=argv[0])
+        self._iniciar(job)
+        return job.to_dict()
 
+    def _iniciar(self, job):
         job.transition(RUNNING)
         job.started_at = now_iso()
 
         try:
             with open(job.stdout_path, "wb") as out, open(job.stderr_path, "wb") as err:
                 proc = subprocess.Popen(
-                    argv, shell=False, stdout=out, stderr=err, start_new_session=True
+                    job.argv, shell=False, stdout=out, stderr=err, start_new_session=True
                 )
             self._procs[job.id] = proc
+            job.pid = proc.pid
             bitacora.evento("iniciado", job.id, pid=proc.pid)
         except OSError as e:
-            job.error = "No se pudo ejecutar " + repr(argv[0]) + ": " + str(e)
+            job.error = "No se pudo ejecutar " + repr(job.argv[0]) + ": " + str(e)
             job.finished_at = now_iso()
             job.transition(FAILED)
             bitacora.error("no_se_pudo_iniciar", job.id, motivo=e.strerror or str(e))
-        return job.to_dict()
+        self._guardar(job)
 
     def get(self, job_id):
         job = self._jobs.get(job_id)
@@ -74,6 +134,7 @@ class JobManager:
             if job.state == RUNNING:
                 job.transition(SUCCEEDED if code == 0 else FAILED)
                 bitacora.evento("terminado", job_id, estado=job.state, codigo=code)
+            self._guardar(job)
 
     def cancel(self, job_id):
         job = self._jobs.get(job_id)
@@ -87,6 +148,7 @@ class JobManager:
             job.transition(CANCELED)
             job.finished_at = now_iso()
             bitacora.evento("cancelado", job_id, estado_previo=QUEUED)
+            self._guardar(job)
             return job.to_dict()
 
         proc = self._procs[job_id]
@@ -108,4 +170,5 @@ class JobManager:
         job.finished_at = now_iso()
         job.transition(CANCELED)
         bitacora.evento("cancelado", job_id, codigo=job.exit_code)
+        self._guardar(job)
         return job.to_dict()
