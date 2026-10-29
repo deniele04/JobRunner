@@ -36,6 +36,8 @@ class Job:
     stdout_path: Optional[str] = None
     stderr_path: Optional[str] = None
     error: Optional[str] = None
+    request_id: Optional[str] = None
+    pid: Optional[int] = None
 
     @classmethod
     def new(cls, argv):

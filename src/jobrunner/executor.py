@@ -79,6 +79,7 @@ class JobManager:
         job = self._jobs.get(job_id)
         if job is None:
             raise KeyError("No existe el trabajo " + str(job_id))
+        self.poll()
         if job.state in FINAL_STATES:
             raise ValueError("El trabajo " + str(job_id) + " ya termino en estado " + job.state + "; no se puede cancelar")
 
