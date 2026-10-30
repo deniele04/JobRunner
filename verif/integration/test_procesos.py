@@ -4,10 +4,9 @@ Primero se comprueba que el script detecta bien lo que debe detectar y no da
 falsos positivos. Después se usa sobre el servidor real (RF-29, RNF-25, RNF-30,
 RNF-33; TC-009, TC-020, TC-024).
 
-Las dos últimas pruebas describen comportamiento que el servidor todavía no
-tiene (ver la docstring de cada una). Van marcadas `expectedFailure` para que
-la suite siga en verde hoy y avise (`unexpected success`) el día que se corrijan,
-momento de quitar la marca.
+La última prueba describe comportamiento que el servidor todavía no tiene (ver
+su docstring). Va marcada `expectedFailure` para que la suite siga en verde y
+avise (`unexpected success`) el día que se implemente, momento de quitar la marca.
 """
 import os
 import re
@@ -116,13 +115,11 @@ class TestProcesosConServidor(BaseConLineaBase):
         self.assertEqual(codigo, 1, salida)
         self.assertRegex(salida, r"HUERFANO\t\d+\tsid=\d+\tsleep 300")
 
-    @unittest.expectedFailure
     def test_servidor_inactivo_no_deja_zombis(self):
-        """RF-29 / RNF-33 (TC-020, TC-024). Defecto conocido: DEF-004.
+        """RF-29 / RNF-33 (TC-020, TC-024). DEF-004, corregido con el ciclo de 0,5 s.
 
-        `poll()` solo se llama cuando llega `status`, `list` o `cancel`. Un trabajo
-        que termina y nadie consulta queda como zombi indefinidamente. Lo corrige
-        el ciclo de 0,5 s del servidor (minuta 20/10, ADR-0004).
+        Un trabajo que termina y nadie consulta debe ser recogido por el servidor
+        (`tick()` cada 0,5 s, ADR-0004) y no quedar como proceso zombi.
         """
         self.servidor.enviar("--", "true")
         time.sleep(1.5)

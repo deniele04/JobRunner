@@ -101,7 +101,7 @@ Los siguientes códigos no existen entre RF-01 a RF-24 ni RNF-01 a RNF-26. Hay q
 | DEF-001 | **IDs de trabajo con colisiones.** `Job.new()` generaba el ID con `uuid.uuid4().hex[:4]` (65 536 valores). | TC-001 | Cerrado. `Job.new()` usa el UUID completo; `test_ids_unicos_en_2000_trabajos` pasa en `20261028-integracion` |
 | DEF-002 | **Archivos de salida sin cerrar** en `JobManager.submit()`. | TC-006 | Cerrado. `submit()` abre los archivos con `with`; `unittest.log` de `20261028-integracion` no contiene `ResourceWarning` |
 | DEF-003 | **El CLI devuelve código de salida 1 en consultas exitosas.** `print_response()` (`src/jobrunner/cli.py`) evalúa `"error" in response`; el JSON de todo trabajo trae la clave `error` (con valor `null`), así que `submit` y `status` de un trabajo existente terminan con código 1 aunque no haya error. `list` no se ve afectado. Incumple RF-17. Corrección sugerida: `response.get("error")`. | TC-001, TC-004 | Abierto. Pruebas que lo detectan: `test_submit_exitoso_termina_con_codigo_0`, `test_status_y_list_exitosos_terminan_con_codigo_0` |
-| DEF-004 | **Zombis de trabajos terminados que nadie consulta.** `JobManager.poll()` solo se llama desde `status`, `list` y `cancel`; un trabajo que termina y no se consulta queda como proceso zombi (`[true] <defunct>`) hasta la siguiente consulta. Afecta RF-29 y RNF-33. La corrección prevista es el ciclo de 0,5 s del servidor (minuta 20/10, ADR-0004). | TC-020, TC-024 | Abierto. Prueba (`expectedFailure`): `test_servidor_inactivo_no_deja_zombis` |
+| DEF-004 | **Zombis de trabajos terminados que nadie consulta.** `JobManager.poll()` solo se llama desde `status`, `list` y `cancel`; un trabajo que termina y no se consulta queda como proceso zombi (`[true] <defunct>`) hasta la siguiente consulta. Afecta RF-29 y RNF-33. La corrección prevista es el ciclo de 0,5 s del servidor (minuta 20/10, ADR-0004). | TC-020, TC-024 | Cerrado. El ciclo de 0,5 s del servidor (`tick()`, ADR-0004) recoge los procesos terminados; `test_servidor_inactivo_no_deja_zombis` pasa sin marca |
 
 ## Comportamiento aún no implementado (fallos esperados)
 
@@ -116,7 +116,7 @@ Los PR #32 (servidor y CLI) y #34 (corrección de DEF-001 y DEF-002) ya están e
 | Pendiente | Efecto en la verificación |
 |---|---|
 | Corregir DEF-003 | TC-001 y TC-004 pasan a PASS al repetir `verify.sh`. |
-| Ciclo de 0,5 s del servidor (DEF-004) y cierre controlado (ADR-0006) | Se quitan las dos marcas `expectedFailure` de `verif/integration/test_procesos.py`. |
+| Cierre controlado (ADR-0006) | Se quita la marca `expectedFailure` restante de `verif/integration/test_procesos.py` (`test_cierre_ordenado_no_deja_huerfanos`). |
 
 ## TC citados en los ADR y fuera del Avance 1
 
