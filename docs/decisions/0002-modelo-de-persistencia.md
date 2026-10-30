@@ -1,11 +1,11 @@
 # ADR-0002: Modelo de persistencia del JobRunner
 
-**Estado:** Propuesto
+**Estado:** Aceptado
 **Fecha:** 27/10/2026
 **Responsable(s):** Josué Said Delgadillo Gutiérrez
-**Issue relacionado:** #8
-**Aprobado en:** PR pendiente
-**Historial:** v1 (11/09/2026): propuesta inicial con base de datos SQL genérica (PostgreSQL). v2 (01/10/2026): corregido a SQLite por decisión del equipo, al no requerir servidor aparte. v3 (27/10/2026): se define el esquema de la tabla, las transacciones y la retención, según la minuta del 20/10/2026.
+**Issue relacionado:** #8, #55
+**Aprobado en:** PR #44
+**Historial:** v1 (11/09/2026): propuesta inicial con base de datos SQL genérica (PostgreSQL). v2 (01/10/2026): corregido a SQLite por decisión del equipo, al no requerir servidor aparte. v3 (27/10/2026): se define el esquema de la tabla, las transacciones y la retención, según la minuta del 20/10/2026. v3 aceptada (30/10/2026): implementada en los PR #45 (`store.py`) y #60 (conexión con el ejecutor).
 
 ## Contexto
 
