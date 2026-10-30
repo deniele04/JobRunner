@@ -42,13 +42,18 @@ class ServidorDePrueba:
         self.directorio = Path(tempfile.mkdtemp(prefix="jobrunner-integracion-"))
         self.socket = str(self.directorio / "jobrunner.sock")
         self.proceso = None
+        self.opciones = []
         self.salida = self.directorio / "servidor.log"
 
     # -- ciclo de vida -----------------------------------------------------
-    def iniciar(self, espera=10.0):
-        with open(self.salida, "wb") as log:
+    def iniciar(self, espera=10.0, opciones=None):
+        """Arranca el servidor. `opciones` (p. ej. ["--max-jobs", "1"]) se recuerdan
+        para `reiniciar()`."""
+        if opciones is not None:
+            self.opciones = list(opciones)
+        with open(self.salida, "ab") as log:
             self.proceso = subprocess.Popen(
-                [sys.executable, "-m", "jobrunner.server", self.socket],
+                [sys.executable, "-m", "jobrunner.server", self.socket, *self.opciones],
                 stdout=log, stderr=subprocess.STDOUT, env=entorno(), cwd=str(RAIZ),
             )
         limite = time.monotonic() + espera
@@ -73,15 +78,23 @@ class ServidorDePrueba:
         finally:
             probe.close()
 
-    def detener(self, espera=8.0):
-        """Cierre ordenado con Ctrl+C (SIGINT), como lo haría el operador."""
+    def detener(self, espera=15.0, senal=signal.SIGINT):
+        """Cierre ordenado con Ctrl+C (SIGINT) o SIGTERM, como lo haría el operador.
+
+        Espera a que el servidor termine por sí solo; si no lo hace, lo mata.
+        """
         if self.proceso is None or self.proceso.poll() is not None:
             return
-        self.proceso.send_signal(signal.SIGINT)
+        self.proceso.send_signal(senal)
         try:
             self.proceso.wait(timeout=espera)
         except subprocess.TimeoutExpired:
             self.matar()
+
+    def reiniciar(self, **kwargs):
+        """Vuelve a arrancar el servidor sobre el mismo directorio de datos."""
+        self.detener()
+        return self.iniciar(**kwargs)
 
     def matar(self):
         """Muerte abrupta (SIGKILL): simula una falla dura del servicio."""
