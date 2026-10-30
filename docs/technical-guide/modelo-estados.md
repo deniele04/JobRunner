@@ -58,4 +58,4 @@ Cuando se cancela un trabajo en estado RUNNING, JobManager.cancel() no bloquea a
 
 3. Si a los 5 segundos de la solicitud el proceso sigue vivo, tick() envia SIGKILL al grupo y el trabajo termina en CANCELED con exit_code -9.
 
-Una segunda cancelacion sobre un trabajo que ya se esta cancelando devuelve su estado real sin reenviar senales. Si el proceso termino solo antes de ser recogido, se recoge primero con su resultado real (SUCCEEDED o FAILED) y cancelar responde que ya termino: un estado final nunca se reescribe como CANCELED.
+Una segunda cancelacion sobre un trabajo que ya se esta cancelando, o que ya esta CANCELED, devuelve su estado real sin reenviar senales y sin error. Si el proceso termino solo antes de ser recogido, se recoge primero con su resultado real (SUCCEEDED o FAILED) y cancelar responde que ya termino: un estado final nunca se reescribe como CANCELED.

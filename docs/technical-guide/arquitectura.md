@@ -44,7 +44,7 @@ Parámetros del servicio: --max-jobs (por defecto 3) y --queue-size (por defecto
 
 ## Cancelación sin bloqueo
 
-cancel() ya no espera al proceso (ADR-0006). Para un trabajo en cola, lo saca de la cola y lo pasa a CANCELED. Para un trabajo en ejecución, envía SIGTERM al grupo de procesos, anota el plazo de 5 s para el SIGKILL y responde de inmediato con el trabajo todavía en RUNNING. El trabajo pasa a CANCELED cuando tick() recoge su proceso. Una segunda cancelación devuelve el estado real sin reenviar señales.
+cancel() ya no espera al proceso (ADR-0006). Para un trabajo en cola, lo saca de la cola y lo pasa a CANCELED. Para un trabajo en ejecución, envía SIGTERM al grupo de procesos, anota el plazo de 5 s para el SIGKILL y responde de inmediato con el trabajo todavía en RUNNING. El trabajo pasa a CANCELED cuando tick() recoge su proceso. Una segunda cancelación (con el trabajo todavía cancelándose o ya CANCELED) devuelve el estado real, sin error y sin reenviar señales.
 
 ## Eventos de la bitácora relacionados
 
