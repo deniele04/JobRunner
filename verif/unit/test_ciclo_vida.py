@@ -132,8 +132,9 @@ class CicloDeVidaTest(unittest.TestCase):
         self.assertIsNotNone(cancelado["finished_at"])
         self.assertNotIn(job["id"], self.mgr._procs)
 
-        with self.assertRaises(ValueError):
-            self.mgr.cancel(job["id"])
+        # Cancelar otra vez un trabajo ya CANCELED devuelve su estado, sin error
+        # y sin cambiarlo (ADR-0006, regla 5).
+        self.assertEqual(self.mgr.cancel(job["id"]), cancelado)
 
     def test_cancelar_trabajo_inexistente(self):
         with self.assertRaises(KeyError):

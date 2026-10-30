@@ -320,36 +320,56 @@ class CancelarSinBloqueoTest(ColaBase):
 
 
 class DobleCancelacionTest(ColaBase):
-    def test_la_segunda_cancelacion_no_cambia_nada(self):            # TC-017
+    def test_la_segunda_cancelacion_devuelve_el_estado_sin_cambiar_nada(self):   # TC-017
+        # El trabajo ignora SIGTERM: sigue RUNNING y en proceso de cancelacion,
+        # asi que el resultado no depende de la velocidad de la maquina.
         self.nuevo()
-        job = self.mgr.submit(["sleep", "30"])["id"]
+        job = self.mgr.submit(["sh", "-c", 'trap "" TERM; sleep 60'])["id"]
+        time.sleep(0.3)   # que el shell instale el trap
         primera = self.mgr.cancel(job)
         limite = self.mgr._cancelando[job]
         segunda = self.mgr.cancel(job)
         self.assertEqual(primera["state"], RUNNING)
         self.assertEqual(segunda, primera)                          # mismo estado real
         self.assertEqual(self.mgr._cancelando[job], limite)         # no se reinicia el plazo
-        self.assertTrue(self.esperar(lambda: self.mgr.get(job)["state"] == CANCELED, timeout=3))
 
-    def test_dos_cancelaciones_seguidas_dejan_un_solo_estado_final(self):   # TC-017
+    def test_la_segunda_cancelacion_no_falla_aunque_el_proceso_ya_murio(self):   # TC-017
+        # Regresion: antes, si el proceso ya habia muerto cuando llegaba la
+        # segunda cancelacion, cancel() lo recogia primero y respondia "ya termino".
         self.nuevo()
         job = self.mgr.submit(["sleep", "30"])["id"]
         self.mgr.cancel(job)
+        self.mgr._procs[job].wait()          # murio, pero el servidor aun no lo recoge
+        segunda = self.mgr.cancel(job)       # no debe lanzar ValueError
+        self.assertEqual(segunda["state"], RUNNING)
+        self.assertTrue(self.esperar(lambda: self.mgr.get(job)["state"] == CANCELED, timeout=3))
+
+    def test_dos_cancelaciones_seguidas_dejan_un_solo_estado_final(self):        # TC-017
+        self.nuevo()
+        job = self.mgr.submit(["sleep", "30"])["id"]
         self.mgr.cancel(job)
+        self.mgr.cancel(job)                 # nunca debe lanzar error
         self.assertTrue(self.esperar(lambda: self.mgr.get(job)["state"] == CANCELED, timeout=3))
         self.assertEqual(self.mgr.get(job)["exit_code"], -15)
 
-    def test_cancelar_un_trabajo_ya_cancelado_da_error_y_no_lo_cambia(self):  # TC-017
+    def test_cancelar_un_trabajo_ya_cancelado_devuelve_su_estado_sin_cambiarlo(self):   # TC-017
         self.nuevo()
         job = self.mgr.submit(["sleep", "30"])["id"]
         self.mgr.cancel(job)
         self.assertTrue(self.esperar(lambda: self.mgr.get(job)["state"] == CANCELED, timeout=3))
         antes = self.mgr.get(job)
-        with self.assertRaises(ValueError):
-            self.mgr.cancel(job)
+        self.assertEqual(self.mgr.cancel(job), antes)
         self.assertEqual(self.mgr.get(job), antes)
 
-    def test_cancelar_un_id_inexistente_no_afecta_a_los_demas(self):          # TC-017
+    def test_cancelar_un_trabajo_que_termino_solo_sigue_dando_error(self):      # TC-017
+        self.nuevo()
+        job = self.mgr.submit(["true"])["id"]
+        time.sleep(0.3)
+        with self.assertRaises(ValueError):
+            self.mgr.cancel(job)
+        self.assertEqual(self.mgr.get(job)["state"], SUCCEEDED)
+
+    def test_cancelar_un_id_inexistente_no_afecta_a_los_demas(self):             # TC-017
         self.nuevo()
         job = self.mgr.submit(["sleep", "30"])["id"]
         with self.assertRaises(KeyError):
