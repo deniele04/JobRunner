@@ -1,3 +1,4 @@
+import collections
 import os
 import signal
 import subprocess
@@ -11,13 +12,28 @@ from .jobs import (
 
 VALID_STATES = {QUEUED, RUNNING, SUCCEEDED, FAILED, CANCELED}
 
+DEFAULT_MAX_JOBS = 3      # trabajos corriendo a la vez (ADR-0004)
+DEFAULT_QUEUE_SIZE = 10   # trabajos esperando en la cola (ADR-0004)
+
+
+class ColaLlena(Exception):
+    """No hay lugar para correr ni para esperar: la solicitud se rechaza."""
+
 
 class JobManager:
-    def __init__(self, data_dir="data", store=None):
+    def __init__(self, data_dir="data", store=None,
+                 max_jobs=DEFAULT_MAX_JOBS, queue_size=DEFAULT_QUEUE_SIZE):
+        if not isinstance(max_jobs, int) or max_jobs < 1:
+            raise ValueError("max_jobs debe ser un entero de al menos 1")
+        if not isinstance(queue_size, int) or queue_size < 0:
+            raise ValueError("queue_size debe ser un entero no negativo")
+        self.max_jobs = max_jobs
+        self.queue_size = queue_size
         self.data_dir = Path(data_dir)
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self._jobs = {}    # id -> Job
         self._procs = {}   # id -> subprocess.Popen
+        self._cola = collections.deque()   # ids en QUEUED, en orden de llegada
         self._store = store
 
     def _guardar(self, job):
@@ -27,7 +43,7 @@ class JobManager:
     def recuperar(self):
         """Carga el historial guardado y reconcilia lo que quedo a medias (ADR-0005).
 
-        Los QUEUED se inician de nuevo; los RUNNING pasan a FAILED y, si su grupo
+        Los QUEUED vuelven a la cola, en su orden original; los RUNNING pasan a FAILED y, si su grupo
         de procesos sigue vivo, se termina. Los estados finales no se tocan.
         """
         if self._store is None:
@@ -43,7 +59,8 @@ class JobManager:
                 bitacora.evento("recuperado", job.id, estado=FAILED, motivo="interrumpido por reinicio")
             elif job.state == QUEUED:
                 bitacora.evento("recuperado", job.id, estado=QUEUED)
-                self._iniciar(job)
+                self._cola.append(job.id)   # mismo orden y mismo limite (ADR-0004)
+        self.tick()   # arranca de la cola solo lo que quepa en max_jobs
 
     @staticmethod
     def _terminar_grupo(pid, espera=5.0):
@@ -79,14 +96,38 @@ class JobManager:
                     bitacora.evento("duplicado", existente.id, request_id=request_id)
                     return existente.to_dict()
 
+        # Primero se da su lugar a los que ya esperan: asi nadie se salta la cola.
+        self._arrancar_de_la_cola()
+        hay_lugar = len(self._procs) < self.max_jobs
+        if not hay_lugar and len(self._cola) >= self.queue_size:
+            # Sin lugar para correr ni para esperar: se rechaza y NO se crea el
+            # trabajo (ADR-0004).
+            bitacora.error("rechazado", motivo="cola llena", programa=argv[0])
+            raise ColaLlena(
+                "cola llena (capacidad " + str(self.queue_size) + "); intenta mas tarde"
+            )
+
         job = Job.new(argv)
         job.request_id = request_id
         job.stdout_path = str(self.data_dir / (job.id + ".out"))
         job.stderr_path = str(self.data_dir / (job.id + ".err"))
         self._jobs[job.id] = job
         bitacora.evento("recibido", job.id, programa=argv[0])
-        self._iniciar(job)
+        if hay_lugar:
+            self._iniciar(job)
+        else:
+            self._cola.append(job.id)
+            self._guardar(job)   # queda como QUEUED y sobrevive a un reinicio
+            bitacora.evento("en_cola", job.id, posicion=len(self._cola))
         return job.to_dict()
+
+    def _arrancar_de_la_cola(self):
+        """Saca de la cola, en orden, mientras haya lugar para correr."""
+        while self._cola and len(self._procs) < self.max_jobs:
+            job = self._jobs[self._cola.popleft()]
+            if job.state != QUEUED:   # se cancelo mientras esperaba
+                continue
+            self._iniciar(job)
 
     def _iniciar(self, job):
         job.transition(RUNNING)
@@ -136,6 +177,15 @@ class JobManager:
                 bitacora.evento("terminado", job_id, estado=job.state, codigo=code)
             self._guardar(job)
 
+    def tick(self):
+        """Ciclo del servidor, cada 0.5 s (ADR-0004). Nunca bloquea.
+
+        1. poll(): recoge los procesos que terminaron.
+        2. arranca trabajos de la cola mientras haya lugar.
+        """
+        self.poll()
+        self._arrancar_de_la_cola()
+
     def cancel(self, job_id):
         job = self._jobs.get(job_id)
         if job is None:
@@ -145,6 +195,10 @@ class JobManager:
             raise ValueError("El trabajo " + str(job_id) + " ya termino en estado " + job.state + "; no se puede cancelar")
 
         if job.state == QUEUED:
+            try:
+                self._cola.remove(job_id)   # libera su lugar en la cola
+            except ValueError:
+                pass
             job.transition(CANCELED)
             job.finished_at = now_iso()
             bitacora.evento("cancelado", job_id, estado_previo=QUEUED)
