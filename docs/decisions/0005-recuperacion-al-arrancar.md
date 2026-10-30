@@ -1,10 +1,11 @@
 # ADR-0005: Recuperación del estado al arrancar el servidor
 
-**Estado:** Propuesto
+**Estado:** Aceptado
 **Fecha:** 27/10/2026
 **Responsable(s):** Josué Said Delgadillo Gutiérrez
-**Issue relacionado:** #por asignar
-**Aprobado en:** PR pendiente
+**Issue relacionado:** #55, #57
+**Aprobado en:** PR #44
+**Historial:** v1 (27/10/2026): propuesta. Aceptado (30/10/2026): implementado en el PR #60; con la cola (PR #66), los `QUEUED` recuperados respetan `--max-jobs`.
 
 ## Contexto
 

@@ -40,6 +40,21 @@ cd ~/JobRunner
 
 Debe aparecer `JobRunner escuchando en data/jobrunner.sock`. Deja esa terminal abierta mientras uses JobRunner.
 
+Opciones del servicio:
+
+```bash
+./scripts/run.sh --max-jobs 2 --queue-size 3
+```
+
+| Opción | Qué hace | Por defecto |
+|---|---|---|
+| `--max-jobs` | Cuántos trabajos se ejecutan al mismo tiempo | 3 |
+| `--queue-size` | Cuántos trabajos pueden esperar en la cola | 10 |
+
+Si ya se ejecutan `--max-jobs` trabajos, los nuevos esperan en la cola (`QUEUED`) y arrancan en orden de llegada. Si la cola también está llena, el trabajo se rechaza.
+
+Los trabajos se guardan en `data/jobrunner.db`. Si el servicio se reinicia, el historial se conserva: los trabajos que estaban en `QUEUED` vuelven a la cola y los que estaban en `RUNNING` quedan en `FAILED` con el motivo «interrumpido por reinicio».
+
 Para detener el servicio, presiona **Ctrl+C** en esa terminal.
 
 ## 4. Usar el cliente
@@ -85,7 +100,8 @@ python3 -m jobrunner.cli status <id>
 | `created_at`, `started_at`, `finished_at` | Fecha y hora (UTC) de recepción, inicio y fin |
 | `stdout_path`, `stderr_path` | Archivos con la salida y los errores del trabajo |
 | `error` | Motivo cuando el trabajo no pudo ejecutarse, o la señal que lo terminó |
-| `request_id`, `pid` | Campos reservados para la persistencia y las solicitudes duplicadas (ADR-0002, ADR-0007) |
+| `pid` | Número del proceso del trabajo en el sistema |
+| `request_id` | Identificador opcional del cliente para no crear el mismo trabajo dos veces (ADR-0007) |
 
 ### 4.3 Listar trabajos
 
@@ -102,7 +118,9 @@ El filtro acepta mayúsculas o minúsculas: `QUEUED`, `RUNNING`, `SUCCEEDED`, `F
 python3 -m jobrunner.cli cancel <id>
 ```
 
-El servicio pide al trabajo que termine (señal SIGTERM). Si a los 5 segundos sigue vivo, lo obliga a terminar (SIGKILL). El trabajo queda en `CANCELED`.
+El servicio envía SIGTERM al trabajo y responde de inmediato, así que la respuesta todavía dice `RUNNING`. Consulta con `status`: en unos instantes pasa a `CANCELED`. Si a los 5 segundos sigue vivo, el servicio lo obliga a terminar (SIGKILL).
+
+Un trabajo en `QUEUED` se cancela al instante y nunca llega a ejecutarse. Cancelar dos veces el mismo trabajo devuelve su estado, sin repetir la señal.
 
 No se puede cancelar un trabajo que ya terminó.
 
@@ -119,7 +137,7 @@ cat data/<id>.err      # los errores del trabajo
 
 | Estado | Significado |
 |---|---|
-| `QUEUED` | Recibido, esperando a ejecutarse |
+| `QUEUED` | Recibido; espera en la cola porque ya se ejecutan `--max-jobs` trabajos |
 | `RUNNING` | En ejecución |
 | `SUCCEEDED` | Terminó con código 0 |
 | `FAILED` | Terminó con un código distinto de 0, o no se pudo ejecutar |
@@ -149,6 +167,7 @@ El servicio registra cada evento en `data/jobrunner.log`. El formato, los tipos 
 |---|---|---|
 | El servicio no está iniciado | `Error: no se pudo conectar al servidor en data/jobrunner.sock. Esta corriendo ./scripts/run.sh?` | Iniciar el servicio (sección 3) |
 | El comando no existe | El trabajo queda en `FAILED` con `"error": "No se pudo ejecutar '...'"` | Revisar el nombre del comando |
+| La cola está llena | `{"error": "cola llena (capacidad N); intenta más tarde"}` | Esperar a que terminen trabajos, o iniciar el servicio con un `--queue-size` mayor |
 | El ID no existe | `{"error": "no existe el trabajo <id>"}` | Copiar el ID completo desde `submit` o `list` |
 | Cancelar un trabajo terminado | `{"error": "El trabajo ... ya termino en estado ...; no se puede cancelar"}` | Nada: el trabajo ya terminó |
 | Estado inválido en `list --state` | `{"error": "error interno: Estado desconocido: ..."}` | Usar uno de los cinco estados (sección 5) |
@@ -160,6 +179,6 @@ El servicio registra cada evento en `data/jobrunner.log`. El formato, los tipos 
 
 Se actualizan en las release notes de cada versión.
 
-- **DEF-003:** el cliente termina con código de salida 1 en algunas operaciones exitosas (`submit`, `status` y `cancel`). La respuesta en pantalla es correcta.
-- **INC-001:** si el cliente se cierra antes de recibir la respuesta (por ejemplo, con Ctrl+C durante un `cancel`), el servicio se detiene. Evita presionar Ctrl+C en el cliente mientras espera una respuesta.
-- **DEF-004:** un trabajo que termina queda como proceso zombi hasta que alguien ejecuta `status` o `list`.
+- Solo funciona en la misma computadora; el acceso en red llega en el Avance 3.
+- Un trabajo que terminó justo antes de una caída del servicio queda como `FAILED` «interrumpido por reinicio», porque su resultado no alcanzó a guardarse.
+- El servicio atiende a un cliente a la vez; un cliente que se conecta y no envía nada retrasa a los demás hasta 5 segundos.
