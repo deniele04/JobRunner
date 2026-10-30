@@ -86,7 +86,9 @@ Para detener el servicio: `Ctrl+C`.
 ./scripts/test.sh
 ```
 
-Ejecuta las pruebas unitarias (`verif/unit/`, con `unittest`) y el script de verificación (`verif/scripts/verify.sh`). La evidencia de cada ejecución se guarda en `verif/results/<run-id>/`.
+Ejecuta las pruebas unitarias (`verif/unit/`), las de integración con servidor y CLI reales (`verif/integration/`), ambas con `unittest`, y el script de verificación (`verif/scripts/verify.sh`). La evidencia de cada ejecución se guarda en `verif/results/<run-id>/`.
+
+Para buscar procesos zombis y huérfanos tras una prueba: `verif/scripts/procesos.sh` (ver el [Plan de Verificación](verif/verification-plan/plan-de-verificacion.md)).
 
 ## Alcance actual
 

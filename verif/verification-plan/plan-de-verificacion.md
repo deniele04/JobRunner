@@ -29,7 +29,8 @@ Fuera del alcance de esta versión: concurrencia, persistencia con SQLite y oper
 |---|---|---|
 | Unitario | `Job` y `JobManager` (estados, transiciones, ejecución, cancelación, entradas inválidas, unicidad de IDs) | `unittest` en `verif/unit/` |
 | Clon limpio | Que un externo pueda clonar y construir siguiendo el README | `verif/scripts/verify.sh` clona el repositorio y ejecuta `./scripts/setup.sh` |
-| Extremo a extremo | Servidor y CLI comunicándose por socket Unix | Casos TC-001 y TC-004. Quedan BLOCKED hasta que el servidor y el CLI estén integrados en `main` (hoy están en el PR #32) |
+| Integración / extremo a extremo | Servidor y CLI reales comunicándose por socket Unix | `unittest` en `verif/integration/`: `helpers.py` levanta un servidor aislado (directorio y socket temporales) por prueba y usa el CLI como una persona. Casos TC-001 y TC-004 |
+| Procesos | Zombis y huérfanos que deje el servicio | `verif/scripts/procesos.sh` (ver sección 6) y `verif/integration/test_procesos.py` |
 
 ## 4. Entorno de verificación
 
@@ -64,7 +65,7 @@ Cada caso vive en `verif/test-cases/TC-XXX.md` y tiene estos campos:
 ## 6. Ejecución y evidencia
 
 ```bash
-./scripts/test.sh                      # pruebas unitarias + verify.sh
+./scripts/test.sh                      # pruebas unitarias + integración + verify.sh
 verif/scripts/verify.sh [run-id]       # solo la verificación y su evidencia
 ```
 
@@ -73,10 +74,25 @@ Cada ejecución de `verify.sh` crea `verif/results/<run-id>/` con:
 | Archivo | Contenido |
 |---|---|
 | `entorno.txt` | Fecha, commit, versión de Python y sistema |
-| `unittest.log` | Salida completa de las pruebas unitarias |
-| `unit-resultados.tsv` | Resultado (`PASS`/`FAIL`) de cada prueba |
+| `unittest.log` | Salida completa de las pruebas unitarias y de integración |
+| `unit-resultados.tsv` | Resultado de cada prueba: `PASS`, `FAIL` o `XFAIL` (fallo esperado y conocido, `expectedFailure`) |
+| `procesos.log` | Zombis y huérfanos que dejaron las pruebas |
 | `tc-014-clon-limpio.log` | Clonado y construcción desde un clon limpio |
 | `resumen.md` | Estado de cada TC en esa ejecución |
+
+Además, `verify.sh` comprueba al final con `procesos.sh` que las pruebas no dejaron zombis ni huérfanos (`procesos.log`), y reemplaza la ruta del repositorio por `<repo>` en los registros para que la evidencia no lleve rutas personales.
+
+**Zombis y huérfanos (`verif/scripts/procesos.sh`).** Solo lectura. Se guarda una línea base antes de la prueba y se revisa después:
+
+```bash
+verif/scripts/procesos.sh guardar base.txt
+# ... prueba ...
+verif/scripts/procesos.sh revisar --base base.txt [--patron 'sleep 300']
+```
+
+- **ZOMBI:** proceso en estado Z cuyo padre es el servidor (no recogió a un hijo terminado).
+- **HUERFANO:** líder de sesión (los trabajos se lanzan con `start_new_session`) adoptado por PID 1, es decir, su padre murió.
+- Código de salida: 0 limpio, 1 hallazgos, 2 uso incorrecto. Detalle en la cabecera del script.
 
 Sin `run-id` se usa la fecha y hora (`AAAAMMDD-HHMMSS`). Para una ejecución formal conviene un nombre explícito, por ejemplo `20261002-avance1`, y confirmar los cambios antes de correrla, porque el clon limpio parte del último commit. Solo las ejecuciones formales se agregan al repositorio.
 
@@ -84,9 +100,9 @@ Sin `run-id` se usa la fecha y hora (`AAAAMMDD-HHMMSS`). Para una ejecución for
 
 | TC | Título | Nivel | Automatización |
 |---|---|---|---|
-| [TC-001](../test-cases/TC-001.md) | Enviar un trabajo y obtener un ID único | Extremo a extremo | Pendiente (requiere CLI). Verificación unitaria complementaria: `test_ids_unicos.py` (falla, DEF-001) |
+| [TC-001](../test-cases/TC-001.md) | Enviar un trabajo y obtener un ID único | Integración | `verif/integration/test_tc001_enviar_trabajo.py`. Complemento unitario: `test_ids_unicos.py` |
 | [TC-003](../test-cases/TC-003.md) | Estados y transiciones de un trabajo | Unitario | `test_ciclo_vida.py` |
-| [TC-004](../test-cases/TC-004.md) | Consultar estado y listar trabajos desde el CLI | Extremo a extremo | Pendiente (requiere CLI) |
+| [TC-004](../test-cases/TC-004.md) | Consultar estado y listar trabajos desde el CLI | Integración | `verif/integration/test_tc004_consultar_listar.py` |
 | [TC-005](../test-cases/TC-005.md) | Cancelación de un trabajo | Unitario | `test_ciclo_vida.py` |
 | [TC-006](../test-cases/TC-006.md) | Ejecución como proceso separado y código de salida | Unitario | `test_ciclo_vida.py` |
 | [TC-008](../test-cases/TC-008.md) | Entradas inválidas sin tumbar el gestor | Unitario | `test_ciclo_vida.py` |

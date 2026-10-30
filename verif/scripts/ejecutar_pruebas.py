@@ -1,11 +1,14 @@
-"""Ejecuta las pruebas de verif/unit y guarda el resultado de cada una.
+"""Ejecuta las pruebas de verif/unit y verif/integration y guarda el resultado de cada una.
 
 Uso: python3 verif/scripts/ejecutar_pruebas.py <archivo-resultados.tsv>
 
 Imprime la salida detallada de unittest y escribe un archivo con una línea por
-prueba ("PASS<TAB>id" o "FAIL<TAB>id") que verify.sh usa para calcular el
-estado de cada caso de prueba. Termina con código 0 solo si todas pasan.
+prueba ("PASS<TAB>id", "FAIL<TAB>id" o "XFAIL<TAB>id") que verify.sh usa para
+calcular el estado de cada caso de prueba. XFAIL es un fallo esperado y
+conocido (`expectedFailure`); un éxito inesperado cuenta como FAIL para que se
+quite la marca. Termina con código 0 solo si todo pasa.
 """
+import os
 import sys
 import unittest
 
@@ -32,6 +35,14 @@ class Resultado(unittest.TextTestResult):
         super().addError(test, err)
         self._marcar(test, "FAIL")
 
+    def addExpectedFailure(self, test, err):
+        super().addExpectedFailure(test, err)
+        self._marcar(test, "XFAIL")
+
+    def addUnexpectedSuccess(self, test):
+        super().addUnexpectedSuccess(test)
+        self._marcar(test, "FAIL")
+
     def addSubTest(self, test, subtest, err):
         super().addSubTest(test, subtest, err)
         if err is not None:
@@ -42,7 +53,10 @@ def main():
     if len(sys.argv) != 2:
         print(__doc__)
         return 2
-    suite = unittest.defaultTestLoader.discover("verif/unit")
+    suite = unittest.TestSuite()
+    for directorio in ("verif/unit", "verif/integration"):
+        if os.path.isdir(directorio):
+            suite.addTests(unittest.defaultTestLoader.discover(directorio))
     # warnings="default" iguala el comportamiento de `python -m unittest`:
     # deja visibles avisos como ResourceWarning (archivos sin cerrar) en el log.
     runner = unittest.TextTestRunner(

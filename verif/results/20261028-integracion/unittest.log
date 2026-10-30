@@ -1,0 +1,76 @@
+test_cada_evento_tiene_fecha_nivel_tipo_e_id (test_bitacora.BitacoraTest.test_cada_evento_tiene_fecha_nivel_tipo_e_id) ... ok
+test_cancelar_registra_el_evento_con_su_codigo (test_bitacora.BitacoraTest.test_cancelar_registra_el_evento_con_su_codigo) ... ok
+test_comando_inexistente_registra_un_error (test_bitacora.BitacoraTest.test_comando_inexistente_registra_un_error) ... ok
+test_eventos_de_un_trabajo_se_correlacionan_por_su_id (test_bitacora.BitacoraTest.test_eventos_de_un_trabajo_se_correlacionan_por_su_id) ... ok
+test_no_registra_los_argumentos_del_trabajo (test_bitacora.BitacoraTest.test_no_registra_los_argumentos_del_trabajo) ... ok
+test_argv_vacio_se_rechaza_y_no_registra_trabajo (test_ciclo_vida.CicloDeVidaTest.test_argv_vacio_se_rechaza_y_no_registra_trabajo) ... ok
+test_cancelar_trabajo_en_ejecucion (test_ciclo_vida.CicloDeVidaTest.test_cancelar_trabajo_en_ejecucion) ... ok
+test_cancelar_trabajo_inexistente (test_ciclo_vida.CicloDeVidaTest.test_cancelar_trabajo_inexistente) ... ok
+test_codigo_de_salida_distinto_de_cero_termina_en_failed (test_ciclo_vida.CicloDeVidaTest.test_codigo_de_salida_distinto_de_cero_termina_en_failed) ... ok
+test_comando_inexistente_falla_sin_tumbar_el_gestor (test_ciclo_vida.CicloDeVidaTest.test_comando_inexistente_falla_sin_tumbar_el_gestor) ... ok
+test_exito_termina_en_succeeded_con_codigo_0 (test_ciclo_vida.CicloDeVidaTest.test_exito_termina_en_succeeded_con_codigo_0) ... ok
+test_stderr_del_trabajo_se_guarda_en_archivo (test_ciclo_vida.CicloDeVidaTest.test_stderr_del_trabajo_se_guarda_en_archivo) ... ok
+test_trabajo_cancelado_no_cambia_de_estado_en_poll (test_ciclo_vida.CicloDeVidaTest.test_trabajo_cancelado_no_cambia_de_estado_en_poll) ... ok
+test_trabajo_corre_en_proceso_separado (test_ciclo_vida.CicloDeVidaTest.test_trabajo_corre_en_proceso_separado) ... ok
+test_transiciones_invalidas_lanzan_error (test_ciclo_vida.CicloDeVidaTest.test_transiciones_invalidas_lanzan_error) ... ok
+test_transiciones_validas (test_ciclo_vida.CicloDeVidaTest.test_transiciones_validas) ... ok
+test_ids_unicos_en_2000_trabajos (test_ids_unicos.IdsUnicosTest.test_ids_unicos_en_2000_trabajos) ... ok
+test_cierre_ordenado_no_deja_huerfanos (test_procesos.TestProcesosConServidor.test_cierre_ordenado_no_deja_huerfanos)
+RF-15 / RNF-25 / RNF-30 (TC-009). Pendiente de implementar: ADR-0006. ... expected failure
+test_servidor_en_reposo_no_deja_nada (test_procesos.TestProcesosConServidor.test_servidor_en_reposo_no_deja_nada) ... ok
+test_servidor_inactivo_no_deja_zombis (test_procesos.TestProcesosConServidor.test_servidor_inactivo_no_deja_zombis)
+RF-29 / RNF-33 (TC-020, TC-024). Defecto conocido: DEF-004. ... expected failure
+test_si_el_servidor_muere_de_golpe_el_trabajo_queda_huerfano (test_procesos.TestProcesosConServidor.test_si_el_servidor_muere_de_golpe_el_trabajo_queda_huerfano) ... ok
+test_detecta_un_huerfano (test_procesos.TestProcesosSh.test_detecta_un_huerfano) ... ok
+test_detecta_un_zombi_del_servidor (test_procesos.TestProcesosSh.test_detecta_un_zombi_del_servidor) ... ok
+test_revisar_exige_base_o_patron (test_procesos.TestProcesosSh.test_revisar_exige_base_o_patron) ... ok
+test_sin_argumentos_es_error_de_uso (test_procesos.TestProcesosSh.test_sin_argumentos_es_error_de_uso) ... ok
+test_sistema_limpio_da_codigo_0 (test_procesos.TestProcesosSh.test_sistema_limpio_da_codigo_0) ... ok
+test_dos_submit_devuelven_ids_distintos (test_tc001_enviar_trabajo.TestTC001EnviarTrabajo.test_dos_submit_devuelven_ids_distintos) ... ok
+test_solicitud_mal_formada_no_tumba_al_servicio (test_tc001_enviar_trabajo.TestTC001EnviarTrabajo.test_solicitud_mal_formada_no_tumba_al_servicio) ... ok
+test_status_reconoce_el_id_devuelto (test_tc001_enviar_trabajo.TestTC001EnviarTrabajo.test_status_reconoce_el_id_devuelto) ... ok
+test_submit_devuelve_un_id (test_tc001_enviar_trabajo.TestTC001EnviarTrabajo.test_submit_devuelve_un_id) ... ok
+test_submit_exitoso_termina_con_codigo_0 (test_tc001_enviar_trabajo.TestTC001EnviarTrabajo.test_submit_exitoso_termina_con_codigo_0) ... FAIL
+test_submit_sin_comando_se_rechaza (test_tc001_enviar_trabajo.TestTC001EnviarTrabajo.test_submit_sin_comando_se_rechaza) ... ok
+test_al_terminar_status_es_succeeded_con_codigo_0 (test_tc004_consultar_listar.TestTC004ConsultarListar.test_al_terminar_status_es_succeeded_con_codigo_0) ... ok
+test_consulta_responde_en_menos_de_1_segundo_con_100_trabajos (test_tc004_consultar_listar.TestTC004ConsultarListar.test_consulta_responde_en_menos_de_1_segundo_con_100_trabajos) ... ok
+test_list_filtra_por_estado (test_tc004_consultar_listar.TestTC004ConsultarListar.test_list_filtra_por_estado) ... ok
+test_list_incluye_el_trabajo_con_su_estado (test_tc004_consultar_listar.TestTC004ConsultarListar.test_list_incluye_el_trabajo_con_su_estado) ... ok
+test_status_de_id_inexistente_da_error_y_codigo_distinto_de_cero (test_tc004_consultar_listar.TestTC004ConsultarListar.test_status_de_id_inexistente_da_error_y_codigo_distinto_de_cero) ... ok
+test_status_inmediato_es_running (test_tc004_consultar_listar.TestTC004ConsultarListar.test_status_inmediato_es_running) ... ok
+test_status_y_list_exitosos_terminan_con_codigo_0 (test_tc004_consultar_listar.TestTC004ConsultarListar.test_status_y_list_exitosos_terminan_con_codigo_0) ... FAIL
+test_trabajo_con_error_termina_failed_con_su_codigo (test_tc004_consultar_listar.TestTC004ConsultarListar.test_trabajo_con_error_termina_failed_con_su_codigo) ... ok
+
+======================================================================
+FAIL: test_submit_exitoso_termina_con_codigo_0 (test_tc001_enviar_trabajo.TestTC001EnviarTrabajo.test_submit_exitoso_termina_con_codigo_0)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<repo>/verif/integration/test_tc001_enviar_trabajo.py", line 21, in test_submit_exitoso_termina_con_codigo_0
+    self.assertEqual(codigo, 0, "un submit exitoso debe terminar con código 0")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 != 0 : un submit exitoso debe terminar con código 0
+
+======================================================================
+FAIL: test_status_y_list_exitosos_terminan_con_codigo_0 (test_tc004_consultar_listar.TestTC004ConsultarListar.test_status_y_list_exitosos_terminan_con_codigo_0)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<repo>/verif/integration/test_tc004_consultar_listar.py", line 58, in test_status_y_list_exitosos_terminan_con_codigo_0
+    self.assertEqual((c_status, c_list), (0, 0))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Tuples differ: (1, 0) != (0, 0)
+
+First differing element 0:
+1
+0
+
+- (1, 0)
+?  ^
+
++ (0, 0)
+?  ^
+
+
+----------------------------------------------------------------------
+Ran 40 tests in 11.707s
+
+FAILED (failures=2, expected failures=2)

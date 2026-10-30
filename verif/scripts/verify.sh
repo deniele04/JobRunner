@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Script de verificación del Avance 1.
 #
-# Ejecuta las pruebas unitarias y la verificación desde un clon limpio (TC-014),
+# Ejecuta las pruebas unitarias y de integración (servidor y CLI reales) y la
+# verificación desde un clon limpio (TC-014),
 # calcula el estado de cada caso de prueba y guarda la evidencia en
 # verif/results/<run-id>/.
 #
@@ -27,7 +28,12 @@ mkdir -p "$OUT"
   echo "sistema: $(uname -sr)"
 } > "$OUT/entorno.txt"
 
-# 1. Pruebas unitarias: una línea por prueba en unit-resultados.tsv.
+# Línea base de procesos para comprobar al final que las pruebas no dejaron
+# zombis ni huérfanos (verif/scripts/procesos.sh).
+BASE_PROCESOS="$(mktemp)"
+verif/scripts/procesos.sh guardar "$BASE_PROCESOS" > /dev/null
+
+# 1. Pruebas unitarias y de integración: una línea por prueba en unit-resultados.tsv.
 python3 verif/scripts/ejecutar_pruebas.py "$OUT/unit-resultados.tsv" > "$OUT/unittest.log" 2>&1
 unit_rc=$?
 
@@ -83,29 +89,56 @@ tc008="$(estado_pruebas \
   test_argv_vacio_se_rechaza_y_no_registra_trabajo)"
 ids="$(estado_pruebas test_ids_unicos_en_2000_trabajos)"
 
-# TC-001 y TC-004 son de extremo a extremo y necesitan el CLI.
-if [ -f src/jobrunner/cli.py ]; then
-  motivo_cli="falta automatizar la prueba extremo a extremo con el CLI"
-else
-  motivo_cli="no existe src/jobrunner/cli.py"
-fi
+# TC-001 y TC-004 son de extremo a extremo: servidor y CLI reales (verif/integration).
+tc001="$(estado_pruebas \
+  test_submit_devuelve_un_id \
+  test_submit_exitoso_termina_con_codigo_0 \
+  test_dos_submit_devuelven_ids_distintos \
+  test_status_reconoce_el_id_devuelto \
+  test_submit_sin_comando_se_rechaza \
+  test_solicitud_mal_formada_no_tumba_al_servicio)"
+tc004="$(estado_pruebas \
+  test_status_inmediato_es_running \
+  test_list_incluye_el_trabajo_con_su_estado \
+  test_al_terminar_status_es_succeeded_con_codigo_0 \
+  test_trabajo_con_error_termina_failed_con_su_codigo \
+  test_list_filtra_por_estado \
+  test_status_de_id_inexistente_da_error_y_codigo_distinto_de_cero \
+  test_status_y_list_exitosos_terminan_con_codigo_0 \
+  test_consulta_responde_en_menos_de_1_segundo_con_100_trabajos)"
+
+# 4. Las pruebas no deben dejar zombis ni huérfanos (RNF-30, RNF-33).
+sleep 1
+verif/scripts/procesos.sh revisar --base "$BASE_PROCESOS" --patron 'sleep|jobrunner' > "$OUT/procesos.log" 2>&1
+procesos_rc=$?
+rm -f "$BASE_PROCESOS"
+if [ "$procesos_rc" -eq 0 ]; then limpieza="PASS"; else limpieza="FAIL"; fi
+conocidos="$(awk -F'\t' '$1 == "XFAIL" { n++ } END { print n + 0 }' "$OUT/unit-resultados.tsv")"
 
 {
   echo "# Resumen de la ejecución $RUN_ID"
   echo
   echo "| TC | Estado | Evidencia |"
   echo "|---|---|---|"
-  echo "| TC-001 | BLOCKED | $motivo_cli. Verificación parcial de ID único: $ids (unittest.log) |"
+  echo "| TC-001 | $tc001 | unittest.log, unit-resultados.tsv. Unicidad de 2000 IDs (unitaria): $ids |"
   echo "| TC-003 | $tc003 | unittest.log, unit-resultados.tsv |"
-  echo "| TC-004 | BLOCKED | $motivo_cli |"
+  echo "| TC-004 | $tc004 | unittest.log, unit-resultados.tsv |"
   echo "| TC-005 | $tc005 | unittest.log, unit-resultados.tsv |"
   echo "| TC-006 | $tc006 | unittest.log, unit-resultados.tsv |"
   echo "| TC-008 | $tc008 | unittest.log, unit-resultados.tsv |"
   echo "| TC-014 | $tc014 | tc-014-clon-limpio.log |"
+  echo "| Sin zombis ni huérfanos tras las pruebas | $limpieza | procesos.log |"
+  echo
+  echo "Fallos esperados y conocidos (expectedFailure): $conocidos. Ver las pruebas con estado XFAIL en unit-resultados.tsv y la matriz de trazabilidad."
 } > "$OUT/resumen.md"
 cat "$OUT/resumen.md"
+
+# La evidencia no debe llevar la ruta personal de quien ejecuta: se sustituye la
+# ruta del repositorio por <repo> en los registros (no cambia ningún resultado).
+sed -i "s|$ROOT|<repo>|g" "$OUT"/*.log "$OUT"/*.tsv "$OUT"/*.md 2>/dev/null
 
 status=0
 [ "$unit_rc" -ne 0 ] && status=1
 [ "$tc014" = "FAIL" ] && status=1
+[ "$limpieza" = "FAIL" ] && status=1
 exit "$status"
