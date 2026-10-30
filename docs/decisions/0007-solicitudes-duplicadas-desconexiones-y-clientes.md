@@ -1,10 +1,11 @@
 # ADR-0007: Solicitudes duplicadas, desconexiones y clientes simultáneos
 
-**Estado:** Propuesto
+**Estado:** Aceptado
 **Fecha:** 29/10/2026
 **Responsable(s):** Daniel Alejandro Huerta Camberos
-**Issue relacionado:** Por asignar
-**Aprobado en:** Por asignar
+**Issue relacionado:** #49
+**Aprobado en:** PR #50
+**Historial:** v1 (29/10/2026): propuesta. Aceptado (30/10/2026): implementado en los PR #51 (desconexiones) y #60 (`request_id`).
 
 ## Contexto
 

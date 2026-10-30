@@ -1,11 +1,11 @@
 # ADR-0006: Cancelación sin bloqueo, escalamiento y cierre controlado
 
-**Estado:** Propuesto
+**Estado:** Aceptado
 **Fecha:** 27/10/2026
 **Responsable(s):** Diego Armando Durán Hernández
-**Issue relacionado:** #por asignar
-**Aprobado en:** PR pendiente
-**Historial:** Propuesto 27/10/2026. Recoge las decisiones 4 y 5 de la minuta del 20/10/2026 (Avance 2).
+**Issue relacionado:** #37, #64
+**Aprobado en:** PR #46
+**Historial:** Propuesto 27/10/2026. Recoge las decisiones 4 y 5 de la minuta del 20/10/2026 (Avance 2). Aceptado (30/10/2026): la cancelación sin bloqueo y el escalamiento se implementaron en el PR #67.
 
 ## Contexto
 

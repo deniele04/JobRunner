@@ -1,15 +1,48 @@
 import argparse
 import json
 import os
+import signal
 import socket
+import threading
 from pathlib import Path
 
 from . import bitacora
-from .executor import DEFAULT_MAX_JOBS, DEFAULT_QUEUE_SIZE, ColaLlena, JobManager
+from .executor import DEFAULT_MAX_JOBS, DEFAULT_QUEUE_SIZE, Cerrando, ColaLlena, JobManager
 from .store import Store
 
 DEFAULT_SOCKET_PATH = os.environ.get("JOBRUNNER_SOCKET", "data/jobrunner.sock")
 INTERVALO_TICK = 0.5   # segundos entre revisiones de procesos
+
+
+class _Cierre:
+    """Estado del cierre controlado (ADR-0006): lo escriben los manejadores de senal."""
+
+    def __init__(self):
+        self.pedido = False   # primer Ctrl+C o SIGTERM: cerrar de forma ordenada
+        self.forzar = False   # segundo aviso: SIGKILL inmediato a lo que siga vivo
+
+
+def _instalar_senales(cierre):
+    """SIGINT y SIGTERM solo piden el cierre; el ciclo principal lo ejecuta.
+
+    Devuelve una funcion que restaura los manejadores anteriores. Fuera del hilo
+    principal no se instalan (signal solo funciona ahi).
+    """
+    if threading.current_thread() is not threading.main_thread():
+        return lambda: None
+
+    def manejador(signum, frame):
+        if cierre.pedido:
+            cierre.forzar = True
+        else:
+            cierre.pedido = True
+
+    anteriores = {s: signal.signal(s, manejador) for s in (signal.SIGINT, signal.SIGTERM)}
+
+    def restaurar():
+        for s, anterior in anteriores.items():
+            signal.signal(s, anterior)
+    return restaurar
 
 
 def handle_request(manager, request):
@@ -28,6 +61,8 @@ def handle_request(manager, request):
             return manager.submit(list(argv), request_id=request_id)
         except ColaLlena:
             return {"error": "cola llena (capacidad " + str(manager.queue_size) + "); intenta más tarde"}
+        except Cerrando as e:
+            return {"error": str(e)}
 
     if cmd == "status":
         job_id = request.get("id")
@@ -78,8 +113,11 @@ def serve(socket_path=DEFAULT_SOCKET_PATH, max_jobs=DEFAULT_MAX_JOBS, queue_size
 
     server.settimeout(INTERVALO_TICK)   # accept() despierta cada 0.5 s (ADR-0004)
 
+    cierre = _Cierre()
+    restaurar_senales = _instalar_senales(cierre)
+
     try:
-        while True:
+        while not cierre.pedido:
             manager.tick()   # recoge terminados, arranca la cola, aplica escalamiento
             try:
                 conn, _ = server.accept()
@@ -113,15 +151,24 @@ def serve(socket_path=DEFAULT_SOCKET_PATH, max_jobs=DEFAULT_MAX_JOBS, queue_size
                     conn.sendall((json.dumps(response) + "\n").encode("utf-8"))
                 except (BrokenPipeError, ConnectionResetError):
                     bitacora.error("cliente_desconectado", motivo="el cliente cerro antes de recibir la respuesta")
-    except KeyboardInterrupt:
-        print("\nDeteniendo JobRunner...")
-        bitacora.evento("servicio_detenido")
+    except KeyboardInterrupt:   # solo si no se pudieron instalar los manejadores
+        cierre.pedido = True
     finally:
+        # Cierre controlado (ADR-0006): 1) dejar de aceptar solicitudes, 2) cancelar los
+        # RUNNING, 3) conservar los QUEUED, 4) registrar y eliminar el socket. Corre tambien
+        # si el ciclo termina por un error, para no dejar hijos huerfanos.
+        print("\nDeteniendo JobRunner...")
         server.close()
-        store.close()
-        bitacora.cerrar()
-        if socket_path.exists():
-            socket_path.unlink()
+        try:
+            resumen = manager.cerrar(forzar=lambda: cierre.forzar)
+            bitacora.evento("servicio_detenido", cancelados=resumen["cancelados"],
+                            en_cola=resumen["en_cola"])
+        finally:
+            store.close()
+            bitacora.cerrar()
+            if socket_path.exists():
+                socket_path.unlink()
+            restaurar_senales()
 
 
 def parse_args(argv=None):

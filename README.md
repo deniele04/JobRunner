@@ -76,7 +76,7 @@ python3 -m jobrunner.cli cancel <id>
 python3 -m jobrunner.cli --help
 ```
 
-Para detener el servicio: `Ctrl+C`.
+Para detener el servicio: `Ctrl+C` o `SIGTERM`. El cierre es controlado: deja de aceptar solicitudes, cancela los trabajos en ejecución, conserva la cola para el siguiente arranque y elimina el socket (un segundo `Ctrl+C` fuerza el cierre inmediato).
 
 > El servicio y el cliente están en desarrollo; los comandos se confirmarán al integrar su código.
 

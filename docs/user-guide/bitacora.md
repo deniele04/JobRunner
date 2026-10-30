@@ -19,14 +19,21 @@ Cuando el evento no corresponde a un trabajo, aparece `job=-`.
 | Evento | Nivel | Cuándo ocurre | Datos |
 |---|---|---|---|
 | `servicio_iniciado` | INFO | El servicio empieza a escuchar | `socket` |
-| `servicio_detenido` | INFO | El servicio se detiene con Ctrl+C | — |
+| `servicio_detenido` | INFO | El servicio se detiene | — |
 | `recibido` | INFO | Se acepta un trabajo nuevo | `programa` |
+| `en_cola` | INFO | El trabajo espera porque ya se ejecutan `--max-jobs` trabajos | `posicion` |
 | `iniciado` | INFO | El trabajo empieza a ejecutarse | `pid` |
 | `terminado` | INFO | El trabajo termina por sí solo | `estado`, `codigo` |
-| `cancelado` | INFO | El trabajo se cancela | `codigo` o `estado_previo` |
+| `cancelacion_solicitada` | INFO | Se envió SIGTERM a un trabajo en ejecución | — |
+| `escalamiento` | INFO | El trabajo siguió vivo 5 s después de SIGTERM y se envía SIGKILL | `senal` |
+| `cancelado` | INFO | El trabajo queda cancelado | `codigo` o `estado_previo` |
+| `recuperado` | INFO | Al arrancar, se recupera un trabajo guardado en la base | `estado`, `motivo` |
+| `duplicado` | INFO | Llega un `request_id` ya usado; se devuelve el trabajo existente | `request_id` |
+| `rechazado` | ERROR | La cola está llena; el trabajo no se registra (`job=-`) | `motivo`, `programa` |
 | `no_se_pudo_iniciar` | ERROR | El comando no existe o no se puede ejecutar | `motivo` |
 | `solicitud_invalida` | ERROR | Llega un mensaje que no es JSON válido | `motivo` |
 | `error_interno` | ERROR | Una solicitud provoca un error inesperado | `motivo` |
+| `cliente_desconectado` | ERROR | El cliente cerró la conexión antes de recibir la respuesta | `motivo` |
 
 ## Consultar la bitácora
 

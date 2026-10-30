@@ -7,10 +7,10 @@
 | **Detectado por** | Daniel Alejandro Huerta Camberos, en la verificación posterior a la entrega del Avance 1 |
 | **Severidad** | Alta: el servicio deja de atender a todos los clientes |
 | **Requisitos afectados** | RNF-08 (una solicitud inválida o una desconexión no debe terminar el servicio), RF-22, RF-28, RNF-30 |
-| **Versiones afectadas** | `v0.1.0` y `main` hasta la integración de la corrección |
+| **Versiones afectadas** | `v0.1.0` y `main` hasta el PR #51 (29/10/2026) |
 | **Corrección** | Josué Said Delgadillo Gutiérrez |
-| **Prueba de regresión** | TC-019 (Diego Armando Durán Hernández) |
-| **Estado** | Causa identificada y corrección probada localmente; pendiente de integrar en `main` |
+| **Prueba de regresión** | TC-019 (Josué Said Delgadillo Gutiérrez) |
+| **Estado** | Corregido en el PR #51 (29/10/2026) |
 
 ## Síntomas
 
@@ -87,40 +87,38 @@ En los tres casos la excepción sale del `while True`, el bloque `finally` cierr
 
 ## Corrección
 
-Cambio en `src/jobrunner/server.py`, probado localmente sobre `main` el 29/10/2026:
+Integrada en `main` con el PR #51 (Josué Said Delgadillo Gutiérrez, 29/10/2026), en `serve()` de `src/jobrunner/server.py`:
 
 ```diff
--                except socket.timeout:
-+                except OSError:
-                     continue
- ...
 -                except json.JSONDecodeError:
-+                except ValueError:
++                except (UnicodeDecodeError, json.JSONDecodeError):
                      response = {"error": "JSON invalido"}
  ...
 -                conn.sendall((json.dumps(response) + "\n").encode("utf-8"))
 +                try:
 +                    conn.sendall((json.dumps(response) + "\n").encode("utf-8"))
-+                except OSError:
-+                    bitacora.error("respuesta_no_entregada", motivo="el cliente se desconecto")
++                except (BrokenPipeError, ConnectionResetError):
++                    bitacora.error("cliente_desconectado", motivo="el cliente cerro antes de recibir la respuesta")
 ```
 
-- `OSError` incluye `socket.timeout` y los demás errores de conexión.
-- `ValueError` incluye `json.JSONDecodeError` y `UnicodeDecodeError`.
-- Una respuesta que no se pudo entregar ya no termina el servidor; queda registrada en la bitácora. La solicitud se aplicó de todos modos, como define el ADR-0007.
+- Los bytes que no son texto UTF-8 válido se responden como `{"error": "JSON invalido"}` y se registran como `solicitud_invalida`.
+- Una respuesta que no se pudo entregar ya no termina el servidor: queda registrada como `cliente_desconectado`. La solicitud se aplicó de todos modos, como define el ADR-0007.
+- La lectura sigue atrapando solo `socket.timeout`. En sockets Unix no se observó otro error de lectura; queda anotado como riesgo bajo.
 
-Resultado con la corrección: en el caso A el servidor sigue vivo y registra `ERROR respuesta_no_entregada`; en el caso B responde `{"error": "JSON invalido"}`; un `list` posterior responde normalmente. Las 17 pruebas unitarias siguen en `PASS`.
+Resultado con la corrección: en el caso A el servidor sigue vivo y registra `ERROR cliente_desconectado`; en el caso B responde `{"error": "JSON invalido"}`; un `list` posterior responde normalmente.
 
 ## Prueba de regresión
 
-**TC-019 — Desconexión durante una solicitud** (RF-28, RF-22, RNF-08), automatizada en las pruebas de integración:
+**TC-019 — Desconexión durante una solicitud** (RF-28, RF-22, RNF-08):
 
 1. Iniciar el servidor.
 2. Enviar `{"cmd":"list"}` y cerrar la conexión sin leer la respuesta.
 3. Enviar bytes no UTF-8 (`\xff\xfe`) y leer la respuesta.
 4. Ejecutar `list` desde el CLI.
 
-**Resultado esperado:** el servidor sigue vivo; el paso 3 responde `{"error": "JSON invalido"}`; el paso 4 responde con la lista de trabajos; la bitácora contiene `respuesta_no_entregada` y `solicitud_invalida`.
+**Resultado esperado:** el servidor sigue vivo; el paso 3 responde `{"error": "JSON invalido"}`; el paso 4 responde con la lista de trabajos; la bitácora contiene `cliente_desconectado` y `solicitud_invalida`.
+
+Pruebas automatizadas: `test_cliente_que_se_desconecta_antes_de_la_respuesta` y `test_bytes_que_no_son_texto_valido` (`verif/unit/test_servidor_robusto.py`), que levantan el servidor real. Las dos fallan sin la corrección (comprobado sobre el commit `572140d`) y pasan con ella.
 
 ## Aprendizaje
 

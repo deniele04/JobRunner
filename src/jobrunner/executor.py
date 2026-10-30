@@ -21,6 +21,10 @@ class ColaLlena(Exception):
     """No hay lugar para correr ni para esperar: la solicitud se rechaza."""
 
 
+class Cerrando(Exception):
+    """El servicio esta en cierre controlado y no acepta trabajos nuevos (RF-15)."""
+
+
 class JobManager:
     def __init__(self, data_dir="data", store=None,
                  max_jobs=DEFAULT_MAX_JOBS, queue_size=DEFAULT_QUEUE_SIZE):
@@ -36,6 +40,7 @@ class JobManager:
         self._procs = {}   # id -> subprocess.Popen
         self._cola = collections.deque()   # ids en QUEUED, en orden de llegada
         self._cancelando = {}              # id -> instante (monotonic) del SIGKILL
+        self._cerrando = False             # True durante el cierre controlado (ADR-0006)
         self._store = store
 
     def _guardar(self, job):
@@ -85,6 +90,8 @@ class JobManager:
             pass
 
     def submit(self, argv, request_id=None):
+        if self._cerrando:
+            raise Cerrando("el servicio se esta cerrando; no acepta trabajos nuevos")
         if not isinstance(argv, (list, tuple)) or not argv:
             raise ValueError("argv debe ser una lista no vacia de strings, p. ej. ['sleep', '5']")
         if not all(isinstance(a, str) and a for a in argv):
@@ -125,6 +132,8 @@ class JobManager:
 
     def _arrancar_de_la_cola(self):
         """Saca de la cola, en orden, mientras haya lugar para correr."""
+        if self._cerrando:   # en el cierre la cola se conserva para el siguiente arranque
+            return
         while self._cola and len(self._procs) < self.max_jobs:
             job = self._jobs[self._cola.popleft()]
             if job.state != QUEUED:   # se cancelo mientras esperaba
@@ -210,6 +219,45 @@ class JobManager:
                 pass
             self._cancelando[job_id] = float("inf")   # se envia una sola vez
             bitacora.evento("escalamiento", job_id, senal="SIGKILL")
+
+    def cerrar(self, forzar=None):
+        """Cierre controlado (ADR-0006, RF-15, RNF-25, RNF-30).
+
+        Deja de arrancar trabajos, cancela los RUNNING con el mismo mecanismo que
+        cancel() (SIGTERM al grupo y, a los 5 s, SIGKILL) y espera a recogerlos, de
+        modo que no quede ningun hijo vivo. Los QUEUED no se tocan: ya estan guardados
+        y ADR-0005 los reanuda en el siguiente arranque.
+
+        forzar: funcion sin argumentos; si devuelve True (segundo Ctrl+C) se envia
+        SIGKILL de inmediato a lo que siga vivo.
+        Devuelve {"cancelados": n, "en_cola": m}.
+        """
+        self._cerrando = True
+        self.poll()
+        en_cola = len([i for i in self._cola if self._jobs[i].state == QUEUED])
+        cancelados = 0
+        for job_id in list(self._procs):
+            try:
+                self.cancel(job_id)
+                cancelados += 1
+            except (KeyError, ValueError):
+                pass   # ya habia terminado por su cuenta
+
+        limite = time.monotonic() + ESPERA_SIGKILL + 5.0   # SIGKILL a los 5 s + margen para recogerlos
+        while self._procs:
+            if forzar is not None and forzar():
+                for job_id in self._cancelando:
+                    self._cancelando[job_id] = 0.0
+            self._escalar()
+            self.poll()
+            if not self._procs:
+                break
+            if time.monotonic() >= limite:
+                bitacora.error("cierre_incompleto", motivo="procesos que no terminaron",
+                               pendientes=len(self._procs))
+                break
+            time.sleep(0.05)
+        return {"cancelados": cancelados, "en_cola": en_cola}
 
     def cancel(self, job_id):
         job = self._jobs.get(job_id)
