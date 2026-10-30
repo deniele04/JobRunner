@@ -67,6 +67,7 @@ class BitacoraTest(unittest.TestCase):
     def test_cancelar_registra_el_evento_con_su_codigo(self):
         job = self.mgr.submit(["sleep", "30"])
         self.mgr.cancel(job["id"])
+        self.esperar_estado_final(job["id"])
 
         self.assertTrue(any(
             "cancelado job=" + job["id"] + " codigo=-15" in linea for linea in self.lineas()

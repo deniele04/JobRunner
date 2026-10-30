@@ -12,6 +12,7 @@ import tempfile
 import time
 import unittest
 
+from jobrunner import bitacora
 from jobrunner.executor import (
     DEFAULT_MAX_JOBS, DEFAULT_QUEUE_SIZE, ColaLlena, JobManager,
 )
@@ -285,6 +286,124 @@ class RecuperacionColaTest(ColaBase):
         finally:
             self.mgr = None
             store.close()
+
+
+class CancelarSinBloqueoTest(ColaBase):
+    def test_cancel_responde_de_inmediato_y_el_trabajo_termina_en_canceled(self):
+        self.nuevo()
+        job = self.mgr.submit(["sleep", "30"])["id"]
+        inicio = time.monotonic()
+        respuesta = self.mgr.cancel(job)
+        self.assertLess(time.monotonic() - inicio, 1.0)
+        self.assertEqual(respuesta["state"], RUNNING)      # aun no se recoge el proceso
+        self.assertTrue(self.esperar(lambda: self.mgr.get(job)["state"] == CANCELED, timeout=3))
+        final = self.mgr.get(job)
+        self.assertEqual(final["exit_code"], -15)
+        self.assertIsNotNone(final["finished_at"])
+        self.assertNotIn(job, self.mgr._cancelando)
+
+    def test_cancelar_libera_el_lugar_para_el_siguiente_de_la_cola(self):
+        self.nuevo(max_jobs=1, queue_size=2)
+        a = self.mgr.submit(["sleep", "30"])["id"]
+        b = self.mgr.submit(["sleep", "30"])["id"]
+        self.mgr.cancel(a)
+        self.assertTrue(self.esperar(lambda: self.mgr.get(b)["state"] == RUNNING, timeout=3))
+        self.assertEqual(self.mgr.get(a)["state"], CANCELED)
+
+    def test_un_trabajo_que_termino_solo_no_se_marca_canceled(self):
+        self.nuevo()
+        job = self.mgr.submit(["true"])["id"]
+        time.sleep(0.3)   # termino, pero nadie lo ha recogido
+        with self.assertRaises(ValueError):
+            self.mgr.cancel(job)
+        self.assertEqual(self.mgr.get(job)["state"], SUCCEEDED)
+
+
+class DobleCancelacionTest(ColaBase):
+    def test_la_segunda_cancelacion_no_cambia_nada(self):            # TC-017
+        self.nuevo()
+        job = self.mgr.submit(["sleep", "30"])["id"]
+        primera = self.mgr.cancel(job)
+        limite = self.mgr._cancelando[job]
+        segunda = self.mgr.cancel(job)
+        self.assertEqual(primera["state"], RUNNING)
+        self.assertEqual(segunda, primera)                          # mismo estado real
+        self.assertEqual(self.mgr._cancelando[job], limite)         # no se reinicia el plazo
+        self.assertTrue(self.esperar(lambda: self.mgr.get(job)["state"] == CANCELED, timeout=3))
+
+    def test_dos_cancelaciones_seguidas_dejan_un_solo_estado_final(self):   # TC-017
+        self.nuevo()
+        job = self.mgr.submit(["sleep", "30"])["id"]
+        self.mgr.cancel(job)
+        self.mgr.cancel(job)
+        self.assertTrue(self.esperar(lambda: self.mgr.get(job)["state"] == CANCELED, timeout=3))
+        self.assertEqual(self.mgr.get(job)["exit_code"], -15)
+
+    def test_cancelar_un_trabajo_ya_cancelado_da_error_y_no_lo_cambia(self):  # TC-017
+        self.nuevo()
+        job = self.mgr.submit(["sleep", "30"])["id"]
+        self.mgr.cancel(job)
+        self.assertTrue(self.esperar(lambda: self.mgr.get(job)["state"] == CANCELED, timeout=3))
+        antes = self.mgr.get(job)
+        with self.assertRaises(ValueError):
+            self.mgr.cancel(job)
+        self.assertEqual(self.mgr.get(job), antes)
+
+    def test_cancelar_un_id_inexistente_no_afecta_a_los_demas(self):          # TC-017
+        self.nuevo()
+        job = self.mgr.submit(["sleep", "30"])["id"]
+        with self.assertRaises(KeyError):
+            self.mgr.cancel("no-existe")
+        self.assertEqual(self.mgr.get(job)["state"], RUNNING)
+
+
+class EscalamientoTest(ColaBase):
+    def test_trabajo_que_ignora_sigterm_termina_con_sigkill(self):           # TC-021
+        ruta = bitacora.configurar(self.dir)
+        self.addCleanup(bitacora.cerrar)
+        self.nuevo()
+        job = self.mgr.submit(["sh", "-c", 'trap "" TERM; sleep 60'])["id"]
+        time.sleep(0.3)   # que el shell instale el trap
+
+        inicio = time.monotonic()
+        respuesta = self.mgr.cancel(job)
+        self.assertLess(time.monotonic() - inicio, 1.0)              # no bloquea
+        self.assertEqual(respuesta["state"], RUNNING)
+
+        time.sleep(1.0)
+        self.mgr.tick()
+        self.assertEqual(self.mgr.get(job)["state"], RUNNING)        # antes de los 5 s sigue vivo
+
+        self.assertTrue(self.esperar(lambda: self.mgr.get(job)["state"] == CANCELED, timeout=6))
+        self.assertLessEqual(time.monotonic() - inicio, 6.5)
+        self.assertEqual(self.mgr.get(job)["exit_code"], -9)
+
+        eventos = [l.split()[2] for l in ruta.read_text(encoding="utf-8").splitlines()
+                   if "job=" + job in l]
+        self.assertEqual(eventos, ["recibido", "iniciado", "cancelacion_solicitada",
+                                   "escalamiento", "cancelado"])
+
+    def test_el_escalamiento_no_bloquea_a_los_demas_trabajos(self):          # TC-021
+        self.nuevo(max_jobs=2, queue_size=2)
+        terco = self.mgr.submit(["sh", "-c", 'trap "" TERM; sleep 60'])["id"]
+        otro = self.mgr.submit(["sleep", "30"])["id"]
+        time.sleep(0.3)
+        self.mgr.cancel(terco)
+        inicio = time.monotonic()
+        self.assertEqual(self.mgr.get(otro)["state"], RUNNING)
+        self.mgr.cancel(otro)                                        # responde mientras el otro escala
+        self.assertLess(time.monotonic() - inicio, 1.0)
+        self.assertTrue(self.esperar(lambda: self.mgr.get(otro)["state"] == CANCELED, timeout=3))
+        self.assertEqual(self.mgr.get(terco)["state"], RUNNING)      # el terco aun espera su SIGKILL
+
+    def test_un_trabajo_que_obedece_sigterm_no_escala(self):
+        ruta = bitacora.configurar(self.dir)
+        self.addCleanup(bitacora.cerrar)
+        self.nuevo()
+        job = self.mgr.submit(["sleep", "30"])["id"]
+        self.mgr.cancel(job)
+        self.assertTrue(self.esperar(lambda: self.mgr.get(job)["state"] == CANCELED, timeout=3))
+        self.assertNotIn("escalamiento", ruta.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

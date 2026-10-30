@@ -14,6 +14,7 @@ VALID_STATES = {QUEUED, RUNNING, SUCCEEDED, FAILED, CANCELED}
 
 DEFAULT_MAX_JOBS = 3      # trabajos corriendo a la vez (ADR-0004)
 DEFAULT_QUEUE_SIZE = 10   # trabajos esperando en la cola (ADR-0004)
+ESPERA_SIGKILL = 5.0      # segundos entre SIGTERM y SIGKILL al cancelar (ADR-0006)
 
 
 class ColaLlena(Exception):
@@ -34,6 +35,7 @@ class JobManager:
         self._jobs = {}    # id -> Job
         self._procs = {}   # id -> subprocess.Popen
         self._cola = collections.deque()   # ids en QUEUED, en orden de llegada
+        self._cancelando = {}              # id -> instante (monotonic) del SIGKILL
         self._store = store
 
     def _guardar(self, job):
@@ -173,18 +175,41 @@ class JobManager:
             if code < 0:
                 job.error = signal.Signals(-code).name
             if job.state == RUNNING:
-                job.transition(SUCCEEDED if code == 0 else FAILED)
-                bitacora.evento("terminado", job_id, estado=job.state, codigo=code)
+                if job_id in self._cancelando:
+                    job.transition(CANCELED)
+                    bitacora.evento("cancelado", job_id, codigo=code)
+                else:
+                    job.transition(SUCCEEDED if code == 0 else FAILED)
+                    bitacora.evento("terminado", job_id, estado=job.state, codigo=code)
+            self._cancelando.pop(job_id, None)
             self._guardar(job)
 
     def tick(self):
         """Ciclo del servidor, cada 0.5 s (ADR-0004). Nunca bloquea.
 
         1. poll(): recoge los procesos que terminaron.
-        2. arranca trabajos de la cola mientras haya lugar.
+        2. escalamiento: SIGKILL a los cancelados que siguen vivos tras 5 s.
+        3. arranca trabajos de la cola mientras haya lugar.
         """
         self.poll()
+        self._escalar()
         self._arrancar_de_la_cola()
+
+    def _escalar(self):
+        """SIGKILL al grupo de los trabajos cancelados que ignoraron SIGTERM (ADR-0006)."""
+        ahora = time.monotonic()
+        for job_id, limite in list(self._cancelando.items()):
+            if ahora < limite:
+                continue
+            proc = self._procs.get(job_id)
+            if proc is None or proc.poll() is not None:
+                continue
+            try:
+                os.killpg(proc.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            self._cancelando[job_id] = float("inf")   # se envia una sola vez
+            bitacora.evento("escalamiento", job_id, senal="SIGKILL")
 
     def cancel(self, job_id):
         job = self._jobs.get(job_id)
@@ -205,24 +230,19 @@ class JobManager:
             self._guardar(job)
             return job.to_dict()
 
+        # Segunda cancelacion: devuelve el estado real, sin reenviar la senal
+        # ni mover el plazo del SIGKILL (RF-26).
+        if job_id in self._cancelando:
+            return job.to_dict()
+
+        # RUNNING: SIGTERM al grupo y se responde de inmediato (ADR-0006). El
+        # trabajo sigue en RUNNING hasta que poll() recoja su proceso; entonces
+        # pasa a CANCELED.
         proc = self._procs[job_id]
         try:
             os.killpg(proc.pid, signal.SIGTERM)
         except ProcessLookupError:
             pass
-        try:
-            proc.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            try:
-                os.killpg(proc.pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
-            proc.wait()
-
-        del self._procs[job_id]
-        job.exit_code = proc.returncode
-        job.finished_at = now_iso()
-        job.transition(CANCELED)
-        bitacora.evento("cancelado", job_id, codigo=job.exit_code)
-        self._guardar(job)
+        self._cancelando[job_id] = time.monotonic() + ESPERA_SIGKILL
+        bitacora.evento("cancelacion_solicitada", job_id)
         return job.to_dict()

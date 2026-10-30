@@ -122,7 +122,12 @@ class CicloDeVidaTest(unittest.TestCase):
 
     def test_cancelar_trabajo_en_ejecucion(self):
         job = self.mgr.submit(["sleep", "30"])
-        cancelado = self.mgr.cancel(job["id"])
+        respuesta = self.mgr.cancel(job["id"])
+        # cancel() responde de inmediato (ADR-0006): sigue RUNNING hasta que
+        # poll() recoge el proceso.
+        self.assertEqual(respuesta["state"], RUNNING)
+
+        cancelado = self.esperar_estado_final(job["id"])
         self.assertEqual(cancelado["state"], CANCELED)
         self.assertIsNotNone(cancelado["finished_at"])
         self.assertNotIn(job["id"], self.mgr._procs)
@@ -137,6 +142,7 @@ class CicloDeVidaTest(unittest.TestCase):
     def test_trabajo_cancelado_no_cambia_de_estado_en_poll(self):
         job = self.mgr.submit(["sleep", "30"])
         self.mgr.cancel(job["id"])
+        self.esperar_estado_final(job["id"])
         self.mgr.poll()
         self.assertEqual(self.mgr.get(job["id"])["state"], CANCELED)
 
