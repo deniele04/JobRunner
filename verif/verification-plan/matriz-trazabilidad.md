@@ -103,12 +103,6 @@ Los siguientes códigos no existen entre RF-01 a RF-24 ni RNF-01 a RNF-26. Hay q
 | DEF-003 | **El CLI devuelve código de salida 1 en consultas exitosas.** `print_response()` (`src/jobrunner/cli.py`) evalúa `"error" in response`; el JSON de todo trabajo trae la clave `error` (con valor `null`), así que `submit` y `status` de un trabajo existente terminan con código 1 aunque no haya error. `list` no se ve afectado. Incumple RF-17. Corrección sugerida: `response.get("error")`. | TC-001, TC-004 | Abierto. Pruebas que lo detectan: `test_submit_exitoso_termina_con_codigo_0`, `test_status_y_list_exitosos_terminan_con_codigo_0` |
 | DEF-004 | **Zombis de trabajos terminados que nadie consulta.** `JobManager.poll()` solo se llama desde `status`, `list` y `cancel`; un trabajo que termina y no se consulta queda como proceso zombi (`[true] <defunct>`) hasta la siguiente consulta. Afecta RF-29 y RNF-33. La corrección prevista es el ciclo de 0,5 s del servidor (minuta 20/10, ADR-0004). | TC-020, TC-024 | Cerrado. El ciclo de 0,5 s del servidor (`tick()`, ADR-0004) recoge los procesos terminados; `test_servidor_inactivo_no_deja_zombis` pasa sin marca |
 
-## Comportamiento aún no implementado (fallos esperados)
-
-| Prueba (`expectedFailure`) | Motivo | Cuándo se quita la marca |
-|---|---|---|
-| `test_cierre_ordenado_no_deja_huerfanos` | Al recibir Ctrl+C el servidor no cancela los trabajos `RUNNING` y el hijo queda huérfano (RF-15, RNF-25, RNF-30; TC-009). Lo resuelve el cierre controlado de ADR-0006. | Al implementar ADR-0006: la prueba pasará y `unittest` avisará de un «unexpected success» |
-
 ## Pendiente de integración
 
 Los PR #32 (servidor y CLI) y #34 (corrección de DEF-001 y DEF-002) ya están en `main`.
@@ -116,7 +110,6 @@ Los PR #32 (servidor y CLI) y #34 (corrección de DEF-001 y DEF-002) ya están e
 | Pendiente | Efecto en la verificación |
 |---|---|
 | Corregir DEF-003 | TC-001 y TC-004 pasan a PASS al repetir `verify.sh`. |
-| Cierre controlado (ADR-0006) | Se quita la marca `expectedFailure` restante de `verif/integration/test_procesos.py` (`test_cierre_ordenado_no_deja_huerfanos`). |
 
 ## TC citados en los ADR y fuera del Avance 1
 

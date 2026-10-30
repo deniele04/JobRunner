@@ -4,9 +4,8 @@ Primero se comprueba que el script detecta bien lo que debe detectar y no da
 falsos positivos. Después se usa sobre el servidor real (RF-29, RNF-25, RNF-30,
 RNF-33; TC-009, TC-020, TC-024).
 
-La última prueba describe comportamiento que el servidor todavía no tiene (ver
-su docstring). Va marcada `expectedFailure` para que la suite siga en verde y
-avise (`unexpected success`) el día que se implemente, momento de quitar la marca.
+El cierre controlado con más detalle (SIGTERM, cola, socket, escalamiento a
+SIGKILL) está en test_tc009_cierre_controlado.py.
 """
 import os
 import re
@@ -126,12 +125,11 @@ class TestProcesosConServidor(BaseConLineaBase):
         codigo, salida, _ = self.revisar()
         self.assertEqual(codigo, 0, salida)
 
-    @unittest.expectedFailure
     def test_cierre_ordenado_no_deja_huerfanos(self):
-        """RF-15 / RNF-25 / RNF-30 (TC-009). Pendiente de implementar: ADR-0006.
+        """RF-15 / RNF-25 / RNF-30 (TC-009). Cierre controlado de ADR-0006.
 
-        Hoy el servidor, al recibir Ctrl+C, no cancela los trabajos RUNNING y el
-        `sleep` queda huérfano. Con el cierre controlado de ADR-0006 debe terminar.
+        Al recibir Ctrl+C el servidor cancela los trabajos RUNNING; no debe quedar
+        ningún `sleep` huérfano.
         """
         self.servidor.enviar("--", "sleep", "300")
         self.servidor.detener()
