@@ -94,9 +94,13 @@ verif/scripts/procesos.sh revisar --base base.txt [--patron 'sleep 300']
 - **HUERFANO:** líder de sesión (los trabajos se lanzan con `start_new_session`) adoptado por PID 1, es decir, su padre murió.
 - Código de salida: 0 limpio, 1 hallazgos, 2 uso incorrecto. Detalle en la cabecera del script.
 
+Al terminar una ejecución formal, `python3 verif/scripts/actualizar_matriz.py <run-id>` copia el estado de cada TC (de `resumen.md`) a la [matriz de trazabilidad](matriz-trazabilidad.md): la columna Estado de los casos y la columna Resultado de cada RF y RNF (el peor estado de sus casos).
+
 Sin `run-id` se usa la fecha y hora (`AAAAMMDD-HHMMSS`). Para una ejecución formal conviene un nombre explícito, por ejemplo `20261002-avance1`, y confirmar los cambios antes de correrla, porque el clon limpio parte del último commit. Solo las ejecuciones formales se agregan al repositorio.
 
-## 7. Casos de prueba del Avance 1
+## 7. Casos de prueba
+
+El catálogo completo (TC-001 a TC-025, con los requisitos que cubre cada uno) está en la [matriz de trazabilidad](matriz-trazabilidad.md); `verify.sh` calcula el estado de cada caso. Los del Avance 1:
 
 | TC | Título | Nivel | Automatización |
 |---|---|---|---|
