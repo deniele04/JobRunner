@@ -1,11 +1,11 @@
 # ADR-0004: Cola, límite de concurrencia y saturación
 
-**Estado:** Propuesto
+**Estado:** Aceptado
 **Fecha:** 29/10/2026
 **Responsable(s):** Juan José Rentería Haro
-**Issue relacionado:** #por asignar
-**Aprobado en:** PR pendiente
-**Historial:** Propuesto 29/10/2026. Recoge las decisiones 1, 2 y 3 de la minuta del 20/10/2026 (Avance 2). La cancelación sin bloqueo y el escalamiento que usan este ciclo se deciden en el [ADR-0006](0006-cancelacion-escalamiento-y-cierre-controlado.md).
+**Issue relacionado:** #63, #65
+**Aprobado en:** PR #73
+**Historial:** Propuesto 29/10/2026. Recoge las decisiones 1, 2 y 3 de la minuta del 20/10/2026 (Avance 2). La cancelación sin bloqueo y el escalamiento que usan este ciclo se deciden en el [ADR-0006](0006-cancelacion-escalamiento-y-cierre-controlado.md). Aceptado (30/10/2026): implementado en los PR #66 (cola, límite y rechazo) y #67 (cancelación sin bloqueo sobre el mismo ciclo).
 
 ## Contexto
 
