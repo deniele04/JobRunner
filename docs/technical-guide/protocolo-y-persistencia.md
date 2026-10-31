@@ -53,7 +53,7 @@ Importante: el campo `error` de un trabajo (`"error": null` o un texto como `SIG
 - Si `submit` trae un `request_id` que ya existe, el servidor devuelve el trabajo existente y no crea otro proceso. Se registra el evento `duplicado` en la bitácora.
 - Una solicitud recibida completa se aplica aunque el cliente se desconecte antes de leer la respuesta. El cliente puede confirmarla con `status`, `list` o reenviando el mismo `request_id`.
 - Sin `request_id`, cada `submit` crea un trabajo nuevo.
-- Desde el CLI: `python3 -m jobrunner.cli submit --request-id <texto> <comando>`.
+- Desde el CLI: `royito submit --request-id <texto> <comando>`.
 
 ## 2. Persistencia
 

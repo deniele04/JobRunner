@@ -63,22 +63,24 @@ Abre **otra** terminal y prepárala una vez:
 
 ```bash
 cd ~/JobRunner
-export PYTHONPATH=src
+export PATH="$PWD/scripts:$PATH"
 ```
+
+Esto habilita el comando `royito` en esa terminal. (Funciona igual con `./scripts/royito`, o con `PYTHONPATH=src python3 -m jobrunner.cli` si prefieres el comando largo.)
 
 | Para… | Comando |
 |---|---|
-| Enviar un trabajo | `python3 -m jobrunner.cli submit -- <comando> [argumentos]` |
-| Consultar un trabajo | `python3 -m jobrunner.cli status <id>` |
-| Listar todos los trabajos | `python3 -m jobrunner.cli list` |
-| Listar por estado | `python3 -m jobrunner.cli list --state <ESTADO>` |
-| Cancelar un trabajo | `python3 -m jobrunner.cli cancel <id>` |
-| Ver la ayuda | `python3 -m jobrunner.cli --help` |
+| Enviar un trabajo | `royito submit -- <comando> [argumentos]` |
+| Consultar un trabajo | `royito status <id>` |
+| Listar todos los trabajos | `royito list` |
+| Listar por estado | `royito list --state <ESTADO>` |
+| Cancelar un trabajo | `royito cancel <id>` |
+| Ver la ayuda | `royito --help` |
 
 ### 4.1 Enviar un trabajo
 
 ```bash
-python3 -m jobrunner.cli submit -- sh -c 'echo hola; exit 3'
+royito submit -- sh -c 'echo hola; exit 3'
 ```
 
 El servicio responde con los datos del trabajo. Copia el valor de `"id"`: lo necesitas para consultarlo o cancelarlo.
@@ -88,7 +90,7 @@ Escribe siempre `--` antes del comando. Sin él, las opciones del comando (por e
 ### 4.2 Consultar un trabajo
 
 ```bash
-python3 -m jobrunner.cli status <id>
+royito status <id>
 ```
 
 | Campo | Significado |
@@ -106,8 +108,8 @@ python3 -m jobrunner.cli status <id>
 ### 4.3 Listar trabajos
 
 ```bash
-python3 -m jobrunner.cli list
-python3 -m jobrunner.cli list --state FAILED
+royito list
+royito list --state FAILED
 ```
 
 El filtro acepta mayúsculas o minúsculas: `QUEUED`, `RUNNING`, `SUCCEEDED`, `FAILED` o `CANCELED`.
@@ -115,7 +117,7 @@ El filtro acepta mayúsculas o minúsculas: `QUEUED`, `RUNNING`, `SUCCEEDED`, `F
 ### 4.4 Cancelar un trabajo
 
 ```bash
-python3 -m jobrunner.cli cancel <id>
+royito cancel <id>
 ```
 
 El servicio envía SIGTERM al trabajo y responde de inmediato, así que la respuesta todavía dice `RUNNING`. Consulta con `status`: en unos instantes pasa a `CANCELED`. Si a los 5 segundos sigue vivo, el servicio lo obliga a terminar (SIGKILL).

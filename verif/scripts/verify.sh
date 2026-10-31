@@ -102,7 +102,11 @@ tc001="$(estado_pruebas \
   test_dos_submit_devuelven_ids_distintos \
   test_status_reconoce_el_id_devuelto \
   test_submit_sin_comando_se_rechaza \
-  test_solicitud_mal_formada_no_tumba_al_servicio)"
+  test_solicitud_mal_formada_no_tumba_al_servicio \
+  test_la_ayuda_lleva_el_nombre_royito \
+  test_royito_envia_y_consulta_desde_cualquier_carpeta \
+  test_respeta_la_variable_jobrunner_socket \
+  test_funciona_a_traves_de_un_enlace_simbolico)"
 tc004="$(estado_pruebas \
   test_status_inmediato_es_running \
   test_list_incluye_el_trabajo_con_su_estado \
@@ -166,10 +170,20 @@ tc018="$(estado_pruebas \
   test_sin_request_id_cada_envio_es_un_trabajo_nuevo \
   test_request_id_repetido_es_rechazado_y_no_cambia_nada \
   test_trabajos_sin_request_id_no_chocan)"
-# TC-019, TC-020 y TC-024 (Josué): sin nombres de prueba todavía, así que salen BLOCKED.
-tc019="$(estado_pruebas)"
-tc020="$(estado_pruebas)"
-tc024="$(estado_pruebas)"
+tc019="$(estado_pruebas \
+  test_cierra_la_conexion_sin_enviar_nada \
+  test_cierra_sin_leer_la_respuesta_y_la_solicitud_se_aplica_una_vez \
+  test_cierra_a_mitad_de_una_solicitud \
+  test_rafaga_de_desconexiones_no_agota_los_descriptores_del_servidor)"
+tc020="$(estado_pruebas \
+  test_kill_9_al_trabajo_lo_deja_failed_con_diagnostico \
+  test_kill_15_externo_lo_deja_failed_con_sigterm \
+  test_los_demas_trabajos_siguen_en_ejecucion \
+  test_el_lugar_liberado_lo_ocupa_el_siguiente_de_la_cola \
+  test_trabajo_que_termina_sin_que_nadie_lo_consulte_no_queda_zombi)"
+tc024="$(estado_pruebas \
+  test_oleadas_de_trabajos_cortos_no_dejan_procesos_ni_fugas \
+  test_saturacion_y_cancelacion_masiva_no_dejan_procesos)"
 tc021="$(estado_pruebas \
   test_trabajo_que_ignora_sigterm_termina_con_sigkill \
   test_el_escalamiento_no_bloquea_a_los_demas_trabajos)"
@@ -209,11 +223,11 @@ conocidos="$(awk -F'\t' '$1 == "XFAIL" { n++ } END { print n + 0 }' "$OUT/unit-r
   echo "| TC-016 | $tc016 | unittest.log, unit-resultados.tsv |"
   echo "| TC-017 | $tc017 | unittest.log, unit-resultados.tsv |"
   echo "| TC-018 | $tc018 | unittest.log, unit-resultados.tsv |"
-  echo "| TC-019 | $tc019 | sin pruebas todavía |"
-  echo "| TC-020 | $tc020 | sin pruebas todavía |"
+  echo "| TC-019 | $tc019 | unittest.log, unit-resultados.tsv |"
+  echo "| TC-020 | $tc020 | unittest.log, unit-resultados.tsv |"
   echo "| TC-021 | $tc021 | unittest.log, unit-resultados.tsv |"
   echo "| TC-022 | $tc022 | unittest.log, unit-resultados.tsv |"
-  echo "| TC-024 | $tc024 | sin pruebas todavía |"
+  echo "| TC-024 | $tc024 | unittest.log, unit-resultados.tsv |"
   echo "| TC-025 | $tc025 | unittest.log, unit-resultados.tsv |"
   echo "| Sin zombis ni huérfanos tras las pruebas | $limpieza | procesos.log |"
   echo

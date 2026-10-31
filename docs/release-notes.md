@@ -24,9 +24,9 @@
     cd JobRunner
     ./scripts/setup.sh
     ./scripts/run.sh                    # en una terminal
-    export PYTHONPATH=src               # en otra terminal
-    python3 -m jobrunner.cli submit -- sleep 10
-    python3 -m jobrunner.cli list
+    export PATH="$PWD/scripts:$PATH"    # en otra terminal (habilita el comando royito)
+    royito submit -- sleep 10
+    royito list
     ./scripts/test.sh                   # pruebas y evidencia en verif/results/
 
 ### Verificación

@@ -20,7 +20,7 @@ Detalle de responsabilidades en [`project-management/ROLES.md`](project-manageme
 ## Arquitectura (resumen)
 
 - **Servicio (`jobrunner.server`)**: proceso que recibe solicitudes, valida, asigna un ID a cada trabajo, lo ejecuta como proceso hijo y controla su ciclo de vida.
-- **Cliente (`jobrunner.cli`)**: comandos `submit`, `status`, `list` y `cancel`.
+- **Cliente (`royito`, módulo `jobrunner.cli`)**: comandos `submit`, `status`, `list` y `cancel`.
 - **Comunicación**: socket Unix con mensajes JSON de una línea ([ADR-0003](docs/decisions/0003-mecanismo-de-comunicacion.md)).
 - **Estados de un trabajo**: `QUEUED → RUNNING → SUCCEEDED | FAILED | CANCELED`.
 - **Persistencia**: SQLite, a partir del Hito 2 ([ADR-0002](docs/decisions/0002-modelo-de-persistencia.md)).
@@ -65,16 +65,18 @@ En una terminal, iniciar el servicio:
 ./scripts/run.sh
 ```
 
-En otra terminal, desde la raíz del repositorio, usar el cliente:
+En otra terminal, desde la raíz del repositorio, usar el cliente `royito` (se prepara una sola vez por terminal):
 
 ```bash
-export PYTHONPATH=src
-python3 -m jobrunner.cli submit -- sleep 10
-python3 -m jobrunner.cli status <id>
-python3 -m jobrunner.cli list
-python3 -m jobrunner.cli cancel <id>
-python3 -m jobrunner.cli --help
+export PATH="$PWD/scripts:$PATH"
+royito submit -- sleep 10
+royito status <id>
+royito list
+royito cancel <id>
+royito --help
 ```
+
+`royito` es un lanzador de `scripts/royito`; equivale a `PYTHONPATH=src python3 -m jobrunner.cli` y sigue funcionando de esa forma.
 
 Para detener el servicio: `Ctrl+C` o `SIGTERM`. El cierre es controlado: deja de aceptar solicitudes, cancela los trabajos en ejecución, conserva la cola para el siguiente arranque y elimina el socket (un segundo `Ctrl+C` fuerza el cierre inmediato).
 
