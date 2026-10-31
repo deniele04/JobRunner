@@ -14,7 +14,7 @@ JobRunner está compuesto por tres piezas:
 
 El flujo completo de un comando submit es el siguiente:
 
-1. El usuario corre python3 -m jobrunner.cli submit -- sleep 5.
+1. El usuario corre royito submit -- sleep 5.
 
 2. CLI arma el JSON {"cmd": "submit", "argv": ["sleep", "5"]} y lo envía por el socket Unix al servidor.
 

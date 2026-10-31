@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# royito: cliente de línea de comandos de JobRunner.
+#
+#   royito submit -- sleep 10      royito status <id>
+#   royito list [--state ESTADO]   royito cancel <id>      royito --help
+#
+# Equivale a «python3 -m jobrunner.cli» pero sin tener que escribir PYTHONPATH ni
+# estar en la raíz del repositorio. Para usarlo como `royito` desde cualquier
+# carpeta, agrega scripts/ al PATH:  export PATH="<repositorio>/scripts:$PATH"
+# Si no se indica otro con --socket o JOBRUNNER_SOCKET, usa el mismo socket que
+# ./scripts/run.sh (<repositorio>/data/jobrunner.sock).
+set -euo pipefail
+ORIGEN="$(readlink -f "${BASH_SOURCE[0]}")"
+RAIZ="$(cd "$(dirname "$ORIGEN")/.." && pwd)"
+export PYTHONPATH="$RAIZ/src${PYTHONPATH:+:$PYTHONPATH}"
+export JOBRUNNER_SOCKET="${JOBRUNNER_SOCKET:-$RAIZ/data/jobrunner.sock}"
+exec python3 -m jobrunner.cli "$@"

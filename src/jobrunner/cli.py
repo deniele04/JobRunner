@@ -57,8 +57,8 @@ def cmd_cancel(args):
 
 def build_parser():
     parser = argparse.ArgumentParser(
-        prog="jobrunner",
-        description="Cliente de linea de comandos para JobRunner.",
+        prog="royito",
+        description="royito: cliente de linea de comandos para JobRunner.",
     )
     parser.add_argument(
         "--socket", default=DEFAULT_SOCKET_PATH,
