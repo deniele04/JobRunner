@@ -263,6 +263,13 @@ class JobManager:
         job = self._jobs.get(job_id)
         if job is None:
             raise KeyError("No existe el trabajo " + str(job_id))
+        # Segunda cancelacion (ADR-0006, regla 5): si el trabajo ya se esta
+        # cancelando o ya quedo CANCELED, se devuelve su estado real sin
+        # modificarlo ni reenviar senales. Se decide ANTES de recoger procesos para
+        # que la respuesta no dependa de si el proceso ya murio o no.
+        if job_id in self._cancelando or job.state == CANCELED:
+            return job.to_dict()
+
         self.poll()
         if job.state in FINAL_STATES:
             raise ValueError("El trabajo " + str(job_id) + " ya termino en estado " + job.state + "; no se puede cancelar")
@@ -276,11 +283,6 @@ class JobManager:
             job.finished_at = now_iso()
             bitacora.evento("cancelado", job_id, estado_previo=QUEUED)
             self._guardar(job)
-            return job.to_dict()
-
-        # Segunda cancelacion: devuelve el estado real, sin reenviar la senal
-        # ni mover el plazo del SIGKILL (RF-26).
-        if job_id in self._cancelando:
             return job.to_dict()
 
         # RUNNING: SIGTERM al grupo y se responde de inmediato (ADR-0006). El

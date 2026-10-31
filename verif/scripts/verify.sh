@@ -149,9 +149,11 @@ tc016="$(estado_pruebas \
   test_el_rechazo_no_afecta_a_los_trabajos_aceptados \
   test_submit_con_cola_llena_responde_error_y_no_crea_trabajo)"
 tc017="$(estado_pruebas \
-  test_la_segunda_cancelacion_no_cambia_nada \
+  test_la_segunda_cancelacion_devuelve_el_estado_sin_cambiar_nada \
+  test_la_segunda_cancelacion_no_falla_aunque_el_proceso_ya_murio \
   test_dos_cancelaciones_seguidas_dejan_un_solo_estado_final \
-  test_cancelar_un_trabajo_ya_cancelado_da_error_y_no_lo_cambia \
+  test_cancelar_un_trabajo_ya_cancelado_devuelve_su_estado_sin_cambiarlo \
+  test_cancelar_un_trabajo_que_termino_solo_sigue_dando_error \
   test_cancelar_un_id_inexistente_no_afecta_a_los_demas)"
 tc018="$(estado_pruebas \
   test_servidor_request_id_repetido_devuelve_el_mismo_trabajo \
