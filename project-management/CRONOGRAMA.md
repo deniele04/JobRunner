@@ -46,17 +46,17 @@ Las tareas de cada integrante y sus fechas están en la minuta del 20/10/2026 y 
 | Dom 25/10 – Lun 26/10 | Cola con límite configurable y rechazo con cola llena; persistencia con SQLite; **reunión de seguimiento** |
 | Mar 27/10 – Mié 28/10 | Recuperación al arrancar y solicitudes duplicadas; cierre controlado; casos de integración y robustez; incidente INC-001; guías técnica y de usuario |
 | Jue 29/10 | Persistencia conectada al ejecutor, recuperación al arrancar y `request_id`; correcciones de DEF-003 e INC-001; ADR-0007, guía de usuario e incidente INC-001; **reunión de seguimiento** |
-| Vie 30/10 | Cola, límite de concurrencia y cancelación sin bloqueo; cierre controlado; casos de integración y robustez en `verify.sh`; matriz de trazabilidad; AI-LOG; congelamiento de `main` a las 18:00; ejecución formal y evidencia; release notes y tag `v0.2.0`; **entrega del Avance 2** |
+| Vie 30/10 | Cola, límite de concurrencia y cancelación sin bloqueo; cierre controlado; casos de integración y robustez en `verify.sh`; matriz de trazabilidad; AI-LOG; ejecución formal y evidencia; release notes y tag `v0.2.0`; **entrega del Avance 2** |
 | Sáb 31/10 – Lun 02/11 | Ensayo: cada integrante presenta su parte técnica y su evidencia |
 | Mar 03/11 | **RT-2 presencial** |
 
-Por acuerdo de la minuta del 29/10/2026, el congelamiento de `main` pasó del 29/10 al 30/10 a las 18:00, para integrar en ese día la cola, la cancelación sin bloqueo, el cierre controlado y los casos de robustez.
+Por acuerdo de la minuta del 29/10/2026, la integración de la cola, la cancelación sin bloqueo, el cierre controlado y los casos de robustez, junto con la ejecución formal de `verify.sh`, se concentró el 30/10.
 
 ## Riesgos identificados
 
 | # | Riesgo | Probabilidad | Impacto | Mitigación | Dueño | Estado |
 |---|---|---|---|---|---|---|
-| 1 | Tiempo insuficiente para el Avance 2, con más alcance que el Avance 1 | Alta | Alto | Decisiones registradas en ADR al inicio; cada integrante con una parte técnica y una evidencia; reuniones de seguimiento el 26/10 y el 29/10; congelamiento acordado el 30/10 a las 18:00 | Daniel Alejandro Huerta Camberos | Mitigado |
+| 1 | Tiempo insuficiente para el Avance 2, con más alcance que el Avance 1 | Alta | Alto | Decisiones registradas en ADR al inicio; cada integrante con una parte técnica y una evidencia; reuniones de seguimiento el 26/10 y el 29/10; orden de integración acordado en la minuta del 29/10 | Daniel Alejandro Huerta Camberos | Mitigado |
 | 2 | Falla la integración entre ejecutor, servidor, persistencia y bitácora | Media | Alto | PR pequeños integrados en el orden de la minuta del 20/10; piezas nuevas en módulos propios (`store.py`, `bitacora.py`); cada pieza con su prueba antes de integrar | Josué Said Delgadillo Gutiérrez | Mitigado: `test.sh` sobre `main` con todas las piezas integradas |
 | 3 | Procesos huérfanos o zombis por mal manejo de señales | Media | Alto | Grupos de procesos (`start_new_session`); revisión de procesos cada 0,5 s (ADR-0004); cierre controlado (ADR-0006); `procesos.sh` para detectarlos | Juan José Rentería Haro | Mitigado: TC-009, TC-020 y TC-024; DEF-004 cerrado |
 | 4 | Un integrante no puede explicar código generado con IA durante la revisión | Media | Alto | Revisión cruzada obligatoria en cada PR; registro en `docs/ai-usage/` y AI-LOG; ensayo de defensa individual antes de cada RT | Diego Armando Durán Hernández | En seguimiento: ensayo de la RT-2 el 02/11 |
@@ -67,7 +67,7 @@ Por acuerdo de la minuta del 29/10/2026, el congelamiento de `main` pasó del 29
 | 9 | El servidor termina ante una desconexión del cliente o un mensaje inválido | Media | Alto | Atrapar los errores de cada conexión; regla de desconexión del ADR-0007; prueba de robustez TC-019 | Josué Said Delgadillo Gutiérrez | Cerrado: INC-001 corregido en el PR #51; TC-019 |
 | 10 | Estados incoherentes por solicitudes concurrentes, duplicadas o cancelaciones | Media | Alto | Atención secuencial y transiciones validadas (ADR-0006 y ADR-0007); revisar el estado real antes de cancelar; pruebas TC-017 y TC-018 | Juan José Rentería Haro | Mitigado: TC-017 y TC-018 |
 | 11 | Pérdida o corrupción de trabajos al reiniciar o ante una falla | Media | Alto | Transacciones de SQLite; al arrancar, los trabajos interrumpidos se marcan y su grupo de procesos se termina (ADR-0005); pruebas TC-007 y TC-022 | Josué Said Delgadillo Gutiérrez | Mitigado: TC-007 y TC-022 |
-| 12 | Pruebas que dependen de tiempos (señales, procesos que terminan rápido) dan resultados distintos entre ejecuciones | Media | Medio | Usar procesos que ignoran SIGTERM cuando la prueba necesita un trabajo vivo; esperas con límite en lugar de pausas fijas; correr `verify.sh` más de una vez antes del congelamiento | Diego Armando Durán Hernández | En seguimiento |
+| 12 | Pruebas que dependen de tiempos (señales, procesos que terminan rápido) dan resultados distintos entre ejecuciones | Media | Medio | Usar procesos que ignoran SIGTERM cuando la prueba necesita un trabajo vivo; esperas con límite en lugar de pausas fijas; correr `verify.sh` más de una vez antes de la ejecución formal | Diego Armando Durán Hernández | En seguimiento |
 
 ## Dependencias conocidas
 
@@ -79,6 +79,6 @@ Por acuerdo de la minuta del 29/10/2026, el congelamiento de `main` pasó del 29
 - La cola, el límite de concurrencia y la cancelación que no espera dependen de la revisión periódica de procesos en el servidor (ADR-0004 y ADR-0006).
 - La recuperación y el `request_id` de las solicitudes duplicadas dependen del módulo de persistencia con SQLite (ADR-0005 y ADR-0007).
 - Los eventos de la bitácora de cada parte dependen de que `bitacora.py` esté integrado primero.
-- La evidencia de concurrencia y recuperación depende de que todas las piezas estén en `main` antes del congelamiento del 30/10 a las 18:00.
-- El tag `v0.2.0` depende de la ejecución formal de `verify.sh` sobre el commit congelado.
+- La evidencia de concurrencia y recuperación depende de que todas las piezas estén en `main` antes de la ejecución formal del 30/10.
+- El tag `v0.2.0` depende de la ejecución formal de `verify.sh` sobre el commit candidato.
 - La operación remota del Hito 3 depende de que el protocolo local ya esté versionado y documentado.
