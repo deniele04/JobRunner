@@ -11,7 +11,7 @@ import threading
 import time
 import unittest
 
-from jobrunner.executor import JobManager
+from jobrunner.executor import JobManager, RequestIdEnUso
 from jobrunner.jobs import CANCELED, FAILED, FINAL_STATES, QUEUED, RUNNING, SUCCEEDED, Job
 from jobrunner.store import Store
 
@@ -162,6 +162,27 @@ class PersistenciaTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.mgr.submit(["true"], request_id=invalido)
         self.assertEqual(self.mgr.list(), [])
+
+    def test_request_id_repetido_marca_duplicado_y_el_primero_no(self):
+        primero = self.mgr.submit(["sleep", "30"], request_id="req-d")
+        segundo = self.mgr.submit(["sleep", "30"], request_id="req-d")
+        self.assertNotIn("duplicado", primero)
+        self.assertTrue(segundo["duplicado"])
+
+    def test_request_id_repetido_con_otro_comando_es_rechazado(self):
+        primero = self.mgr.submit(["sleep", "30"], request_id="req-otro")
+        with self.assertRaises(RequestIdEnUso):
+            self.mgr.submit(["sleep", "999"], request_id="req-otro")
+        self.assertEqual([t["id"] for t in self.mgr.list()], [primero["id"]])
+        self.assertEqual(len(self.mgr._procs), 1)
+
+    def test_request_id_valida_largo_y_caracteres(self):
+        for invalido in ("a" * 65, "con espacio", "punto.no", "ñ", "a/b"):
+            with self.assertRaises(ValueError, msg=invalido):
+                self.mgr.submit(["true"], request_id=invalido)
+        self.assertEqual(self.mgr.list(), [])
+        self.mgr.submit(["true"], request_id="a" * 64)
+        self.mgr.submit(["true"], request_id="Ab_9-x")
 
     def test_sin_request_id_cada_envio_es_un_trabajo_nuevo(self):
         a = self.mgr.submit(["true"])

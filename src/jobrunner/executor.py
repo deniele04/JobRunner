@@ -1,5 +1,6 @@
 import collections
 import os
+import re
 import signal
 import subprocess
 import time
@@ -19,6 +20,21 @@ ESPERA_SIGKILL = 5.0      # segundos entre SIGTERM y SIGKILL al cancelar (ADR-00
 
 class ColaLlena(Exception):
     """No hay lugar para correr ni para esperar: la solicitud se rechaza."""
+
+
+class RequestIdEnUso(Exception):
+    """El request_id ya pertenece a un trabajo con otro comando (ADR-0007)."""
+
+
+_REQUEST_ID = re.compile(r"[A-Za-z0-9_-]{1,64}")
+
+
+def validar_request_id(request_id):
+    """request_id: texto de 1 a 64 caracteres (letras, numeros, - y _), ADR-0007."""
+    if not (isinstance(request_id, str) and _REQUEST_ID.fullmatch(request_id)):
+        raise ValueError(
+            "request_id debe ser texto de 1 a 64 caracteres (letras, numeros, - y _)"
+        )
 
 
 class Cerrando(Exception):
@@ -97,13 +113,19 @@ class JobManager:
         if not all(isinstance(a, str) and a for a in argv):
             raise ValueError("argv debe contener solo strings no vacios")
 
-        if request_id is not None and not (isinstance(request_id, str) and request_id):
-            raise ValueError("request_id debe ser un string no vacio")
         if request_id is not None:
+            validar_request_id(request_id)
             for existente in self._jobs.values():
                 if existente.request_id == request_id:
+                    if list(existente.argv) != list(argv):
+                        bitacora.error("request_id_en_uso", existente.id, request_id=request_id)
+                        raise RequestIdEnUso(
+                            "el request_id ya se uso para otro comando (trabajo " + existente.id + ")"
+                        )
                     bitacora.evento("duplicado", existente.id, request_id=request_id)
-                    return existente.to_dict()
+                    respuesta = existente.to_dict()
+                    respuesta["duplicado"] = True
+                    return respuesta
 
         # Primero se da su lugar a los que ya esperan: asi nadie se salta la cola.
         self._arrancar_de_la_cola()
