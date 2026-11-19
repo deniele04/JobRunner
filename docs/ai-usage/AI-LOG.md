@@ -18,6 +18,7 @@
 | [IA-008](IA-008-casos-de-prueba-y-guia-persistencia.md) | 29/10/2026 | Josué Said Delgadillo Gutiérrez | Casos TC-007, TC-018 y TC-022 y guía de protocolo y persistencia | 2 |
 | [IA-009](IA-009-casos-desconexion-muerte-subito-estres.md) | 30/10/2026 | Josué Said Delgadillo Gutiérrez | Casos TC-019, TC-020 y TC-024 (desconexión, muerte súbita y estrés) | 2 |
 | [IA-010](IA-010-bitacora-documentacion-y-entrega.md) | 30/10/2026 | Daniel Alejandro Huerta Camberos | Bitácora de eventos, ADR-0007, INC-001, guía de usuario y documentación de la entrega | 2 |
+| [IA-011](IA-011-adr-red-y-protocolo.md) | 19/11/2026 | Josué Said Delgadillo Gutiérrez | ADR-0008 y ADR-0009 (red y protocolo v1) y actualización de ADR-0003 y ADR-0007 | 3 |
 
 ## Cómo agregar un registro
 

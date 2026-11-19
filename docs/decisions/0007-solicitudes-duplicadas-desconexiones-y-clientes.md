@@ -5,7 +5,7 @@
 **Responsable(s):** Daniel Alejandro Huerta Camberos
 **Issue relacionado:** #49
 **Aprobado en:** PR #50
-**Historial:** v1 (29/10/2026): propuesta. Aceptado (30/10/2026): implementado en los PR #51 (desconexiones) y #60 (`request_id`).
+**Historial:** v1 (29/10/2026): propuesta. Aceptado (30/10/2026): implementado en los PR #51 (desconexiones) y #60 (`request_id`). v2 (19/11/2026): con clientes remotos los clientes ya no se atienden uno por uno; se usa `selectors` en un solo hilo (ADR-0009).
 
 ## Contexto
 
@@ -48,7 +48,7 @@ Si no se decide, un reenvío por un error de red puede ejecutar dos veces el mis
 
 Se eligen la **atención secuencial con operaciones que no esperan** (A3) y el **identificador de solicitud opcional** (B3), con estas reglas:
 
-1. **Clientes simultáneos:** el servidor atiende una solicitud a la vez. Ninguna operación espera: la lectura tiene un tiempo límite de 5 s y la cancelación responde de inmediato (ADR-0006). Los demás clientes esperan su turno en la cola de conexiones del socket.
+1. **Clientes simultáneos:** el servidor mantiene varias conexiones abiertas en un solo hilo (`selectors`, ADR-0009) y ejecuta cada solicitud completa de una en una, sin intercalarla con otra. Ninguna operación espera: la cancelación responde de inmediato (ADR-0006) y una conexión sin datos se cierra a los 30 s. Un cliente lento ya no retrasa a los demás. (Hasta la v1 de este ADR, los clientes esperaban su turno en la cola de conexiones del socket, con un tiempo límite de lectura de 5 s.)
 2. **Duplicados en `submit`:**
    - Sin `request_id`, cada solicitud crea un trabajo nuevo.
    - Con un `request_id` ya registrado y el mismo comando, se devuelve el trabajo existente con `"duplicado": true` y no se crea otro.
@@ -74,18 +74,18 @@ Implementación: Josué (`request_id` y manejo de desconexiones en el servidor) 
 - Un cliente que se desconecta ya no termina el servicio (RNF-08).
 
 **Negativas**
-- Un cliente lento puede retrasar a los demás hasta 5 s.
+- Un cliente lento ya no retrasa a los demás, pero cada conexión consume un búfer y un reloj de inactividad (ADR-0009).
 - La protección contra duplicados depende de que el cliente envíe el `request_id`.
 
 **Riesgos**
-- Un cliente lento o inactivo retrasa a todos — Mitigación: tiempo límite de lectura de 5 s y operaciones que no esperan — Prueba: TC-019.
+- Un cliente lento o inactivo retiene su conexión — Mitigación: atención con `selectors` y cierre a los 30 s de inactividad (ADR-0009) — Prueba: TC-012.
 - Dos cancelaciones del mismo trabajo dejan estados contradictorios — Mitigación: atención secuencial y transiciones validadas — Prueba: TC-017.
 - Se reutiliza un `request_id` para otro comando — Mitigación: rechazo explícito — Prueba: TC-018.
 - El cliente pierde la respuesta al desconectarse — Mitigación: la solicitud completa se aplica y se puede confirmar con `status` o con el mismo `request_id` — Prueba: TC-019.
 
 ## Decisiones abiertas
 
-Si la atención secuencial es suficiente con clientes remotos (Hito 3). Se revisará al definir el protocolo TCP.
+Ninguna. Con clientes remotos (Hito 3) se pasó a varias conexiones en un solo hilo con `selectors` (ADR-0009). Se conservan la ausencia de candados y las transiciones validadas, porque los estados se siguen cambiando en un solo lugar (`JobManager`).
 
 ## Requisitos afectados
 
