@@ -3,8 +3,8 @@
 **Estado:** Propuesto
 **Fecha:** 19/11/2026
 **Responsable(s):** Josué Said Delgadillo Gutiérrez
-**Issue relacionado:** #por asignar
-**Aprobado en:** PR pendiente
+**Issue relacionado:** #76
+**Aprobado en:** PR #85
 **Historial:** v1 (19/11/2026): propuesta para el Hito 3 (operación remota privada). Cierra la decisión abierta del ADR-0003.
 
 ## Contexto
