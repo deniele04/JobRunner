@@ -108,7 +108,11 @@ def responder(manager, linea):
 
 
 def serve(socket_path=DEFAULT_SOCKET_PATH, max_jobs=DEFAULT_MAX_JOBS, queue_size=DEFAULT_QUEUE_SIZE,
-          listen=None):
+          listen=None, allow=None):
+    try:
+        permitidas = red.redes_permitidas(allow)
+    except ValueError as e:
+        raise SystemExit("Error: " + str(e))
     socket_path = Path(socket_path)
     socket_path.parent.mkdir(parents=True, exist_ok=True)
     if socket_path.exists():
@@ -120,7 +124,7 @@ def serve(socket_path=DEFAULT_SOCKET_PATH, max_jobs=DEFAULT_MAX_JOBS, queue_size
     bitacora.configurar(socket_path.parent)
     manager.recuperar()
 
-    servidor_red = red.Red(lambda linea: responder(manager, linea))
+    servidor_red = red.Red(lambda linea: responder(manager, linea), permitidas=permitidas)
     detalles = {"socket": socket_path}
     try:
         unix = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -129,11 +133,13 @@ def serve(socket_path=DEFAULT_SOCKET_PATH, max_jobs=DEFAULT_MAX_JOBS, queue_size
         servidor_red.escuchar(unix)
         if listen is not None:
             host, puerto = red.parsear_direccion(listen)
+            red.validar_escucha(host)
             tcp = red.abrir_tcp(host, puerto)
             servidor_red.escuchar(tcp)
             direccion = tcp.getsockname()
             detalles["tcp"] = ("[" + direccion[0] + "]" if ":" in direccion[0] else direccion[0]) \
                 + ":" + str(direccion[1])
+            detalles["permitidas"] = ",".join(str(r) for r in permitidas)
     except (OSError, ValueError) as e:
         servidor_red.cerrar()
         store.close()
@@ -143,7 +149,8 @@ def serve(socket_path=DEFAULT_SOCKET_PATH, max_jobs=DEFAULT_MAX_JOBS, queue_size
         raise SystemExit("Error: no se pudo abrir el servicio: " + str(e))
     print("JobRunner escuchando en " + str(socket_path))
     if "tcp" in detalles:
-        print("JobRunner escuchando en " + detalles["tcp"] + " (TCP)")
+        print("JobRunner escuchando en " + detalles["tcp"] + " (TCP); origenes permitidos: "
+              + detalles["permitidas"])
     bitacora.evento("servicio_iniciado", **detalles)
 
     cierre = _Cierre()
@@ -195,12 +202,21 @@ def parse_args(argv=None):
         help="Ademas del socket Unix, escucha por TCP en HOST:PUERTO "
              "(sin valor: 127.0.0.1:7070). Sin esta opcion no se abre ningun puerto.",
     )
+    parser.add_argument(
+        "--allow", action="append", default=[], metavar="RED",
+        help="Red de origen permitida por TCP, en CIDR (p. ej. 100.64.0.0/10 para Tailscale). "
+             "Se puede repetir. Siempre se permite 127.0.0.1 y ::1. Solo se aceptan redes "
+             "privadas; 0.0.0.0, :: y las publicas impiden el arranque.",
+    )
     args = parser.parse_args(argv)
-    if args.listen is not None:
-        try:
-            red.parsear_direccion(args.listen)
-        except ValueError as e:
-            parser.error(str(e))
+    try:
+        if args.listen is not None:
+            red.validar_escucha(red.parsear_direccion(args.listen)[0])
+        red.redes_permitidas(args.allow)
+    except ValueError as e:
+        parser.error(str(e))
+    if args.allow and args.listen is None:
+        parser.error("--allow solo tiene efecto con --listen")
     if args.max_jobs < 1:
         parser.error("--max-jobs debe ser al menos 1")
     if args.queue_size < 0:
@@ -210,4 +226,5 @@ def parse_args(argv=None):
 
 if __name__ == "__main__":
     args = parse_args()
-    serve(args.socket, max_jobs=args.max_jobs, queue_size=args.queue_size, listen=args.listen)
+    serve(args.socket, max_jobs=args.max_jobs, queue_size=args.queue_size, listen=args.listen,
+          allow=args.allow)
