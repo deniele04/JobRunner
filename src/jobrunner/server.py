@@ -7,7 +7,10 @@ import threading
 from pathlib import Path
 
 from . import bitacora, red
-from .executor import DEFAULT_MAX_JOBS, DEFAULT_QUEUE_SIZE, Cerrando, ColaLlena, JobManager
+from .executor import (
+    DEFAULT_MAX_JOBS, DEFAULT_QUEUE_SIZE, Cerrando, ColaLlena, JobManager,
+    RequestIdEnUso, validar_request_id,
+)
 from .store import Store
 
 DEFAULT_SOCKET_PATH = os.environ.get("JOBRUNNER_SOCKET", "data/jobrunner.sock")
@@ -55,10 +58,12 @@ def handle_request(manager, request):
         if not all(isinstance(a, str) and a for a in argv):
             return {"error": "argv debe contener solo strings no vacios"}
         request_id = request.get("request_id")
-        if request_id is not None and not (isinstance(request_id, str) and request_id):
-            return {"error": "request_id debe ser un string no vacio"}
         try:
+            if request_id is not None:
+                validar_request_id(request_id)
             return manager.submit(list(argv), request_id=request_id)
+        except (ValueError, RequestIdEnUso) as e:
+            return {"error": str(e)}
         except ColaLlena:
             return {"error": "cola llena (capacidad " + str(manager.queue_size) + "); intenta más tarde"}
         except Cerrando as e:

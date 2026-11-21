@@ -169,7 +169,12 @@ tc018="$(estado_pruebas \
   test_request_id_invalido_es_rechazado \
   test_sin_request_id_cada_envio_es_un_trabajo_nuevo \
   test_request_id_repetido_es_rechazado_y_no_cambia_nada \
-  test_trabajos_sin_request_id_no_chocan)"
+  test_trabajos_sin_request_id_no_chocan \
+  test_request_id_repetido_marca_duplicado_y_el_primero_no \
+  test_request_id_repetido_con_otro_comando_es_rechazado \
+  test_request_id_valida_largo_y_caracteres \
+  test_servidor_request_id_con_otro_comando_se_rechaza_y_duplicado_se_marca \
+  test_servidor_request_id_demasiado_largo_se_rechaza)"
 tc019="$(estado_pruebas \
   test_cierra_la_conexion_sin_enviar_nada \
   test_cierra_sin_leer_la_respuesta_y_la_solicitud_se_aplica_una_vez \
