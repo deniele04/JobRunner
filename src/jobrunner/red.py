@@ -11,6 +11,7 @@ solo lugar, asi que no hacen falta candados (ADR-0007).
 
 Solo biblioteca estandar (ADR-0001).
 """
+import ipaddress
 import json
 import selectors
 import socket
@@ -21,6 +22,87 @@ from . import bitacora
 MAX_MENSAJE = 64 * 1024   # bytes por mensaje (ADR-0009, regla 4)
 INACTIVIDAD = 30.0        # segundos sin datos antes de cerrar la conexion (regla 5)
 _LECTURA = 65536
+
+# Redes que el servicio acepta como origen o destino (ADR-0008, regla 4). Cualquier
+# otra red, incluida la publica, 0.0.0.0 y ::, se rechaza al arrancar.
+REDES_ACEPTABLES = tuple(ipaddress.ip_network(r) for r in (
+    "127.0.0.0/8", "::1/128", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16",
+    "100.64.0.0/10",   # rango que usa Tailscale
+))
+# Origenes permitidos aunque no se pase --allow (regla 3).
+PERMITIDAS_POR_DEFECTO = (ipaddress.ip_network("127.0.0.1/32"), ipaddress.ip_network("::1/128"))
+
+
+def _es_aceptable(red):
+    return any(red.version == a.version and red.subnet_of(a) for a in REDES_ACEPTABLES)
+
+
+def parsear_red(texto):
+    """Convierte una red en notacion CIDR (o una IP suelta) en un objeto de red.
+
+    ValueError si no es valida, si es 0.0.0.0 o :: o si no esta en las redes aceptables.
+    """
+    try:
+        red = ipaddress.ip_network(texto, strict=False)
+    except ValueError:
+        raise ValueError("red invalida: " + str(texto) + " (usa CIDR, p. ej. 192.168.1.0/24)")
+    if red.network_address.is_unspecified:
+        raise ValueError("red no permitida: " + str(texto) + " abriria el servicio a cualquier origen")
+    if not _es_aceptable(red):
+        raise ValueError(
+            "red no permitida: " + str(texto) + " no es privada (solo loopback, 10.0.0.0/8, "
+            "172.16.0.0/12, 192.168.0.0/16 y 100.64.0.0/10)"
+        )
+    return red
+
+
+def redes_permitidas(textos):
+    """Redes de origen permitidas: loopback (127.0.0.1 y ::1) mas las de --allow."""
+    return list(PERMITIDAS_POR_DEFECTO) + [parsear_red(t) for t in (textos or [])]
+
+
+def es_permitida(ip, redes):
+    """True si la direccion `ip` (texto) pertenece a alguna de `redes`."""
+    try:
+        direccion = ipaddress.ip_address(str(ip).split("%")[0])   # quita el ambito IPv6
+    except ValueError:
+        return False
+    if direccion.version == 6 and direccion.ipv4_mapped is not None:
+        direccion = direccion.ipv4_mapped   # ::ffff:a.b.c.d cuenta como IPv4
+    return any(direccion.version == r.version and direccion in r for r in redes)
+
+
+def _literal(host):
+    try:
+        return ipaddress.ip_address(host.split("%")[0])
+    except ValueError:
+        return None
+
+
+def validar_escucha(host):
+    """ValueError si `host` no es una direccion privada donde sea seguro escuchar (regla 2)."""
+    if not host:
+        raise ValueError("falta la direccion donde escuchar")
+    literal = _literal(host)
+    if literal is not None:
+        direcciones = [literal]
+    else:
+        try:
+            infos = socket.getaddrinfo(host, None, type=socket.SOCK_STREAM)
+        except OSError:
+            raise ValueError("no se pudo resolver el nombre: " + host)
+        direcciones = [ipaddress.ip_address(i[4][0].split("%")[0]) for i in infos]
+    for direccion in direcciones:
+        if direccion.is_unspecified:
+            raise ValueError(
+                "no se puede escuchar en " + host + ": abriria el servicio a cualquier red; "
+                "usa una direccion privada o la de Tailscale"
+            )
+        if not _es_aceptable(ipaddress.ip_network(direccion)):
+            raise ValueError(
+                "no se puede escuchar en " + host + " (" + str(direccion) + "): no es privada; usa "
+                "loopback, 10.x, 172.16-31.x, 192.168.x o 100.64-127.x (Tailscale)"
+            )
 
 
 def parsear_direccion(texto):
@@ -73,8 +155,11 @@ class _Conexion:
 class Red:
     """Multiplexor de conexiones. `procesar(linea: bytes)` devuelve el dict de respuesta."""
 
-    def __init__(self, procesar, inactividad=INACTIVIDAD, max_mensaje=MAX_MENSAJE):
+    def __init__(self, procesar, inactividad=INACTIVIDAD, max_mensaje=MAX_MENSAJE, permitidas=None):
         self._procesar = procesar
+        self._permitidas = list(PERMITIDAS_POR_DEFECTO if permitidas is None else permitidas)
+        self._tcp = set()
+        self.rechazadas = 0   # conexiones TCP cerradas por origen no permitido (para health)
         self._inactividad = inactividad
         self._max = max_mensaje
         self._sel = selectors.DefaultSelector()
@@ -85,6 +170,8 @@ class Red:
     def escuchar(self, sock):
         """Registra un socket de escucha (Unix o TCP) ya enlazado."""
         sock.setblocking(False)
+        if sock.family in (socket.AF_INET, socket.AF_INET6):
+            self._tcp.add(sock)   # solo estas pasan por la lista de origenes permitidos
         self._escuchas.append(sock)
         self._sel.register(sock, selectors.EVENT_READ, None)
 
@@ -126,8 +213,14 @@ class Red:
             except OSError as e:
                 bitacora.error("error_interno", motivo="accept: " + str(e))
                 return
-            sock.setblocking(False)
             origen = direccion[0] if isinstance(direccion, tuple) else "unix"
+            if escucha in self._tcp and not es_permitida(origen, self._permitidas):
+                # Origen no permitido (ADR-0008, regla 5): se cierra sin leer nada.
+                sock.close()
+                self.rechazadas += 1
+                bitacora.error("acceso_rechazado", ip=origen)
+                continue
+            sock.setblocking(False)
             con = _Conexion(sock, origen)
             self._conexiones.add(con)
             self._sel.register(sock, selectors.EVENT_READ, con)

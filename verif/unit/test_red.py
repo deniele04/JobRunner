@@ -35,6 +35,7 @@ def leer_linea(sock, limite=5.0):
 class RedBase(unittest.TestCase):
     max_mensaje = red.MAX_MENSAJE
     inactividad = red.INACTIVIDAD
+    permitidas = None   # None: las de por defecto (127.0.0.1 y ::1)
 
     def setUp(self):
         self.recibidas = []
@@ -48,7 +49,8 @@ class RedBase(unittest.TestCase):
                 return {"datos": "x" * (GRANDE)}
             return {"eco": texto}
 
-        self.red = red.Red(procesar, inactividad=self.inactividad, max_mensaje=self.max_mensaje)
+        self.red = red.Red(procesar, inactividad=self.inactividad, max_mensaje=self.max_mensaje,
+                            permitidas=self.permitidas)
         self.unix = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.unix.bind(self.ruta)
         self.unix.listen(16)
@@ -198,6 +200,119 @@ class RedInactividadTest(RedBase):
             time.sleep(0.2)
             c.sendall(b"ping" + NL)
             self.assertEqual(json.loads(leer_linea(c))["eco"], "ping")
+
+
+class RedAccesoRechazadoTest(RedBase):
+    permitidas = [red.parsear_red("10.0.0.0/8")]   # sin loopback
+
+    def test_origen_no_permitido_se_cierra_sin_leer_y_se_cuenta(self):
+        c = self.cliente_tcp()   # llega desde 127.0.0.1, que aqui no esta permitido
+        try:
+            c.sendall(b"hola" + NL)
+        except OSError:
+            pass
+        c.settimeout(3)
+        try:
+            self.assertEqual(c.recv(100), b"")
+        except ConnectionResetError:
+            pass   # tambien vale: el servidor cerro de golpe
+        time.sleep(0.2)
+        self.assertEqual(self.recibidas, [])
+        self.assertEqual(self.red.rechazadas, 1)
+
+    def test_el_socket_unix_no_pasa_por_la_lista_de_origenes(self):
+        c = self.cliente_unix()
+        c.sendall(b"hola" + NL)
+        self.assertEqual(json.loads(leer_linea(c))["eco"], "hola")
+        self.assertEqual(self.red.rechazadas, 0)
+
+    def test_un_rechazo_no_afecta_al_servicio(self):
+        for _ in range(5):
+            try:
+                self.cliente_tcp().sendall(b"x" + NL)
+            except OSError:
+                pass
+        time.sleep(0.3)
+        c = self.cliente_unix()
+        c.sendall(b"sigo" + NL)
+        self.assertEqual(json.loads(leer_linea(c))["eco"], "sigo")
+        self.assertEqual(self.red.rechazadas, 5)
+
+
+class RedAccesoPermitidoTest(RedBase):
+    permitidas = [red.parsear_red("127.0.0.0/8")]
+
+    def test_origen_dentro_de_la_red_permitida_es_atendido(self):
+        c = self.cliente_tcp()
+        c.sendall(b"hola" + NL)
+        self.assertEqual(json.loads(leer_linea(c))["eco"], "hola")
+        self.assertEqual(self.red.rechazadas, 0)
+
+
+class RedesPermitidasTest(unittest.TestCase):
+    def test_por_defecto_solo_127_0_0_1_y_loopback_ipv6(self):
+        redes = red.redes_permitidas([])
+        self.assertTrue(red.es_permitida("127.0.0.1", redes))
+        self.assertTrue(red.es_permitida("::1", redes))
+        self.assertFalse(red.es_permitida("127.0.0.2", redes))
+        self.assertFalse(red.es_permitida("192.168.1.10", redes))
+        self.assertFalse(red.es_permitida("8.8.8.8", redes))
+
+    def test_allow_agrega_redes_y_conserva_el_loopback(self):
+        redes = red.redes_permitidas(["192.168.1.0/24", "100.64.0.0/10"])
+        self.assertTrue(red.es_permitida("127.0.0.1", redes))
+        self.assertTrue(red.es_permitida("192.168.1.77", redes))
+        self.assertTrue(red.es_permitida("100.101.102.103", redes))
+        self.assertFalse(red.es_permitida("192.168.2.1", redes))
+        self.assertFalse(red.es_permitida("100.128.0.1", redes))   # fuera de 100.64.0.0/10
+
+    def test_una_ip_suelta_cuenta_como_red_de_un_solo_equipo(self):
+        redes = red.redes_permitidas(["10.1.2.3"])
+        self.assertTrue(red.es_permitida("10.1.2.3", redes))
+        self.assertFalse(red.es_permitida("10.1.2.4", redes))
+
+    def test_ipv4_mapeada_en_ipv6_y_ambito_se_normalizan(self):
+        redes = red.redes_permitidas(["192.168.1.0/24"])
+        self.assertTrue(red.es_permitida("::ffff:192.168.1.5", redes))
+        self.assertTrue(red.es_permitida("::1%lo", redes))
+        self.assertFalse(red.es_permitida("::ffff:8.8.8.8", redes))
+
+    def test_direccion_que_no_es_ip_no_se_permite(self):
+        self.assertFalse(red.es_permitida("no-es-ip", red.redes_permitidas([])))
+
+    def test_redes_aceptables(self):
+        for texto in ("10.0.0.0/8", "10.5.0.0/16", "172.16.0.0/12", "172.31.1.0/24", "192.168.0.0/16",
+                      "100.64.0.0/10", "100.100.0.0/16", "127.0.0.1", "::1"):
+            with self.subTest(red=texto):
+                red.parsear_red(texto)
+
+    def test_redes_rechazadas(self):
+        for texto in ("0.0.0.0/0", "0.0.0.0", "::/0", "::", "8.8.8.0/24", "1.2.3.4", "172.32.0.0/16",
+                      "100.128.0.0/10", "192.168.0.0/15", "10.0.0.0/7", "2001:db8::/32", "basura", "10.0.0.0/33", ""):
+            with self.subTest(red=texto):
+                with self.assertRaises(ValueError):
+                    red.parsear_red(texto)
+
+    def test_una_red_invalida_en_la_lista_impide_construirla(self):
+        with self.assertRaises(ValueError):
+            red.redes_permitidas(["192.168.1.0/24", "8.8.8.0/24"])
+
+
+class ValidarEscuchaTest(unittest.TestCase):
+    def test_direcciones_privadas_son_validas(self):
+        for host in ("127.0.0.1", "localhost", "::1", "10.1.2.3", "172.16.5.5", "192.168.0.20", "100.101.102.103"):
+            with self.subTest(host=host):
+                red.validar_escucha(host)
+
+    def test_todas_las_interfaces_y_las_publicas_se_rechazan(self):
+        for host in ("0.0.0.0", "::", "8.8.8.8", "1.1.1.1", "172.32.0.1", "100.128.0.1", "2001:db8::1", ""):
+            with self.subTest(host=host):
+                with self.assertRaises(ValueError):
+                    red.validar_escucha(host)
+
+    def test_nombre_que_no_se_resuelve_se_rechaza(self):
+        with self.assertRaises(ValueError):
+            red.validar_escucha("este-nombre-no-existe.invalid")
 
 
 class ParsearDireccionTest(unittest.TestCase):
