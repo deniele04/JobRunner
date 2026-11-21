@@ -6,7 +6,7 @@ import socket
 import threading
 from pathlib import Path
 
-from . import bitacora
+from . import bitacora, red
 from .executor import (
     DEFAULT_MAX_JOBS, DEFAULT_QUEUE_SIZE, Cerrando, ColaLlena, JobManager,
     RequestIdEnUso, validar_request_id,
@@ -98,7 +98,26 @@ def handle_request(manager, request):
     return {"error": "comando desconocido: " + str(cmd)}
 
 
-def serve(socket_path=DEFAULT_SOCKET_PATH, max_jobs=DEFAULT_MAX_JOBS, queue_size=DEFAULT_QUEUE_SIZE):
+def responder(manager, linea):
+    """Procesa una solicitud completa (una linea de bytes) y devuelve el dict de respuesta."""
+    try:
+        request = json.loads(linea.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        bitacora.error("solicitud_invalida", motivo="JSON invalido")
+        return {"error": "JSON invalido"}
+    try:
+        return handle_request(manager, request)
+    except Exception as e:
+        bitacora.error("error_interno", motivo=e)
+        return {"error": "error interno: " + str(e)}
+
+
+def serve(socket_path=DEFAULT_SOCKET_PATH, max_jobs=DEFAULT_MAX_JOBS, queue_size=DEFAULT_QUEUE_SIZE,
+          listen=None, allow=None):
+    try:
+        permitidas = red.redes_permitidas(allow)
+    except ValueError as e:
+        raise SystemExit("Error: " + str(e))
     socket_path = Path(socket_path)
     socket_path.parent.mkdir(parents=True, exist_ok=True)
     if socket_path.exists():
@@ -110,13 +129,34 @@ def serve(socket_path=DEFAULT_SOCKET_PATH, max_jobs=DEFAULT_MAX_JOBS, queue_size
     bitacora.configurar(socket_path.parent)
     manager.recuperar()
 
-    server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    server.bind(str(socket_path))
-    server.listen(5)
+    servidor_red = red.Red(lambda linea: responder(manager, linea), permitidas=permitidas)
+    detalles = {"socket": socket_path}
+    try:
+        unix = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        unix.bind(str(socket_path))
+        unix.listen(128)
+        servidor_red.escuchar(unix)
+        if listen is not None:
+            host, puerto = red.parsear_direccion(listen)
+            red.validar_escucha(host)
+            tcp = red.abrir_tcp(host, puerto)
+            servidor_red.escuchar(tcp)
+            direccion = tcp.getsockname()
+            detalles["tcp"] = ("[" + direccion[0] + "]" if ":" in direccion[0] else direccion[0]) \
+                + ":" + str(direccion[1])
+            detalles["permitidas"] = ",".join(str(r) for r in permitidas)
+    except (OSError, ValueError) as e:
+        servidor_red.cerrar()
+        store.close()
+        bitacora.cerrar()
+        if socket_path.exists():
+            socket_path.unlink()
+        raise SystemExit("Error: no se pudo abrir el servicio: " + str(e))
     print("JobRunner escuchando en " + str(socket_path))
-    bitacora.evento("servicio_iniciado", socket=socket_path)
-
-    server.settimeout(INTERVALO_TICK)   # accept() despierta cada 0.5 s (ADR-0004)
+    if "tcp" in detalles:
+        print("JobRunner escuchando en " + detalles["tcp"] + " (TCP); origenes permitidos: "
+              + detalles["permitidas"])
+    bitacora.evento("servicio_iniciado", **detalles)
 
     cierre = _Cierre()
     restaurar_senales = _instalar_senales(cierre)
@@ -124,38 +164,7 @@ def serve(socket_path=DEFAULT_SOCKET_PATH, max_jobs=DEFAULT_MAX_JOBS, queue_size
     try:
         while not cierre.pedido:
             manager.tick()   # recoge terminados, arranca la cola, aplica escalamiento
-            try:
-                conn, _ = server.accept()
-            except socket.timeout:
-                continue
-            with conn:
-                conn.settimeout(5)
-                data = b""
-                try:
-                    while not data.endswith(b"\n"):
-                        chunk = conn.recv(4096)
-                        if not chunk:
-                            break
-                        data += chunk
-                except socket.timeout:
-                    continue
-                if not data.strip():
-                    continue
-                try:
-                    request = json.loads(data.decode("utf-8"))
-                except (UnicodeDecodeError, json.JSONDecodeError):
-                    response = {"error": "JSON invalido"}
-                    bitacora.error("solicitud_invalida", motivo="JSON invalido")
-                else:
-                    try:
-                        response = handle_request(manager, request)
-                    except Exception as e:
-                        response = {"error": "error interno: " + str(e)}
-                        bitacora.error("error_interno", motivo=e)
-                try:
-                    conn.sendall((json.dumps(response) + "\n").encode("utf-8"))
-                except (BrokenPipeError, ConnectionResetError):
-                    bitacora.error("cliente_desconectado", motivo="el cliente cerro antes de recibir la respuesta")
+            servidor_red.atender(INTERVALO_TICK)   # espera hasta 0.5 s (ADR-0004, ADR-0009)
     except KeyboardInterrupt:   # solo si no se pudieron instalar los manejadores
         cierre.pedido = True
     finally:
@@ -163,7 +172,7 @@ def serve(socket_path=DEFAULT_SOCKET_PATH, max_jobs=DEFAULT_MAX_JOBS, queue_size
         # RUNNING, 3) conservar los QUEUED, 4) registrar y eliminar el socket. Corre tambien
         # si el ciclo termina por un error, para no dejar hijos huerfanos.
         print("\nDeteniendo JobRunner...")
-        server.close()
+        servidor_red.cerrar()
         try:
             resumen = manager.cerrar(forzar=lambda: cierre.forzar)
             bitacora.evento("servicio_detenido", cancelados=resumen["cancelados"],
@@ -193,7 +202,26 @@ def parse_args(argv=None):
         "--queue-size", type=int, default=DEFAULT_QUEUE_SIZE,
         help="Trabajos que pueden esperar en la cola (default: %(default)s)",
     )
+    parser.add_argument(
+        "--listen", nargs="?", const="127.0.0.1:7070", default=None, metavar="HOST:PUERTO",
+        help="Ademas del socket Unix, escucha por TCP en HOST:PUERTO "
+             "(sin valor: 127.0.0.1:7070). Sin esta opcion no se abre ningun puerto.",
+    )
+    parser.add_argument(
+        "--allow", action="append", default=[], metavar="RED",
+        help="Red de origen permitida por TCP, en CIDR (p. ej. 100.64.0.0/10 para Tailscale). "
+             "Se puede repetir. Siempre se permite 127.0.0.1 y ::1. Solo se aceptan redes "
+             "privadas; 0.0.0.0, :: y las publicas impiden el arranque.",
+    )
     args = parser.parse_args(argv)
+    try:
+        if args.listen is not None:
+            red.validar_escucha(red.parsear_direccion(args.listen)[0])
+        red.redes_permitidas(args.allow)
+    except ValueError as e:
+        parser.error(str(e))
+    if args.allow and args.listen is None:
+        parser.error("--allow solo tiene efecto con --listen")
     if args.max_jobs < 1:
         parser.error("--max-jobs debe ser al menos 1")
     if args.queue_size < 0:
@@ -203,4 +231,5 @@ def parse_args(argv=None):
 
 if __name__ == "__main__":
     args = parse_args()
-    serve(args.socket, max_jobs=args.max_jobs, queue_size=args.queue_size)
+    serve(args.socket, max_jobs=args.max_jobs, queue_size=args.queue_size, listen=args.listen,
+          allow=args.allow)

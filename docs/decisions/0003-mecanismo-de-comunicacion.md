@@ -5,7 +5,7 @@
 **Responsable(s):** Josué Said Delgadillo Gutiérrez
 **Issue relacionado:** #8
 **Aprobado en:** PR #14
-**Historial:** v1 (11/09/2026): propuesta inicial con API REST sobre HTTP. v2 (01/10/2026): corregido a daemon+CLI por socket Unix por decisión del equipo, al no requerir servidor HTTP para comunicación local.
+**Historial:** v1 (11/09/2026): propuesta inicial con API REST sobre HTTP. v2 (01/10/2026): corregido a daemon+CLI por socket Unix por decisión del equipo, al no requerir servidor HTTP para comunicación local. v3 (19/11/2026): se cierra la decisión abierta del transporte TCP, que se decide en el ADR-0008 y el protocolo v1 en el ADR-0009.
 
 ## Contexto
 
@@ -25,7 +25,7 @@ Los clientes del JobRunner necesitan poder encolar nuevos jobs, consultar su est
 
 ## Decisión
 
-Se elige **daemon con socket Unix y mensajes JSON de una línea**, con el que un CLI se comunica enviando y recibiendo comandos.
+Se elige **daemon con socket Unix y mensajes JSON de una línea**, con el que un CLI se comunica enviando y recibiendo comandos. Desde el Hito 3 el mismo protocolo también se ofrece por TCP, restringido a redes privadas o VPN (ADR-0008, ADR-0009).
 
 Razones técnicas:
 - Evita el overhead de un servidor HTTP cuando el daemon y el cliente corren localmente en la misma máquina.
@@ -39,14 +39,14 @@ Razones técnicas:
 - Permite evolucionar en el Hito 3 hacia el mismo protocolo JSON sobre TCP, restringido a LAN/VPN, sin rediseñar el formato de mensajes (RF-18 a RF-22).
 
 **Negativas**
-- Solo funciona para clientes en la misma máquina, no es accesible remotamente sin un mecanismo adicional.
+- Por socket Unix solo funciona para clientes en la misma máquina; el acceso remoto se resuelve con TCP restringido a LAN/VPN (ADR-0008).
 
 **Riesgos**
 - Protocolo propio sin estandarización como HTTP podría generar ambigüedad entre comandos — Mitigación: documentar el contrato de mensajes JSON (comandos y respuestas) en docs/ — Prueba: TC-008/TC-023.
 
 ## Decisiones abiertas
 
-Transporte TCP restringido a LAN/VPN para acceso remoto (se resolverá en Hito 3).
+Ninguna. El transporte TCP restringido a LAN/VPN se decidió en el ADR-0008 y el protocolo v1 en el ADR-0009.
 
 ## Requisitos afectados
 

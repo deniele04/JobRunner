@@ -56,7 +56,7 @@ def main():
     suite = unittest.TestSuite()
     for directorio in ("verif/unit", "verif/integration"):
         if os.path.isdir(directorio):
-            suite.addTests(unittest.defaultTestLoader.discover(directorio))
+            suite.addTests(unittest.TestLoader().discover(directorio))
     # warnings="default" iguala el comportamiento de `python -m unittest`:
     # deja visibles avisos como ResourceWarning (archivos sin cerrar) en el log.
     runner = unittest.TextTestRunner(
