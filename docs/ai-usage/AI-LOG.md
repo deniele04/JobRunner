@@ -19,6 +19,8 @@
 | [IA-009](IA-009-casos-desconexion-muerte-subito-estres.md) | 30/10/2026 | Josué Said Delgadillo Gutiérrez | Casos TC-019, TC-020 y TC-024 (desconexión, muerte súbita y estrés) | 2 |
 | [IA-010](IA-010-bitacora-documentacion-y-entrega.md) | 30/10/2026 | Daniel Alejandro Huerta Camberos | Bitácora de eventos, ADR-0007, INC-001, guía de usuario y documentación de la entrega | 2 |
 | [IA-011](IA-011-adr-red-y-protocolo.md) | 19/11/2026 | Josué Said Delgadillo Gutiérrez | ADR-0008 y ADR-0009 (red y protocolo v1) y actualización de ADR-0003 y ADR-0007 | 3 |
+| [IA-012](IA-012-servidor-tcp-con-selectors.md) | 19/11/2026 | Josué Said Delgadillo Gutiérrez | Servidor TCP con varios clientes (selectors, --listen) | 4 |
+| [IA-014](IA-014-restriccion-de-acceso-allow.md) | 19/11/2026 | Josué Said Delgadillo Gutiérrez | Restricción de acceso por red (--allow) y validación de --listen | 4 |
 
 ## Cómo agregar un registro
 
