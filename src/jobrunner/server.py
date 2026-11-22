@@ -172,7 +172,8 @@ def serve(socket_path=DEFAULT_SOCKET_PATH, max_jobs=DEFAULT_MAX_JOBS, queue_size
         # RUNNING, 3) conservar los QUEUED, 4) registrar y eliminar el socket. Corre tambien
         # si el ciclo termina por un error, para no dejar hijos huerfanos.
         print("\nDeteniendo JobRunner...")
-        servidor_red.cerrar()
+        cerradas = servidor_red.cerrar()   # sin conexiones nuevas, clientes cerrados, puertos libres
+        bitacora.evento("red_cerrada", conexiones=cerradas, tcp=detalles.get("tcp", "-"))
         try:
             resumen = manager.cerrar(forzar=lambda: cierre.forzar)
             bitacora.evento("servicio_detenido", cancelados=resumen["cancelados"],

@@ -202,6 +202,36 @@ class RedInactividadTest(RedBase):
             self.assertEqual(json.loads(leer_linea(c))["eco"], "ping")
 
 
+class RedCierreTest(RedBase):
+    def test_cerrar_cierra_las_conexiones_abiertas_y_devuelve_cuantas_eran(self):
+        clientes = [self.cliente_tcp(), self.cliente_tcp(), self.cliente_unix()]
+        for c in clientes:   # una peticion cada uno, para que el servidor ya los haya aceptado
+            c.sendall(b"hola" + NL)
+            leer_linea(c)
+        self.activo = False
+        self.hilo.join(timeout=5)
+        self.assertEqual(self.red.cerrar(), 3)
+        for c in clientes:
+            c.settimeout(3)
+            self.assertEqual(c.recv(10), b"")   # el servidor cerro: fin de archivo
+
+    def test_cerrar_libera_el_puerto_y_ya_no_acepta_conexiones(self):
+        self.activo = False
+        self.hilo.join(timeout=5)
+        self.red.cerrar()
+        with self.assertRaises(OSError):
+            socket.create_connection(("127.0.0.1", self.puerto), timeout=2).close()
+        libre = socket.socket()
+        libre.bind(("127.0.0.1", self.puerto))   # el puerto quedo libre de inmediato
+        libre.close()
+
+    def test_cerrar_sin_conexiones_devuelve_cero_y_se_puede_repetir(self):
+        self.activo = False
+        self.hilo.join(timeout=5)
+        self.assertEqual(self.red.cerrar(), 0)
+        self.assertEqual(self.red.cerrar(), 0)
+
+
 class RedAccesoRechazadoTest(RedBase):
     permitidas = [red.parsear_red("10.0.0.0/8")]   # sin loopback
 
