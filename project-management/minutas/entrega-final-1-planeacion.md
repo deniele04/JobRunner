@@ -5,7 +5,7 @@
 | **Medio** | WhatsApp y Discord |
 | **Asistentes** | Diego Armando Durán Hernández, Josué Said Delgadillo Gutiérrez, Juan José Rentería Haro y Daniel Alejandro Huerta Camberos |
 | **Redactó** | Daniel Alejandro Huerta Camberos |
-| **Issue relacionado** | Por asignar |
+| **Issue relacionado** | #93 |
 
 ## Objetivo
 
