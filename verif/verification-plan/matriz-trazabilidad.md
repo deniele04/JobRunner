@@ -37,6 +37,11 @@ Cadena obligatoria del Plan de Verificación: Requisito → Método → Caso →
 | TC-023 | Compatibilidad de protocolo | `verif/integration/test_tc023_version_protocolo.py` | Pendiente |
 | [TC-024](../test-cases/TC-024.md) | Liberación de recursos bajo carga | `verif/integration/test_tc024_estres.py` | PASS |
 | [TC-025](../test-cases/TC-025.md) | Bitácora de eventos (caso del equipo) | `verif/unit/test_bitacora.py` | PASS |
+| [TC-026](../test-cases/TC-026.md) | 500 registros sin pérdida de metadatos (caso de Verificación para RNF-06) | `verif/integration/test_tc026_500_registros.py`, `verif/unit/test_500_registros.py` | Pendiente |
+| [INS-016](../inspecciones/INS-016.md) | Inspección: mínimo privilegio y modelo de amenazas (RNF-16) | `verif/scripts/inspecciones.py`, `verif/unit/test_inspecciones.py`; documento `seguridad.md` de Josué | Pendiente |
+| [INS-017](../inspecciones/INS-017.md) | Inspección: código modular (RNF-17) | `verif/scripts/inspecciones.py`, `verif/unit/test_inspecciones.py` | Pendiente |
+| [INS-018](../inspecciones/INS-018.md) | Inspección: interfaces y decisiones documentadas (RNF-18) | `verif/scripts/inspecciones.py`, `verif/unit/test_inspecciones.py` | Pendiente |
+| [INS-034](../inspecciones/INS-034.md) | Inspección: riesgo y prueba en cada ADR (RNF-34) | `verif/scripts/inspecciones.py`, `verif/unit/test_inspecciones.py` | Pendiente |
 
 ## Matriz por requisito
 
