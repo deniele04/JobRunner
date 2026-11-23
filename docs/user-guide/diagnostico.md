@@ -12,6 +12,7 @@ ls -l data/jobrunner.sock                      # 2. ¿Existe el socket?
 royito list | head -20                         # 3. ¿Responde? (usa: export PATH="$PWD/scripts:$PATH")
 tail -20 data/jobrunner.log                    # 4. ¿Qué fue lo último que pasó?
 grep " ERROR " data/jobrunner.log | tail -10   # 5. ¿Qué errores hubo?
+royito health                                  # 6. Trabajos por estado, límites, base de datos, clientes y accesos rechazados
 ```
 
 Y, si hay trabajos o red de por medio:
@@ -42,14 +43,14 @@ En la columna `STAT` de `ps`: `S` o `R` = normal, `Z` = zombi, `T` = detenido (p
 
 | Lo que ves | Revisa | Causa probable | Qué hacer |
 |---|---|---|---|
-| El cliente recibe «Connection reset by peer» o la conexión se cierra sin respuesta | `grep acceso_rechazado data/jobrunner.log` en el servidor | La IP del cliente no está en `--allow`. Con `--allow`, solo entran las redes indicadas (`127.0.0.1` incluido solo si se agrega) | Reinicia el servidor con `--allow <IP del cliente>/32` |
-| «Connection refused» | `ss -ltn \| grep 7070` en el servidor | El servidor no escucha por TCP (falta `--listen`) o escucha en otra IP o puerto | Revisa la línea `JobRunner escuchando en ... (TCP)` al arrancar |
-| El cliente se queda esperando hasta que falla por tiempo | `tailscale status` en los dos equipos y la prueba con `curl` de [conexion-lan-vpn.md](conexion-lan-vpn.md) | Problema de red: Tailscale apagado, cuentas distintas o firewall | Corrige la red antes de revisar JobRunner |
+| `royito` dice «cerro la conexion sin responder» (u otro cliente recibe «Connection reset by peer») | `grep acceso_rechazado data/jobrunner.log` en el servidor, o `rejected_access` en `royito health` | La IP del cliente no está en `--allow`. Con `--allow`, solo entran las redes indicadas (`127.0.0.1` incluido solo si se agrega) | Reinicia el servidor con `--allow <IP del cliente>/32` |
+| `royito` dice «no se pudo conectar a HOST:PUERTO (Connection refused)» | `ss -ltn \| grep 7070` en el servidor | El servidor no escucha por TCP (falta `--listen`) o escucha en otra IP o puerto | Revisa la línea `JobRunner escuchando en ... (TCP)` al arrancar |
+| `royito` dice «no se pudo conectar a HOST:PUERTO (timed out)» o se queda esperando | `tailscale status` en los dos equipos y la prueba con `curl` de [conexion-lan-vpn.md](conexion-lan-vpn.md) | Problema de red: Tailscale apagado, cuentas distintas o firewall | Corrige la red antes de revisar JobRunner |
 | La conexión se cierra sola tras un rato sin enviar nada | `grep conexion_inactiva data/jobrunner.log` | Comportamiento normal: 30 s sin datos (ADR-0009) | Nada; el cliente abre otra conexión |
 | `mensaje demasiado grande (maximo 65536 bytes)` | `grep "mensaje demasiado grande" data/jobrunner.log` | El mensaje superó 64 KiB | Enviar comandos más cortos |
 | `version de protocolo no soportada` | — | El cliente es de otra versión del protocolo | Usar el cliente del mismo repositorio que el servidor |
 
-Para separar un problema de red de uno de JobRunner, prueba desde el cliente sin `royito` (cambia la IP y el puerto):
+Para separar un problema de red de uno de JobRunner, primero prueba `royito --host <IP> --port 7070 health` desde el cliente. Si falla, prueba sin `royito` (cambia la IP y el puerto):
 
 ```bash
 python3 -c 'import socket; s=socket.create_connection(("100.101.102.103", 7070), timeout=5); s.sendall(b"{\"cmd\":\"list\"}\n"); print(s.recv(200))'
@@ -67,6 +68,8 @@ Si responde `{"v": 1, ...}`, la red y el servidor funcionan.
 | Un trabajo `FAILED` con «No se pudo ejecutar» | `royito status <id>` | El comando no existe o no tiene permiso de ejecución | Corrige el comando |
 | Aparece un `ZOMBI` en `procesos.sh` | `ps -o stat -p <pid del servidor>` | El servidor está detenido (`T`) y no recoge a sus hijos | `kill -CONT <pid del servidor>`; en menos de 0,5 s los recoge |
 | Aparece un `HUERFANO` en `procesos.sh` | `pgrep -af jobrunner.server` | El servidor murió de golpe y sus trabajos siguen vivos | Reinicia el servidor: al arrancar termina esos grupos de procesos y marca los trabajos (sección 2.3) |
+| `royito health` muestra `database` distinto de `ok` | `df -h .` y `ls -l data/` | La base no responde: disco lleno, permisos o archivo dañado | Libera espacio o corrige permisos; con el servidor apagado, revisa la base con el comando de la sección 2.3 |
+| `running` llega a `max_jobs` y `queued` a `queue_size` en `royito health` | `royito list --state RUNNING` | El servicio está saturado | Espera, cancela trabajos o reinicia con límites mayores |
 
 ### 2.3 Después de una caída del servidor
 
@@ -108,6 +111,7 @@ cp data/jobrunner.log evidencia-incidente/
 verif/scripts/procesos.sh revisar --patron 'sleep' > evidencia-incidente/procesos.txt 2>&1
 ps -eo pid,ppid,pgid,stat,cmd > evidencia-incidente/ps.txt
 royito list > evidencia-incidente/list.json 2>&1
+royito health > evidencia-incidente/health.json 2>&1
 ```
 
 Con eso se redacta el registro en `docs/incidents/` (ver el [índice de incidentes](../incidents/README.md)) y, si deja un defecto, se agrega a [defectos-y-limitaciones.md](../defectos-y-limitaciones.md).
