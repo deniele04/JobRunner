@@ -91,7 +91,7 @@ verif/scripts/procesos.sh revisar --base base.txt [--patron 'sleep 300']
 ```
 
 - **ZOMBI:** proceso en estado Z cuyo padre es el servidor (no recogió a un hijo terminado).
-- **HUERFANO:** líder de sesión (los trabajos se lanzan con `start_new_session`) adoptado por PID 1, es decir, su padre murió.
+- **HUERFANO:** líder de sesión (los trabajos se lanzan con `start_new_session`) cuyo padre ya no es el servidor, es decir, su padre murió y lo adoptó otro proceso. En Linux lo adopta el PID 1, pero en WSL puede adoptarlo otro proceso de la sesión, por eso no se exige PPID 1 (DEF-005). Un trabajo vivo tiene como padre al servidor y no cuenta.
 - Código de salida: 0 limpio, 1 hallazgos, 2 uso incorrecto. Detalle en la cabecera del script.
 
 Al terminar una ejecución formal, `python3 verif/scripts/actualizar_matriz.py <run-id>` copia el estado de cada TC (de `resumen.md`) a la [matriz de trazabilidad](matriz-trazabilidad.md): la columna Estado de los casos y la columna Resultado de cada RF y RNF (el peor estado de sus casos).

@@ -202,6 +202,20 @@ tc025="$(estado_pruebas \
   test_comando_inexistente_registra_un_error \
   test_no_registra_los_argumentos_del_trabajo)"
 
+# La herramienta que detecta zombis y huérfanos también se verifica: si procesos.sh
+# fallara, el resultado «sin zombis ni huérfanos» no valdría (DEF-005).
+procesos_sh="$(estado_pruebas \
+  test_sin_argumentos_es_error_de_uso \
+  test_revisar_exige_base_o_patron \
+  test_sistema_limpio_da_codigo_0 \
+  test_detecta_un_huerfano \
+  test_detecta_un_huerfano_adoptado_por_otro_proceso_que_no_es_el_pid_1 \
+  test_detecta_un_zombi_del_servidor \
+  test_servidor_en_reposo_no_deja_nada \
+  test_un_trabajo_en_ejecucion_no_es_un_huerfano \
+  test_si_el_servidor_muere_de_golpe_el_trabajo_queda_huerfano \
+  test_servidor_inactivo_no_deja_zombis)"
+
 # 4. Las pruebas no deben dejar zombis ni huérfanos (RNF-30, RNF-33).
 sleep 1
 verif/scripts/procesos.sh revisar --base "$BASE_PROCESOS" --patron 'sleep|jobrunner' > "$OUT/procesos.log" 2>&1
@@ -235,6 +249,7 @@ conocidos="$(awk -F'\t' '$1 == "XFAIL" { n++ } END { print n + 0 }' "$OUT/unit-r
   echo "| TC-024 | $tc024 | unittest.log, unit-resultados.tsv |"
   echo "| TC-025 | $tc025 | unittest.log, unit-resultados.tsv |"
   echo "| Sin zombis ni huérfanos tras las pruebas | $limpieza | procesos.log |"
+  echo "| procesos.sh detecta zombis y huérfanos, también adoptados por otro proceso (DEF-005) | $procesos_sh | unittest.log, unit-resultados.tsv |"
   echo
   echo "Fallos esperados y conocidos (expectedFailure): $conocidos. Ver las pruebas con estado XFAIL en unit-resultados.tsv y la matriz de trazabilidad."
 } > "$OUT/resumen.md"

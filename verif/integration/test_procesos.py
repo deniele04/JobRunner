@@ -34,6 +34,34 @@ def matar_grupos(salida):
             pass
 
 
+def pids_con(patron):
+    """PID de los procesos cuya linea de comando coincide con `patron` (expresion regular)."""
+    r = subprocess.run(["ps", "-eo", "pid=,args="], capture_output=True, text=True, timeout=30)
+    encontrados = []
+    for linea in r.stdout.splitlines():
+        pid, _, args = linea.strip().partition(" ")
+        if pid.isdigit() and int(pid) != os.getpid() and re.search(patron, args):
+            encontrados.append(int(pid))
+    return encontrados
+
+
+def ppid_de(pid):
+    r = subprocess.run(["ps", "-o", "ppid=", "-p", str(pid)], capture_output=True, text=True, timeout=30)
+    return int(r.stdout.strip()) if r.stdout.strip().isdigit() else None
+
+
+# Un "adoptante": proceso que se declara subreaper (PR_SET_CHILD_SUBREAPER = 36) y lanza
+# un lider de sesion que queda huerfano. Los huerfanos de sus descendientes terminan
+# adoptados por este proceso y no por el PID 1, igual que en WSL (DEF-005).
+ADOPTANTE = """
+import ctypes, subprocess, sys, time
+if ctypes.CDLL(None, use_errno=True).prctl(36, 1, 0, 0, 0) != 0:
+    sys.exit(3)
+subprocess.run(["sh", "-c", "setsid sleep 306 >/dev/null 2>&1 &"], check=True)
+time.sleep(30)
+"""
+
+
 class BaseConLineaBase(PruebaDeIntegracion):
     """Guarda la línea base de PID ANTES de levantar el servidor."""
 
@@ -79,6 +107,33 @@ class TestProcesosSh(unittest.TestCase):
         self.assertEqual(codigo, 1, salida)
         self.assertRegex(salida, r"HUERFANO\t\d+")
 
+    def test_detecta_un_huerfano_adoptado_por_otro_proceso_que_no_es_el_pid_1(self):
+        """DEF-005 (RNF-30). En WSL el huerfano lo adopta otro proceso, no el PID 1.
+
+        Aqui el adoptante es un subreaper explicito, asi que la prueba reproduce lo mismo en
+        cualquier Linux: un lider de sesion cuyo padre ya no es el servidor es un huerfano.
+        """
+        with tempfile.TemporaryDirectory() as d:
+            base = os.path.join(d, "base")
+            procesos("guardar", base)
+            adoptante = subprocess.Popen([sys.executable, "-c", ADOPTANTE])
+            self.addCleanup(lambda: (adoptante.kill(), adoptante.wait()))
+            self.addCleanup(lambda: [matar_grupos("HUERFANO\t%d" % p) for p in pids_con(r"^sleep 306$")])
+            for _ in range(50):
+                if adoptante.poll() is not None:
+                    break
+                if any(ppid_de(p) == adoptante.pid for p in pids_con(r"^sleep 306$")):
+                    break
+                time.sleep(0.1)
+            if adoptante.poll() == 3:
+                self.skipTest("este sistema no permite declarar un subreaper (prctl)")
+            hijos = [p for p in pids_con(r"^sleep 306$") if ppid_de(p) == adoptante.pid]
+            self.assertTrue(hijos, "el adoptante no llego a adoptar al sleep")
+            self.assertNotEqual(adoptante.pid, 1)
+            codigo, salida, _ = procesos("revisar", "--base", base, "--patron", "sleep 306")
+        self.assertEqual(codigo, 1, salida)
+        self.assertRegex(salida, r"HUERFANO\t\d+\tsid=\d+\tsleep 306")
+
     def test_detecta_un_zombi_del_servidor(self):
         with tempfile.TemporaryDirectory() as d:
             base = os.path.join(d, "base")
@@ -102,6 +157,16 @@ class TestProcesosConServidor(BaseConLineaBase):
     def test_servidor_en_reposo_no_deja_nada(self):
         self.servidor.detener()
         codigo, salida, _ = self.revisar("--patron", "sleep|jobrunner")
+        self.assertEqual(codigo, 0, salida)
+
+    def test_un_trabajo_en_ejecucion_no_es_un_huerfano(self):
+        """DEF-005: al no exigir PPID 1, un trabajo vivo no debe confundirse con un huérfano.
+
+        Es lider de sesion, pero su padre sigue siendo el servidor.
+        """
+        self.servidor.enviar("--", "sleep", "301")
+        self.assertTrue(pids_con(r"^sleep 301$"), "el trabajo no esta corriendo")
+        codigo, salida, _ = self.revisar("--patron", "sleep 301")
         self.assertEqual(codigo, 0, salida)
 
     def test_si_el_servidor_muere_de_golpe_el_trabajo_queda_huerfano(self):
