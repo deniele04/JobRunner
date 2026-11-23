@@ -197,7 +197,21 @@ tc009="$(estado_pruebas \
   test_el_estado_final_de_un_trabajo_ya_terminado_no_se_reescribe \
   test_escala_a_sigkill_si_el_trabajo_ignora_sigterm \
   test_forzar_envia_sigkill_de_inmediato \
-  test_el_resultado_del_cierre_queda_guardado)"
+  test_el_resultado_del_cierre_queda_guardado \
+  test_ctrl_c_libera_el_puerto_y_no_quedan_conexiones_en_escucha \
+  test_sigterm_tambien_libera_el_puerto \
+  test_las_conexiones_abiertas_se_cierran_al_cerrar \
+  test_el_cierre_de_la_red_no_espera_a_que_mueran_los_trabajos \
+  test_trabajos_enviados_por_tcp_se_cancelan_sin_huerfanos \
+  test_se_conserva_la_cola_de_los_trabajos_enviados_por_tcp \
+  test_se_puede_reiniciar_en_el_mismo_puerto_de_inmediato_con_clientes_conectados \
+  test_una_solicitud_a_medias_no_crea_trabajos \
+  test_el_segundo_ctrl_c_fuerza_el_cierre_con_tcp_abierto \
+  test_la_bitacora_registra_el_cierre_de_la_red \
+  test_sin_listen_no_se_registra_puerto_tcp \
+  test_cerrar_cierra_las_conexiones_abiertas_y_devuelve_cuantas_eran \
+  test_cerrar_libera_el_puerto_y_ya_no_acepta_conexiones \
+  test_cerrar_sin_conexiones_devuelve_cero_y_se_puede_repetir)"
 tc016="$(estado_pruebas \
   test_cola_llena_rechaza_y_no_registra_el_trabajo \
   test_el_rechazo_no_afecta_a_los_trabajos_aceptados \
