@@ -21,10 +21,10 @@ Cadena obligatoria del Plan de Verificación: Requisito → Método → Caso →
 | [TC-007](../test-cases/TC-007.md) | Reinicio y recuperación | `verif/unit/test_persistencia.py`, `test_reinicio_servidor.py`, `test_store.py` | PASS |
 | [TC-008](../test-cases/TC-008.md) | Aislamiento de fallo | `verif/unit/test_ciclo_vida.py`, `test_servidor_robusto.py`, `verif/integration/test_tc001_enviar_trabajo.py` | PASS |
 | [TC-009](../test-cases/TC-009.md) | Cierre controlado | `verif/integration/test_tc009_cierre_controlado.py`, `test_procesos.py`, `test_tc009_cierre_tcp.py` (cierre con TCP, Josué), `verif/unit/test_cierre.py`, `test_red.py` | PASS |
-| TC-010 | Flujo remoto completo en LAN/VPN | `verif/integration/test_servidor_tcp.py`, `test_acceso_tcp.py` (servidor TCP); cliente remoto `test_tc010_*.py` (Juan); evidencia entre dos equipos en `verif/results/<run-id>-remoto/` | Pendiente |
-| TC-011 | Restricción de red | `verif/integration/test_acceso_tcp.py`, `test_servidor_tcp.py`, `verif/unit/test_red.py` | Pendiente |
+| TC-010 | Flujo remoto completo en LAN/VPN | `verif/integration/test_servidor_tcp.py`, `test_acceso_tcp.py` (servidor TCP); cliente remoto `test_tc010_operacion_remota.py` (Juan); evidencia entre dos equipos en `verif/results/<run-id>-remoto/` | Pendiente |
+| TC-011 | Restricción de red | `verif/integration/test_tc011_restriccion_acceso.py`, `test_acceso_tcp.py`, `test_servidor_tcp.py`, `verif/unit/test_red.py` | Pendiente |
 | TC-012 | Fragmentación y desconexión | `verif/unit/test_red.py`, `verif/integration/test_servidor_tcp.py` | Pendiente |
-| TC-013 | Configuración y salud | `verif/integration/test_acceso_tcp.py`, `test_servidor_tcp.py` (configuración); salud: `test_tc013_*.py` (Juan) | Pendiente |
+| TC-013 | Configuración y salud | `verif/integration/test_acceso_tcp.py`, `test_servidor_tcp.py` (configuración); salud: `test_tc013_salud_y_configuracion.py` (Juan) | Pendiente |
 | [TC-014](../test-cases/TC-014.md) | Construcción desde clon limpio | `verif/scripts/verify.sh` | PASS |
 | TC-015 | Usabilidad documental | `verif/integration/test_royito.py`, `test_tc004_consultar_listar.py`, `test_tc001_enviar_trabajo.py`; registro manual `verif/manual/TC-015.md` | Pendiente |
 | [TC-016](../test-cases/TC-016.md) | Saturación de cola y rechazo explícito | `verif/unit/test_cola.py`, `test_servidor_cola.py` | PASS |
@@ -66,15 +66,15 @@ Incluye RF-01 a RF-30 y RNF-01 a RNF-34 (el PDF 05 exige RF-01…RF-24 y RNF-01�
 | RF-13 | Recuperar historial y marcar trabajos interrumpidos | Por definir | Prueba | [TC-007](../test-cases/TC-007.md) | unittest.log, unit-resultados.tsv | PASS | — |
 | RF-14 | Bitácora con marca temporal e ID de trabajo | Por definir | Prueba | [TC-025](../test-cases/TC-025.md) | unittest.log, unit-resultados.tsv | PASS | [TC-025](../test-cases/TC-025.md) lo define el equipo; no está en el PDF 05 |
 | RF-15 | Inicio y cierre controlados, sin aceptar trabajos durante el cierre | Por definir | Prueba | [TC-009](../test-cases/TC-009.md) | unittest.log, procesos.log | PASS | — |
-| RF-16 | Configuración de directorio, concurrencia, interfaz y puerto | Por definir | Prueba/Inspección | TC-013 | unittest.log, unit-resultados.tsv | Pendiente | Salud (`health`) y configuración; depende de las pruebas de Juan (U3) |
+| RF-16 | Configuración de directorio, concurrencia, interfaz y puerto | Por definir | Prueba/Inspección | TC-013 | unittest.log, unit-resultados.tsv | Pendiente | Salud (`health`) y configuración; pruebas de Juan en `test_tc013_salud_y_configuracion.py` |
 | RF-17 | Ayuda de uso y códigos de salida del cliente | Por definir | Prueba/Inspección | [TC-001](../test-cases/TC-001.md), [TC-004](../test-cases/TC-004.md), TC-015 | unittest.log, unit-resultados.tsv, manual-TC-015.md | Pendiente | — |
-| RF-18 | Operación remota con protocolo documentado | Alta | Prueba/Demo | TC-010 | unittest.log, unit-resultados.tsv, verif/results/<run-id>-remoto/ | Pendiente | Necesita el cliente remoto de Juan y la ejecución entre dos equipos |
-| RF-19 | Misma semántica local y remota | Por definir | Prueba/Demo | TC-010 | unittest.log, unit-resultados.tsv, verif/results/<run-id>-remoto/ | Pendiente | Necesita el cliente remoto de Juan y la ejecución entre dos equipos |
+| RF-18 | Operación remota con protocolo documentado | Alta | Prueba/Demo | TC-010 | unittest.log, unit-resultados.tsv, verif/results/<run-id>-remoto/ | Pendiente | Falta la ejecución entre dos equipos (evidencia `<run-id>-remoto`) |
+| RF-19 | Misma semántica local y remota | Por definir | Prueba/Demo | TC-010 | unittest.log, unit-resultados.tsv, verif/results/<run-id>-remoto/ | Pendiente | Falta la ejecución entre dos equipos (evidencia `<run-id>-remoto`) |
 | RF-20 | Acceso remoto restringido a LAN/VPN autorizada | Crítica | Prueba/Análisis | TC-011 | unittest.log, unit-resultados.tsv | Pendiente | — |
 | RF-21 | Protocolo con mensajes delimitados y lecturas parciales | Por definir | Prueba | TC-012, TC-023 | unittest.log, unit-resultados.tsv | Pendiente | — |
 | RF-22 | Desconexiones de cliente sin terminar el servicio | Por definir | Prueba | TC-012, [TC-019](../test-cases/TC-019.md) | unittest.log, unit-resultados.tsv | Pendiente | — |
 | RF-23 | Rechazar y registrar solicitudes que excedan límites | Por definir | Prueba | [TC-016](../test-cases/TC-016.md) | unittest.log, unit-resultados.tsv | PASS | El PDF 05 no asigna TC; se propone [TC-016](../test-cases/TC-016.md) (cola llena) |
-| RF-24 | Resumen de salud del servicio | Por definir | Prueba | TC-013 | unittest.log, unit-resultados.tsv | Pendiente | Depende del comando `health` y de sus pruebas (Juan) |
+| RF-24 | Resumen de salud del servicio | Por definir | Prueba | TC-013 | unittest.log, unit-resultados.tsv | Pendiente | Pruebas de `health` en `test_tc013_salud_y_configuracion.py` (Juan) |
 | RF-25 | Cola llena: rechazo explícito sin perder trabajos | Por definir | Prueba | [TC-016](../test-cases/TC-016.md) | unittest.log, unit-resultados.tsv | PASS | — |
 | RF-26 | Cancelaciones concurrentes con estado final coherente | Por definir | Prueba | [TC-017](../test-cases/TC-017.md) | unittest.log, unit-resultados.tsv | PASS | — |
 | RF-27 | Solicitudes duplicadas sin estados contradictorios | Por definir | Prueba | [TC-018](../test-cases/TC-018.md) | unittest.log, unit-resultados.tsv | PASS | — |
@@ -136,7 +136,6 @@ Incluye RF-01 a RF-30 y RNF-01 a RNF-34 (el PDF 05 exige RF-01…RF-24 y RNF-01�
 | Pendiente | Quién | Efecto en la matriz |
 |---|---|---|
 | Ejecución formal final de `verify.sh` y `actualizar_matriz.py` sobre el commit final | Diego | Llena la columna Resultado: hoy está en `Pendiente` porque la última ejecución formal (`20261030-v0.2.0`) es del Avance 2 |
-| Pruebas del cliente remoto (`test_tc010_*.py`) y de `health` (`test_tc013_*.py`) | Juan (U3) | TC-010 y TC-013 quedan `BLOCKED` hasta que existan |
 | Evidencia de la operación entre dos equipos, `verif/results/<run-id>-remoto/` | Josué (J9) y Diego | TC-010 queda `BLOCKED` sin ella; también RNF-26 |
 | `seguridad.md` (modelo de amenazas y mínimo privilegio) | Josué (J7) | INS-016 queda `BLOCKED` sin él (RNF-16) |
 | Registro manual de usabilidad, `verif/manual/TC-015.md`, llenado por una persona ajena a la guía | Persona evaluadora | TC-015 queda `BLOCKED` mientras esté sin llenar (RNF-23) |
