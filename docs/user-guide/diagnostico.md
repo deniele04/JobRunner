@@ -42,7 +42,7 @@ En la columna `STAT` de `ps`: `S` o `R` = normal, `Z` = zombi, `T` = detenido (p
 
 | Lo que ves | Revisa | Causa probable | Qué hacer |
 |---|---|---|---|
-| El cliente recibe «Connection reset by peer» o la conexión se cierra sin respuesta | `grep acceso_rechazado data/jobrunner.log` en el servidor | La IP del cliente no está en `--allow` | Reinicia el servidor con `--allow <IP del cliente>/32` |
+| El cliente recibe «Connection reset by peer» o la conexión se cierra sin respuesta | `grep acceso_rechazado data/jobrunner.log` en el servidor | La IP del cliente no está en `--allow`. Con `--allow`, solo entran las redes indicadas (`127.0.0.1` incluido solo si se agrega) | Reinicia el servidor con `--allow <IP del cliente>/32` |
 | «Connection refused» | `ss -ltn \| grep 7070` en el servidor | El servidor no escucha por TCP (falta `--listen`) o escucha en otra IP o puerto | Revisa la línea `JobRunner escuchando en ... (TCP)` al arrancar |
 | El cliente se queda esperando hasta que falla por tiempo | `tailscale status` en los dos equipos y la prueba con `curl` de [conexion-lan-vpn.md](conexion-lan-vpn.md) | Problema de red: Tailscale apagado, cuentas distintas o firewall | Corrige la red antes de revisar JobRunner |
 | La conexión se cierra sola tras un rato sin enviar nada | `grep conexion_inactiva data/jobrunner.log` | Comportamiento normal: 30 s sin datos (ADR-0009) | Nada; el cliente abre otra conexión |
