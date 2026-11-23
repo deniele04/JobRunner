@@ -4,9 +4,9 @@ Cadena obligatoria del Plan de Verificación: Requisito → Método → Caso →
 
 **Última ejecución formal:** `verif/results/20261030-v0.2.0/` (ver [resumen](../results/20261030-v0.2.0/resumen.md))
 
-**Numeración de TC:** alineada con el PDF 05 del Plan de Verificación ([TC-001](../test-cases/TC-001.md) a [TC-024](../test-cases/TC-024.md)). [TC-025](../test-cases/TC-025.md) (bitácora) lo agregó el equipo.
+**Numeración de TC:** alineada con el PDF 05 del Plan de Verificación ([TC-001](../test-cases/TC-001.md) a [TC-024](../test-cases/TC-024.md)). [TC-025](../test-cases/TC-025.md) (bitácora) y [TC-026](../test-cases/TC-026.md) (500 registros, RNF-06) los agregó el equipo. Los cuatro requisitos que el PDF 05 deja como inspección (RNF-16, RNF-17, RNF-18 y RNF-34) tienen una inspección, [INS-016](../inspecciones/INS-016.md), [INS-017](../inspecciones/INS-017.md), [INS-018](../inspecciones/INS-018.md) e [INS-034](../inspecciones/INS-034.md), que `verify.sh` ejecuta y cuenta como un caso más.
 
-**Valores de Resultado:** `PASS`, `FAIL`, `BLOCKED` (el caso existe pero no puede ejecutarse) y `Pendiente` (sin ejecución automatizada todavía, por ejemplo los casos del Hito 3).
+**Valores de Resultado:** `PASS`, `FAIL`, `BLOCKED` (el caso existe pero no puede ejecutarse; `resumen.md` dice qué falta) y `Pendiente` (el caso todavía no tiene resultado porque no se ha hecho con él la ejecución formal). Cuando se corre la ejecución formal final y `actualizar_matriz.py` llena la columna, no debe quedar ningún `Pendiente`: cada requisito termina en `PASS`, `FAIL` o `BLOCKED` con su motivo.
 
 ## Casos de prueba
 
@@ -45,7 +45,7 @@ Cadena obligatoria del Plan de Verificación: Requisito → Método → Caso →
 
 ## Matriz por requisito
 
-Incluye RF-01 a RF-30 y RNF-01 a RNF-34 (el PDF 05 exige RF-01…RF-24 y RNF-01…RNF-26 sin huecos; RF-25 a RF-30 y RNF-27 a RNF-34 son los requisitos de condiciones operativas del documento de requisitos). **Prioridad:** solo las ocho filas de la matriz de muestra del PDF 05 tienen prioridad definida; el resto la decide Producto. **Método y TC:** se toman del PDF 05; cuando el PDF no asigna caso, la columna Defecto/Excepción lo indica y propone uno.
+Incluye RF-01 a RF-30 y RNF-01 a RNF-34 (el PDF 05 exige RF-01…RF-24 y RNF-01…RNF-26 sin huecos; RF-25 a RF-30 y RNF-27 a RNF-34 son los requisitos de condiciones operativas del documento de requisitos). **Prioridad:** solo las ocho filas de la matriz de muestra del PDF 05 tienen prioridad definida; el resto la decide Producto. **Método y TC:** se toman del PDF 05; cuando el PDF no asigna caso, la columna Defecto/Excepción lo indica y Verificación define uno (TC-026 para RNF-06) o una inspección (RNF-16, RNF-17, RNF-18 y RNF-34).
 
 ### Requisitos funcionales
 
