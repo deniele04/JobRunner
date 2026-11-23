@@ -39,9 +39,9 @@ Si no se decide, la tentación es escuchar en `0.0.0.0` para "que funcione", lo 
 Se elige **TCP con el protocolo JSON de una línea, restringido a redes privadas por dirección de origen, y Tailscale como VPN recomendada** (alternativa 1). El token compartido no se adopta en el Hito 3 (ver Decisiones abiertas).
 
 Reglas:
-1. **Dirección de escucha:** `--listen HOST:PUERTO`, por defecto `127.0.0.1:7070`. El socket Unix sigue funcionando igual, sin cambios.
+1. **Dirección de escucha:** `--listen [HOST:PUERTO]`; sin valor, `127.0.0.1:7070`. Sin `--listen` no se abre ningún puerto TCP. El socket Unix sigue funcionando igual, sin cambios.
 2. **Direcciones prohibidas al arrancar:** si `--listen` es `0.0.0.0`, `::` o una dirección pública, el servidor se niega a arrancar y explica por qué.
-3. **Lista de redes permitidas:** `--allow RED`, repetible, en notación CIDR. Por defecto solo `127.0.0.1` y `::1`. Una red de `--allow` que sea pública, `0.0.0.0` o `::` también impide el arranque.
+3. **Lista de redes permitidas:** `--allow RED`, repetible, en notación CIDR. Sin `--allow` solo se permiten `127.0.0.1` y `::1`; con `--allow`, la lista indicada reemplaza a la de por defecto (para permitir también el loopback hay que incluirlo, p. ej. `--allow 127.0.0.1`). Una red de `--allow` que sea pública, `0.0.0.0` o `::` también impide el arranque.
 4. **Redes aceptables:** loopback, `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16` y `100.64.0.0/10` (el rango que usa Tailscale).
 5. **Conexión desde una dirección no permitida:** se cierra sin leer nada, se registra `ERROR acceso_rechazado ip=<dirección>` en la bitácora y se cuenta para el resumen de salud (`health`).
 6. **Cifrado:** el servicio no cifra. El cifrado lo da la VPN. En una LAN sin VPN el tráfico viaja en claro y se documenta como limitación.

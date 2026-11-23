@@ -288,13 +288,19 @@ class RedesPermitidasTest(unittest.TestCase):
         self.assertFalse(red.es_permitida("192.168.1.10", redes))
         self.assertFalse(red.es_permitida("8.8.8.8", redes))
 
-    def test_allow_agrega_redes_y_conserva_el_loopback(self):
+    def test_allow_reemplaza_la_lista_por_defecto(self):
         redes = red.redes_permitidas(["192.168.1.0/24", "100.64.0.0/10"])
-        self.assertTrue(red.es_permitida("127.0.0.1", redes))
+        self.assertFalse(red.es_permitida("127.0.0.1", redes))   # sin localhost salvo que se pida
         self.assertTrue(red.es_permitida("192.168.1.77", redes))
         self.assertTrue(red.es_permitida("100.101.102.103", redes))
         self.assertFalse(red.es_permitida("192.168.2.1", redes))
         self.assertFalse(red.es_permitida("100.128.0.1", redes))   # fuera de 100.64.0.0/10
+
+    def test_allow_puede_incluir_el_loopback_si_se_pide(self):
+        redes = red.redes_permitidas(["127.0.0.1", "10.0.0.0/8"])
+        self.assertTrue(red.es_permitida("127.0.0.1", redes))
+        self.assertTrue(red.es_permitida("10.9.8.7", redes))
+        self.assertFalse(red.es_permitida("::1", redes))
 
     def test_una_ip_suelta_cuenta_como_red_de_un_solo_equipo(self):
         redes = red.redes_permitidas(["10.1.2.3"])
@@ -304,7 +310,7 @@ class RedesPermitidasTest(unittest.TestCase):
     def test_ipv4_mapeada_en_ipv6_y_ambito_se_normalizan(self):
         redes = red.redes_permitidas(["192.168.1.0/24"])
         self.assertTrue(red.es_permitida("::ffff:192.168.1.5", redes))
-        self.assertTrue(red.es_permitida("::1%lo", redes))
+        self.assertTrue(red.es_permitida("::1%lo", red.redes_permitidas([])))   # el ambito IPv6 se ignora
         self.assertFalse(red.es_permitida("::ffff:8.8.8.8", redes))
 
     def test_direccion_que_no_es_ip_no_se_permite(self):

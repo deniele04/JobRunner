@@ -235,8 +235,9 @@ def parse_args(argv=None):
     parser.add_argument(
         "--allow", action="append", default=[], metavar="RED",
         help="Red de origen permitida por TCP, en CIDR (p. ej. 100.64.0.0/10 para Tailscale). "
-             "Se puede repetir. Siempre se permite 127.0.0.1 y ::1. Solo se aceptan redes "
-             "privadas; 0.0.0.0, :: y las publicas impiden el arranque.",
+             "Se puede repetir. Sin --allow solo se permiten 127.0.0.1 y ::1; con --allow, "
+             "solo las redes indicadas (incluye 127.0.0.1 si tambien lo quieres). Solo se "
+             "aceptan redes privadas; 0.0.0.0, :: y las publicas impiden el arranque.",
     )
     args = parser.parse_args(argv)
     try:
