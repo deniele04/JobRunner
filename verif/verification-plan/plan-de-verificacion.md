@@ -188,11 +188,18 @@ Un FAIL se registra con la plantilla de Issue «defecto» (`.github/ISSUE_TEMPLA
 - **Cierre.** Un defecto se cierra con una corrección **y** una prueba de regresión que falla sin ella, en el mismo PR. Si no se corrige, se justifica como limitación aceptada con quién lo decidió y por qué; queda en las release notes.
 - **Ningún FAIL sin defecto.** Si un caso falla en una ejecución formal, antes de la siguiente debe existir su Issue.
 
-## 9. Criterios de salida del Avance 1
+## 9. Criterios de aceptación de la entrega final
 
-- Todos los TC del catálogo están en PASS, o en BLOCKED con la dependencia indicada.
-- No hay TC en FAIL sin defecto registrado.
-- TC-014 en PASS desde un clon limpio (condición del tag `v0.1.0`).
+La versión `v1.0.0` se acepta cuando la ejecución formal final de `verify.sh` sobre el commit etiquetado cumple todo lo siguiente:
+
+1. **Casos e inspecciones.** Todos los TC y las cuatro inspecciones están en `PASS`. Un `BLOCKED` solo se admite como excepción documentada en las release notes, con su motivo y quién lo resolverá; ningún caso queda en `Pendiente`.
+2. **Sin defectos sin atender.** No hay un `FAIL` sin defecto registrado. Todo defecto abierto tiene severidad y decisión (corregir o limitación aceptada); ninguno de severidad alta queda abierto.
+3. **Matriz completa.** Los 30 RF y los 34 RNF tienen su caso o inspección y su resultado: sin `Pendiente` ni `Sin TC`, con la evidencia enlazada.
+4. **Construcción reproducible.** TC-014 en `PASS` desde un clon limpio; quien recibe la versión puede clonar, construir y probar solo con el README.
+5. **Sin procesos sueltos.** La revisión de `procesos.sh` al final de las pruebas no encuentra zombis ni huérfanos, y las pruebas de la propia herramienta pasan también en WSL.
+6. **Operación entre dos equipos.** Existe `verif/results/<run-id>-remoto/` con la bitácora de ambos lados, la salida de los comandos y el `health`, hecha solo en LAN privada o VPN.
+7. **Verificación cruzada cerrada.** Cada defecto reportado por el otro equipo tiene su respuesta y su regresión en `PASS`, o su justificación (sección 12).
+8. **Reproducible por cualquiera.** `./scripts/test.sh` termina sin `FAILED` sobre el commit etiquetado, y la evidencia entregada sale de esa ejecución, no de una preparada a mano.
 
 ## 10. Pendientes por confirmar con el equipo
 
