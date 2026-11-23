@@ -240,7 +240,7 @@ def build_parser():
 
     p_health = sub.add_parser(
         "health", help="Resumen de salud del servicio",
-        description="Muestra la version, el tiempo activo, los trabajos por estado, los trabajos en "
+        description="Resumen de salud del servicio: version, tiempo activo, los trabajos por estado, los trabajos en "
                     "ejecucion y en cola frente a sus limites (--max-jobs y --queue-size), el estado "
                     "de la base de datos, los clientes conectados y los accesos rechazados.",
     )

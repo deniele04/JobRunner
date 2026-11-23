@@ -71,7 +71,7 @@ class OutputPorCliTest(ClienteRemotoBase):
             self.assertEqual(json.loads(salida)["error"], "No existe el trabajo no-existe")
             self.assertIn("Error al leer la salida del trabajo", err)
 
-    def test_trabajo_en_ejecucion_devuelve_lo_que_lleva(self):
+    def test_output_de_un_trabajo_en_ejecucion_por_tcp_devuelve_lo_que_lleva(self):
         _, trabajo = self.servidor.enviar(
             "--", sys.executable, "-u", "-c", "print('avance'); import time; time.sleep(30)")
         fin = time.monotonic() + 10

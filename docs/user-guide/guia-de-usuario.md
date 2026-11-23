@@ -92,6 +92,14 @@ royito submit -- sh -c 'echo hola; exit 3'
 
 El servicio responde con los datos del trabajo. Copia el valor de `"id"`: lo necesitas para consultarlo o cancelarlo.
 
+Si no estás seguro de que el envío llegó (por ejemplo, se cortó la conexión), repítelo con `--request-id`: el servicio no crea un segundo trabajo y devuelve el mismo, con `"duplicado": true`.
+
+```bash
+royito submit --request-id respaldo-1 -- sleep 30
+```
+
+El `request_id` lleva de 1 a 64 caracteres: letras, números, `-` y `_`. Si lo reusas con otro comando, el servicio lo rechaza.
+
 Escribe siempre `--` antes del comando. Sin él, las opciones del comando (por ejemplo, el `-l` de `ls -l`) se confunden con opciones del cliente.
 
 ### 4.2 Consultar un trabajo
