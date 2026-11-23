@@ -104,5 +104,11 @@ class Store:
         sql += " ORDER BY created_at, rowid"
         return [_a_job(f) for f in self._conn.execute(sql, params).fetchall()]
 
+    def verificar(self):
+        """Comprueba que la base responde y que existe la tabla de trabajos (health).
+
+        Lanza sqlite3.Error si no es asi."""
+        self._conn.execute("SELECT 1 FROM jobs LIMIT 1").fetchall()
+
     def close(self):
         self._conn.close()

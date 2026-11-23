@@ -16,6 +16,8 @@ ACCIONES = (
     ("cola llena", "espera a que termine algun trabajo o reinicia el servicio con un --queue-size mayor"),
     ("ya termino en estado", "no hay nada que hacer: un trabajo terminado no se puede cancelar"),
     ("estado desconocido", "usa QUEUED, RUNNING, SUCCEEDED, FAILED o CANCELED"),
+    ("la salida del trabajo", "el archivo de salida ya no existe; revisa la carpeta data/ del servicio"),
+    ("max_bytes", "usa un entero de 1 a 65536"),
     ("se esta cerrando", "espera a que el servicio vuelva a iniciar y repite la operacion"),
     ("request_id", "usa de 1 a 64 caracteres: letras, numeros, - y _"),
     ("argv", "escribe el comando despues de -- , por ejemplo: royito submit -- sleep 5"),
@@ -28,6 +30,8 @@ OPERACIONES = {
     "status": "consultar el trabajo",
     "list": "listar los trabajos",
     "cancel": "cancelar el trabajo",
+    "output": "leer la salida del trabajo",
+    "health": "consultar la salud del servicio",
 }
 
 
@@ -147,6 +151,24 @@ def cmd_cancel(args):
     print_response(_enviar(args, {"cmd": "cancel", "id": args.id}), "cancel")
 
 
+def cmd_output(args):
+    request = {"cmd": "output", "id": args.id, "stream": "stderr" if args.stderr else "stdout"}
+    if args.max_bytes is not None:
+        request["max_bytes"] = args.max_bytes
+    response = _enviar(args, request)
+    if args.raw and isinstance(response, dict) and "data" in response \
+            and not es_error_del_servicio(response):
+        sys.stdout.write(response["data"])
+        if response.get("truncated"):
+            print("\nAviso: la salida es mas larga; solo se muestra el final.", file=sys.stderr)
+        return
+    print_response(response, "output")
+
+
+def cmd_health(args):
+    print_response(_enviar(args, {"cmd": "health"}), "health")
+
+
 def _puerto(texto):
     try:
         numero = int(texto)
@@ -200,6 +222,29 @@ def build_parser():
     p_cancel = sub.add_parser("cancel", help="Cancela un trabajo")
     p_cancel.add_argument("id", help="Identificador del trabajo")
     p_cancel.set_defaults(func=cmd_cancel)
+
+    p_output = sub.add_parser(
+        "output", help="Muestra la salida de un trabajo (el final, hasta 64 KiB)",
+        description="Muestra el final de la salida normal (o de errores, con --stderr) de un trabajo. "
+                    "Responde un JSON con id, stream, data y truncated; truncated es true si habia "
+                    "mas salida al principio.",
+    )
+    p_output.add_argument("id", help="Identificador del trabajo")
+    p_output.add_argument("--stderr", action="store_true",
+                          help="Muestra la salida de errores en lugar de la salida normal")
+    p_output.add_argument("--max-bytes", type=int, default=None, metavar="N",
+                          help="Cuantos bytes del final mostrar, de 1 a 65536 (default: 65536)")
+    p_output.add_argument("--raw", action="store_true",
+                          help="Imprime solo el texto de la salida, sin el JSON")
+    p_output.set_defaults(func=cmd_output)
+
+    p_health = sub.add_parser(
+        "health", help="Resumen de salud del servicio",
+        description="Muestra la version, el tiempo activo, los trabajos por estado, los trabajos en "
+                    "ejecucion y en cola frente a sus limites (--max-jobs y --queue-size), el estado "
+                    "de la base de datos, los clientes conectados y los accesos rechazados.",
+    )
+    p_health.set_defaults(func=cmd_health)
 
     return parser
 
