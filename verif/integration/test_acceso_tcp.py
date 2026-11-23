@@ -94,7 +94,7 @@ class AccesoConAllowTest(unittest.TestCase):
     def test_allow_con_una_ip_deja_pasar_solo_a_esa(self):
         _, puerto = self.iniciar("127.0.0.2")
         self.assertEqual(pedir_desde("127.0.0.2", puerto, {"cmd": "list"}), {"v": 1, "jobs": []})
-        self.assertEqual(pedir_desde("127.0.0.1", puerto, {"cmd": "list"}), {"v": 1, "jobs": []})   # loopback siempre
+        self.assertIsNone(pedir_desde("127.0.0.1", puerto, {"cmd": "list"}))   # --allow reemplaza la lista por defecto
         self.assertIsNone(pedir_desde("127.0.0.3", puerto, {"cmd": "list"}))
 
     def test_allow_con_cidr_cubre_todo_el_rango(self):

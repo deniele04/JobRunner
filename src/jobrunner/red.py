@@ -58,8 +58,14 @@ def parsear_red(texto):
 
 
 def redes_permitidas(textos):
-    """Redes de origen permitidas: loopback (127.0.0.1 y ::1) mas las de --allow."""
-    return list(PERMITIDAS_POR_DEFECTO) + [parsear_red(t) for t in (textos or [])]
+    """Redes de origen permitidas (ADR-0008, reglas 3 y 5).
+
+    Sin --allow solo se permiten 127.0.0.1 y ::1. Con --allow, esa lista reemplaza a la de por
+    defecto: para permitir tambien el loopback hay que incluirlo (--allow 127.0.0.1).
+    """
+    if not textos:
+        return list(PERMITIDAS_POR_DEFECTO)
+    return [parsear_red(t) for t in textos]
 
 
 def es_permitida(ip, redes):
