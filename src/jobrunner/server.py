@@ -98,18 +98,42 @@ def handle_request(manager, request):
     return {"error": "comando desconocido: " + str(cmd)}
 
 
+def _con_version(respuesta):
+    """Toda respuesta lleva "v": 1 (ADR-0009, regla 1); la version va primero."""
+    if isinstance(respuesta, dict):
+        respuesta = {key: valor for key, valor in respuesta.items() if key != "v"}
+        return {"v": red.VERSION_PROTOCOLO, **respuesta}
+    return respuesta
+
+
+def _version_soportada(request):
+    """True si la solicitud no trae "v" (se toma como 1) o trae exactamente el entero 1."""
+    if "v" not in request:
+        return True
+    version = request["v"]
+    return type(version) is int and version == red.VERSION_PROTOCOLO
+
+
 def responder(manager, linea):
     """Procesa una solicitud completa (una linea de bytes) y devuelve el dict de respuesta."""
     try:
         request = json.loads(linea.decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError):
         bitacora.error("solicitud_invalida", motivo="JSON invalido")
-        return {"error": "JSON invalido"}
+        return _con_version({"error": "JSON invalido"})
+    if not isinstance(request, dict):
+        bitacora.error("solicitud_invalida", motivo="la solicitud no es un objeto JSON")
+        return _con_version({"error": "la solicitud debe ser un objeto JSON"})
+    if not _version_soportada(request):
+        bitacora.error("solicitud_invalida", motivo="version de protocolo no soportada",
+                       version=json.dumps(request["v"]))
+        return _con_version({"error": "version de protocolo no soportada: " + json.dumps(request["v"])
+                             + " (soportada: " + str(red.VERSION_PROTOCOLO) + ")"})
     try:
-        return handle_request(manager, request)
+        return _con_version(handle_request(manager, request))
     except Exception as e:
         bitacora.error("error_interno", motivo=e)
-        return {"error": "error interno: " + str(e)}
+        return _con_version({"error": "error interno: " + str(e)})
 
 
 def serve(socket_path=DEFAULT_SOCKET_PATH, max_jobs=DEFAULT_MAX_JOBS, queue_size=DEFAULT_QUEUE_SIZE,

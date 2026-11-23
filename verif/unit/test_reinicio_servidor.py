@@ -152,20 +152,20 @@ class ReinicioServidorTest(unittest.TestCase):
         repetido = pedir(self.ruta, {"cmd": "submit", "argv": ["sleep", "120"], "request_id": "req-x"})
         self.assertTrue(repetido["duplicado"])
         otro = pedir(self.ruta, {"cmd": "submit", "argv": ["sleep", "999"], "request_id": "req-x"})
-        self.assertEqual(list(otro), ["error"])
+        self.assertEqual([k for k in otro if k != "v"], ["error"])
         self.assertIn("otro comando", otro["error"])
         listado = pedir(self.ruta, {"cmd": "list"})["jobs"]
         self.assertEqual([t["argv"] for t in listado], [["sleep", "120"]])
 
     def test_servidor_request_id_demasiado_largo_se_rechaza(self):
         respuesta = pedir(self.ruta, {"cmd": "submit", "argv": ["true"], "request_id": "a" * 65})
-        self.assertEqual(list(respuesta), ["error"])
+        self.assertEqual([k for k in respuesta if k != "v"], ["error"])
         self.assertEqual(pedir(self.ruta, {"cmd": "list"})["jobs"], [])
 
     def test_request_id_invalido_se_rechaza(self):
         for invalido in ("", 5):
             respuesta = pedir(self.ruta, {"cmd": "submit", "argv": ["true"], "request_id": invalido})
-            self.assertEqual(list(respuesta), ["error"])
+            self.assertEqual([k for k in respuesta if k != "v"], ["error"])
         self.assertEqual(pedir(self.ruta, {"cmd": "list"})["jobs"], [])
 
 

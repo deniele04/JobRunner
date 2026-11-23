@@ -4,6 +4,7 @@ import os
 import socket
 import sys
 
+VERSION_PROTOCOLO = 1   # protocolo v1 (ADR-0009)
 DEFAULT_SOCKET_PATH = os.environ.get("JOBRUNNER_SOCKET", "data/jobrunner.sock")
 
 
@@ -16,7 +17,7 @@ def send_request(request, socket_path=DEFAULT_SOCKET_PATH):
         sys.exit(1)
 
     with client:
-        client.sendall((json.dumps(request) + "\n").encode("utf-8"))
+        client.sendall((json.dumps({"v": VERSION_PROTOCOLO, **request}) + "\n").encode("utf-8"))
         data = b""
         while not data.endswith(b"\n"):
             chunk = client.recv(4096)
@@ -26,9 +27,19 @@ def send_request(request, socket_path=DEFAULT_SOCKET_PATH):
     return json.loads(data.decode("utf-8"))
 
 
+def es_error_del_servicio(response):
+    """Un error del servicio trae solo "error" (y "v"); un trabajo fallido trae mas campos."""
+    return isinstance(response, dict) and [k for k in response if k != "v"] == ["error"]
+
+
 def print_response(response):
+    version = response.get("v") if isinstance(response, dict) else None
+    if version is not None and version != VERSION_PROTOCOLO:
+        print("Error: el servidor usa el protocolo v" + str(version) +
+              " y este cliente usa v" + str(VERSION_PROTOCOLO), file=sys.stderr)
+        sys.exit(1)
     print(json.dumps(response, indent=2))
-    if isinstance(response, dict) and list(response) == ["error"]:
+    if es_error_del_servicio(response):
         sys.exit(1)
 
 

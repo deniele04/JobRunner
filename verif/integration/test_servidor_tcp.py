@@ -68,9 +68,9 @@ class ServidorTcpTest(unittest.TestCase):
             while datos.count(NL) < 3:
                 datos += c.recv(65536)
         r1, r2, r3 = [json.loads(x) for x in datos.strip().split(NL)]
-        self.assertEqual(r1, {"jobs": []})
+        self.assertEqual(r1, {"v": 1, "jobs": []})
         self.assertIn("comando desconocido", r2["error"])
-        self.assertEqual(r3, {"jobs": []})
+        self.assertEqual(r3, {"v": 1, "jobs": []})
 
     def test_mensaje_mayor_de_64_kib_recibe_error_y_el_servidor_sigue(self):
         with socket.create_connection(("127.0.0.1", self.puerto), timeout=5) as c:
@@ -78,7 +78,7 @@ class ServidorTcpTest(unittest.TestCase):
             c.settimeout(5)
             respuesta = json.loads(c.recv(4096))
         self.assertIn("demasiado grande", respuesta["error"])
-        self.assertEqual(pedir_tcp(self.puerto, {"cmd": "list"}), {"jobs": []})
+        self.assertEqual(pedir_tcp(self.puerto, {"cmd": "list"}), {"v": 1, "jobs": []})
         self.assertIn("mensaje demasiado grande", self.servidor.directorio.joinpath("jobrunner.log").read_text())
 
     def test_el_bitacora_registra_el_puerto_tcp(self):

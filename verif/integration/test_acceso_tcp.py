@@ -55,7 +55,7 @@ class AccesoPorDefectoTest(unittest.TestCase):
         return self.servidor.directorio.joinpath("jobrunner.log").read_text()
 
     def test_loopback_si_y_otro_origen_no(self):
-        self.assertEqual(pedir_desde("127.0.0.1", self.puerto, {"cmd": "list"}), {"jobs": []})
+        self.assertEqual(pedir_desde("127.0.0.1", self.puerto, {"cmd": "list"}), {"v": 1, "jobs": []})
         self.assertIsNone(pedir_desde("127.0.0.2", self.puerto, {"cmd": "list"}))
 
     def test_el_rechazo_se_registra_con_la_ip_y_no_se_crea_trabajo(self):
@@ -63,14 +63,14 @@ class AccesoPorDefectoTest(unittest.TestCase):
         time.sleep(0.3)
         self.assertIn("acceso_rechazado", self.bitacora())
         self.assertIn("ip=127.0.0.2", self.bitacora())
-        self.assertEqual(pedir_desde("127.0.0.1", self.puerto, {"cmd": "list"}), {"jobs": []})
+        self.assertEqual(pedir_desde("127.0.0.1", self.puerto, {"cmd": "list"}), {"v": 1, "jobs": []})
 
     def test_el_servidor_sigue_atendiendo_despues_de_muchos_rechazos(self):
         for _ in range(20):
             self.assertIsNone(pedir_desde("127.0.0.2", self.puerto, {"cmd": "list"}))
         codigo, respuesta = self.servidor.cli_json("list")
         self.assertEqual(codigo, 0)
-        self.assertEqual(respuesta, {"jobs": []})
+        self.assertEqual(respuesta, {"v": 1, "jobs": []})
 
     def test_el_socket_unix_no_depende_de_allow(self):
         codigo, _ = self.servidor.cli_json("list")
@@ -93,20 +93,20 @@ class AccesoConAllowTest(unittest.TestCase):
 
     def test_allow_con_una_ip_deja_pasar_solo_a_esa(self):
         _, puerto = self.iniciar("127.0.0.2")
-        self.assertEqual(pedir_desde("127.0.0.2", puerto, {"cmd": "list"}), {"jobs": []})
-        self.assertEqual(pedir_desde("127.0.0.1", puerto, {"cmd": "list"}), {"jobs": []})   # loopback siempre
+        self.assertEqual(pedir_desde("127.0.0.2", puerto, {"cmd": "list"}), {"v": 1, "jobs": []})
+        self.assertEqual(pedir_desde("127.0.0.1", puerto, {"cmd": "list"}), {"v": 1, "jobs": []})   # loopback siempre
         self.assertIsNone(pedir_desde("127.0.0.3", puerto, {"cmd": "list"}))
 
     def test_allow_con_cidr_cubre_todo_el_rango(self):
         _, puerto = self.iniciar("127.0.0.0/24")
         for origen in ("127.0.0.2", "127.0.0.77"):
-            self.assertEqual(pedir_desde(origen, puerto, {"cmd": "list"}), {"jobs": []})
+            self.assertEqual(pedir_desde(origen, puerto, {"cmd": "list"}), {"v": 1, "jobs": []})
         self.assertIsNone(pedir_desde("127.0.1.1", puerto, {"cmd": "list"}))
 
     def test_allow_repetido_suma_redes(self):
         _, puerto = self.iniciar("127.0.0.2", "127.0.0.3")
-        self.assertEqual(pedir_desde("127.0.0.2", puerto, {"cmd": "list"}), {"jobs": []})
-        self.assertEqual(pedir_desde("127.0.0.3", puerto, {"cmd": "list"}), {"jobs": []})
+        self.assertEqual(pedir_desde("127.0.0.2", puerto, {"cmd": "list"}), {"v": 1, "jobs": []})
+        self.assertEqual(pedir_desde("127.0.0.3", puerto, {"cmd": "list"}), {"v": 1, "jobs": []})
         self.assertIsNone(pedir_desde("127.0.0.4", puerto, {"cmd": "list"}))
 
     def test_un_cliente_permitido_puede_enviar_y_cancelar(self):

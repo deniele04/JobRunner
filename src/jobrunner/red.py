@@ -19,6 +19,7 @@ import time
 
 from . import bitacora
 
+VERSION_PROTOCOLO = 1     # campo "v" de cada respuesta (ADR-0009, regla 1)
 MAX_MENSAJE = 64 * 1024   # bytes por mensaje (ADR-0009, regla 4)
 INACTIVIDAD = 30.0        # segundos sin datos antes de cerrar la conexion (regla 5)
 _LECTURA = 65536
@@ -281,7 +282,8 @@ class Red:
     def _rechazar_grande(self, con):
         bitacora.error("solicitud_invalida", motivo="mensaje demasiado grande",
                        maximo=self._max, origen=con.origen)
-        aviso = {"error": "mensaje demasiado grande (maximo " + str(self._max) + " bytes)"}
+        aviso = {"v": VERSION_PROTOCOLO,
+                 "error": "mensaje demasiado grande (maximo " + str(self._max) + " bytes)"}
         try:
             con.sock.send((json.dumps(aviso) + "\n").encode("utf-8"))
         except OSError:
