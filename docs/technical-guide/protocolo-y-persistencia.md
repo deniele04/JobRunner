@@ -48,8 +48,8 @@ Toda solicitud es un objeto con el campo `cmd` (y opcionalmente `v`).
 | `status` | `id` | El trabajo |
 | `list` | `state` (opcional: QUEUED, RUNNING, SUCCEEDED, FAILED o CANCELED) | `{"v": 1, "jobs": [...]}` |
 | `cancel` | `id` | El trabajo, ya en estado CANCELED |
-| `output` | _Pendiente: formato definido por el equipo del cliente (U2)_ | _Ver sección 1.8_ |
-| `health` | _Pendiente: formato definido por el equipo del cliente (U2)_ | _Ver sección 1.8_ |
+| `output` | `id`, `stream` (opcional: `stdout` por defecto o `stderr`), `max_bytes` (opcional: entero de 1 a 65536) | `{"v": 1, "id", "stream", "data", "truncated"}` (sección 1.8) |
+| `health` | Ninguno | El resumen de salud (sección 1.8) |
 
 Ejemplo (los saltos de línea son solo para leer; en el cable va todo en una línea):
 
@@ -102,8 +102,13 @@ Un error de la operación es un objeto cuyas únicas claves son `v` y `error`:
 | `request_id` ya usado con otro comando | Error y no cambia nada (evento `request_id_en_uso`) |
 | Cola llena | `cola llena (capacidad N); intenta más tarde` |
 | Servicio en cierre | `el servicio se esta cerrando; no acepta trabajos nuevos` |
-| `status` o `cancel` sin `id` | `falta id` |
-| ID inexistente | `no existe el trabajo <id>` |
+| `status`, `cancel` u `output` sin `id` | `falta id` |
+| ID inexistente | `no existe el trabajo <id>` (en `cancel` y `output`, `No existe el trabajo <id>`) |
+| `list` con un estado desconocido | `Estado desconocido: <X>` |
+| `list` con un `state` que no es texto | `state debe ser texto (QUEUED, RUNNING, SUCCEEDED, FAILED o CANCELED)` |
+| `output` con un `stream` no válido | `stream debe ser stdout o stderr` |
+| `output` con un `max_bytes` no válido | `max_bytes debe ser un entero de 1 a 65536` |
+| `output` de un trabajo terminado cuyo archivo ya no existe | `la salida del trabajo <id> no esta disponible: no existe su archivo <ruta>` |
 | Cancelar un trabajo ya terminado | `El trabajo <id> ya termino en estado <ESTADO>; no se puede cancelar` |
 | Línea que no es JSON ni UTF-8 válido | `JSON invalido` |
 | JSON válido que no es un objeto | `la solicitud debe ser un objeto JSON` |
@@ -113,8 +118,52 @@ Un error de la operación es un objeto cuyas únicas claves son `v` y `error`:
 
 Importante: el campo `error` **dentro de un trabajo** (`"error": null` o un texto como `SIGTERM`) no es un error de la operación. Regla para clientes: es error del servicio la respuesta cuyas claves, **excluyendo `v`**, son exactamente `["error"]`. Un trabajo FAILED es una operación exitosa (la CLI sale con código 0); un error del servicio hace que la CLI salga con código 1.
 
-### 1.8 Comandos `output` y `health` (pendiente)
-Estos dos comandos los define e implementa el equipo del cliente (tarea U2) y todavía no están en el servidor. Cuando se integren, esta sección debe completarse con: campos de la solicitud, forma de la respuesta (cómo se entrega la salida de un trabajo y su límite de tamaño, y qué campos reporta `health`), errores propios y ejemplo. Hasta entonces, la salida de un trabajo se obtiene de los archivos que indican `stdout_path` y `stderr_path`, y no hay comando de salud.
+### 1.8 Comandos `output` y `health`
+
+Los dos solo leen: no cambian el estado de ningún trabajo y funcionan igual por el socket Unix y por TCP.
+
+**`output`** devuelve el **final** de la salida de un trabajo.
+
+```
+{"v": 1, "cmd": "output", "id": "63c4512b-3526-45a4-91cf-0879d31b2d64"}
+{"v": 1, "cmd": "output", "id": "63c4512b-...", "stream": "stderr", "max_bytes": 1024}
+
+{"v": 1, "id": "63c4512b-3526-45a4-91cf-0879d31b2d64", "stream": "stdout",
+ "data": "hola\n", "truncated": false}
+```
+
+| Campo de la respuesta | Significado |
+|---|---|
+| `id` | El trabajo consultado |
+| `stream` | `stdout` (`data/<id>.out`) o `stderr` (`data/<id>.err`) |
+| `data` | Texto UTF-8: como mucho `max_bytes` bytes (por defecto y como máximo 65 536) tomados del **final** del archivo. Los bytes que no sean UTF-8 válido se sustituyen por `\ufffd`; si el corte cae a la mitad de un carácter, se descarta ese pedazo |
+| `truncated` | `true` si el archivo tenía más bytes de los devueltos (se perdió el principio) |
+
+Un trabajo en `QUEUED` todavía no tiene archivos: devuelve `data` vacío. Uno en `RUNNING` devuelve lo que lleva escrito. Los errores (id inexistente, `stream` o `max_bytes` no válidos, archivo borrado) son errores de la operación (sección 1.7). Un cliente que necesite más de 64 KiB debe leer el archivo en el equipo del servicio.
+
+**`health`** devuelve el resumen de salud (RF-24).
+
+```
+{"v": 1, "cmd": "health"}
+
+{"v": 1, "version": "1.0.0", "uptime_seconds": 42.7,
+ "jobs_by_state": {"QUEUED": 1, "RUNNING": 2, "SUCCEEDED": 5, "FAILED": 1, "CANCELED": 0},
+ "running": 2, "max_jobs": 3, "queued": 1, "queue_size": 10,
+ "database": "ok", "clients": 2, "rejected_access": 0}
+```
+
+| Campo | Significado |
+|---|---|
+| `version` | Versión del software del servicio (no es la versión `v` del protocolo) |
+| `uptime_seconds` | Segundos desde que arrancó el gestor de trabajos, con un decimal |
+| `jobs_by_state` | Trabajos por estado; la suma es el total de trabajos que conoce el servicio |
+| `running`, `max_jobs` | Trabajos en `RUNNING` y el límite de `--max-jobs` |
+| `queued`, `queue_size` | Trabajos en `QUEUED` y el límite de `--queue-size` |
+| `database` | `"ok"` si la base responde; `"error: <causa>"` si no (`health` no falla por eso); `"no configurada"` si el gestor se usa sin base |
+| `clients` | Conexiones abiertas en este instante, Unix y TCP, incluida la de quien pregunta |
+| `rejected_access` | Conexiones TCP cerradas por origen no permitido desde que arrancó el servicio (ADR-0008) |
+
+`health` nunca trae la clave `error`, así que el cliente lo trata como operación exitosa aunque `database` informe un problema.
 
 ### 1.9 Duplicados y desconexiones (`request_id`)
 - Si `submit` trae un `request_id` que ya existe con el mismo comando, el servidor devuelve el trabajo existente con `"duplicado": true` y no crea otro proceso (evento `duplicado`).
@@ -125,7 +174,7 @@ Estos dos comandos los define e implementa el equipo del cliente (tarea U2) y to
 ### 1.10 Historial de versiones
 | Versión | Cambios |
 |---|---|
-| v1 | Primera versión versionada (entrega final). Socket Unix y TCP; campo `v` en toda respuesta; varias solicitudes por conexión; límite de 64 KiB y 30 s de inactividad; comandos `submit`, `status`, `list` y `cancel`. Antes de v1 (Hitos 1 a 3) el protocolo no llevaba `v` y solo usaba el socket Unix con una solicitud por conexión; un cliente así sigue funcionando porque sin `v` se toma como 1. |
+| v1 | Primera versión versionada (entrega final). Socket Unix y TCP; campo `v` en toda respuesta; varias solicitudes por conexión; límite de 64 KiB y 30 s de inactividad; comandos `submit`, `status`, `list`, `cancel`, `output` y `health`. Antes de v1 (Hitos 1 a 3) el protocolo no llevaba `v` y solo usaba el socket Unix con una solicitud por conexión; un cliente así sigue funcionando porque sin `v` se toma como 1. |
 
 Una versión nueva se anunciaría aquí. Agregar campos opcionales no cambia la versión; cambiar el significado de un campo o quitarlo sí.
 
@@ -187,8 +236,8 @@ La recuperación es idempotente: repetirla da el mismo resultado, porque los est
 ## 4. Limitaciones conocidas
 - Un trabajo que terminó pero que el servidor no consultó antes de caer queda en FAILED «interrumpido por reinicio», porque su resultado real no se guardó.
 - El PID guardado podría haberse reutilizado por otro proceso. Se mitiga enviando la señal al grupo de procesos solo si existe y es accesible; se acepta el riesgo residual (ADR-0005).
-- La CLI no tiene tiempo de espera propio si el servidor no responde.
-- `list` con un estado desconocido responde `error interno: Estado desconocido: <X>` en lugar de un mensaje de validación.
+- La CLI espera hasta 5 s para abrir la conexión TCP, pero no tiene tiempo de espera propio si el servidor acepta y luego no responde.
+- `output` devuelve como máximo los últimos 64 KiB de la salida de un trabajo.
 - El protocolo no tiene autenticación ni cifrado: la protección es la lista de orígenes y la red privada o VPN (ver [seguridad](seguridad.md)).
 
 ## 5. Pruebas relacionadas

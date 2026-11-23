@@ -1,6 +1,6 @@
 # Guía de usuario — JobRunner
 
-JobRunner ejecuta comandos de Linux como **trabajos** en segundo plano. Un servicio (el servidor) lanza y controla cada trabajo, y el usuario lo opera desde un cliente de línea de comandos (el CLI) para enviar, consultar, listar y cancelar trabajos.
+JobRunner ejecuta comandos de Linux como **trabajos** en segundo plano. Un servicio (el servidor) lanza y controla cada trabajo, y el usuario lo opera desde un cliente de línea de comandos (el CLI) para enviar, consultar, listar y cancelar trabajos, ver su salida y revisar la salud del servicio, en la misma computadora o desde otra por una red privada o VPN.
 
 Esta guía explica cómo instalarlo y usarlo sin ayuda del equipo (RNF-23).
 
@@ -50,6 +50,10 @@ Opciones del servicio:
 |---|---|---|
 | `--max-jobs` | Cuántos trabajos se ejecutan al mismo tiempo | 3 |
 | `--queue-size` | Cuántos trabajos pueden esperar en la cola | 10 |
+| `--listen [HOST:PUERTO]` | Además del socket Unix, escucha por TCP para clientes de otros equipos. Sin valor usa `127.0.0.1:7070`. Sin esta opción no se abre ningún puerto | Desactivado |
+| `--allow RED` | Red de origen permitida por TCP, en CIDR (se puede repetir). Solo con `--listen` | Solo `127.0.0.1` y `::1` |
+
+Para atender a otro equipo, ver la [conexión entre dos equipos](conexion-lan-vpn.md). Nunca abras puertos en el router: JobRunner solo se usa en `localhost`, en una red local privada o en una VPN.
 
 Si ya se ejecutan `--max-jobs` trabajos, los nuevos esperan en la cola (`QUEUED`) y arrancan en orden de llegada. Si la cola también está llena, el trabajo se rechaza.
 
@@ -75,7 +79,10 @@ Esto habilita el comando `royito` en esa terminal. (Funciona igual con `./script
 | Listar todos los trabajos | `royito list` |
 | Listar por estado | `royito list --state <ESTADO>` |
 | Cancelar un trabajo | `royito cancel <id>` |
-| Ver la ayuda | `royito --help` |
+| Ver la salida de un trabajo | `royito output <id>` (con `--stderr` para los errores) |
+| Ver la salud del servicio | `royito health` |
+| Usar un servicio de otro equipo | `royito --host HOST --port PUERTO <comando>` (sección 4.7) |
+| Ver la ayuda | `royito --help`, o `royito <comando> --help` |
 
 ### 4.1 Enviar un trabajo
 
@@ -84,6 +91,14 @@ royito submit -- sh -c 'echo hola; exit 3'
 ```
 
 El servicio responde con los datos del trabajo. Copia el valor de `"id"`: lo necesitas para consultarlo o cancelarlo.
+
+Si no estás seguro de que el envío llegó (por ejemplo, se cortó la conexión), repítelo con `--request-id`: el servicio no crea un segundo trabajo y devuelve el mismo, con `"duplicado": true`.
+
+```bash
+royito submit --request-id respaldo-1 -- sleep 30
+```
+
+El `request_id` lleva de 1 a 64 caracteres: letras, números, `-` y `_`. Si lo reusas con otro comando, el servicio lo rechaza.
 
 Escribe siempre `--` antes del comando. Sin él, las opciones del comando (por ejemplo, el `-l` de `ls -l`) se confunden con opciones del cliente.
 
@@ -128,12 +143,53 @@ No se puede cancelar un trabajo que ya terminó.
 
 ### 4.5 Ver la salida de un trabajo
 
-La salida normal y la de errores se guardan por separado:
+La salida normal y la de errores se guardan por separado. Con `royito output` se leen desde el cliente, también por red:
 
 ```bash
-cat data/<id>.out      # lo que el trabajo imprimió
-cat data/<id>.err      # los errores del trabajo
+royito output <id>             # lo que el trabajo imprimió
+royito output <id> --stderr    # los errores del trabajo
+royito output <id> --raw       # solo el texto, sin el JSON
 ```
+
+La respuesta es un JSON con `id`, `stream` (`stdout` o `stderr`), `data` (el texto) y `truncated`. Se devuelve el **final** de la salida, hasta 64 KiB; si había más al principio, `truncated` es `true` (con `--raw` aparece un aviso). `--max-bytes N` pide menos (de 1 a 65536). Un trabajo en cola todavía no tiene salida y devuelve `data` vacío; uno en ejecución devuelve lo que lleva hasta ese momento.
+
+En el equipo del servicio también se pueden leer los archivos directamente: `cat data/<id>.out` y `cat data/<id>.err`.
+
+### 4.6 Ver la salud del servicio
+
+```bash
+royito health
+```
+
+| Campo | Significado |
+|---|---|
+| `version` | Versión del software del servicio |
+| `uptime_seconds` | Segundos desde que arrancó el servicio |
+| `jobs_by_state` | Cuántos trabajos hay en cada estado (`QUEUED`, `RUNNING`, `SUCCEEDED`, `FAILED`, `CANCELED`) |
+| `running` y `max_jobs` | Trabajos en ejecución frente al límite (`--max-jobs`) |
+| `queued` y `queue_size` | Trabajos en cola frente a su capacidad (`--queue-size`) |
+| `database` | `ok` si la base de datos responde; `error: ...` si no |
+| `clients` | Conexiones abiertas ahora, incluida la del propio `royito health` |
+| `rejected_access` | Conexiones TCP rechazadas desde que arrancó el servicio por venir de una red que no está en `--allow` |
+
+### 4.7 Usar un servicio de otro equipo
+
+Si el servicio se inició con `--listen`, desde otro equipo se usa el mismo `royito`, con `--host` y `--port` **antes** del comando:
+
+```bash
+royito --host 192.168.1.20 --port 7070 submit -- sleep 30
+royito --host 192.168.1.20 --port 7070 list
+```
+
+Para no repetirlos, usa variables de entorno (la opción tiene prioridad sobre la variable):
+
+```bash
+export JOBRUNNER_HOST=192.168.1.20
+export JOBRUNNER_PORT=7070        # opcional: sin él se usa 7070
+royito list
+```
+
+Sin host, `royito` usa el socket Unix local, como siempre. `--port` sin `--host` es un error. Los comandos y las respuestas son los mismos que en local.
 
 ## 5. Estados de un trabajo
 
@@ -165,15 +221,24 @@ El servicio registra cada evento en `data/jobrunner.log`. El formato, los tipos 
 
 ## 8. Errores comunes
 
+`royito` termina con código **0** si la operación se hizo (un trabajo `FAILED` también es una operación hecha), **1** si el servicio la rechazó o no se pudo conectar, y **2** si el comando se escribió mal. Ante un error, la respuesta JSON sale en la salida normal y en la salida de errores aparece una línea `Error al <operación>: <causa>. Que hacer: <acción>.`
+
 | Situación | Lo que responde | Qué hacer |
 |---|---|---|
-| El servicio no está iniciado | `Error: no se pudo conectar al servidor en data/jobrunner.sock. Esta corriendo ./scripts/run.sh?` | Iniciar el servicio (sección 3) |
+| El servicio no está iniciado (local) | `Error: no se pudo conectar al servidor en data/jobrunner.sock. Esta corriendo ./scripts/run.sh?` | Iniciar el servicio (sección 3) |
+| No hay servicio en ese host y puerto | `Error: no se pudo conectar a HOST:PUERTO (...)` | Revisa que el servicio use `--listen`, que el host y el puerto sean correctos y que tu IP esté en `--allow` |
+| Tu IP no está en `--allow` | `Error: el servidor en HOST:PUERTO cerro la conexion sin responder...` | Pide que agreguen tu IP con `--allow` en el servicio |
+| `--port` sin `--host` | `--port requiere --host (o la variable JOBRUNNER_HOST)` | Agrega `--host` o define `JOBRUNNER_HOST` |
+| El puerto no es válido | `puerto invalido` o `puerto fuera de rango` | Usa un número de 1 a 65535 |
 | El comando no existe | El trabajo queda en `FAILED` con `"error": "No se pudo ejecutar '...'"` | Revisar el nombre del comando |
 | La cola está llena | `{"error": "cola llena (capacidad N); intenta más tarde"}` | Esperar a que terminen trabajos, o iniciar el servicio con un `--queue-size` mayor |
-| El ID no existe | `{"error": "no existe el trabajo <id>"}` | Copiar el ID completo desde `submit` o `list` |
+| El ID no existe | `{"error": "no existe el trabajo <id>"}` (en `cancel` y `output`, con `No` en mayúscula) | Copiar el ID completo desde `submit` o `list` |
 | Cancelar un trabajo terminado | `{"error": "El trabajo ... ya termino en estado ...; no se puede cancelar"}` | Nada: el trabajo ya terminó |
-| Estado inválido en `list --state` | `{"error": "error interno: Estado desconocido: ..."}` | Usar uno de los cinco estados (sección 5) |
-| Subcomando mal escrito | `invalid choice: '...' (choose from 'submit', 'status', 'list', 'cancel')` | Usar uno de los cuatro subcomandos |
+| Estado inválido en `list --state` | `{"error": "Estado desconocido: ..."}` | Usar uno de los cinco estados (sección 5) |
+| `output --max-bytes` fuera de rango | `{"error": "max_bytes debe ser un entero de 1 a 65536"}` | Usar un valor de 1 a 65536 |
+| El archivo de salida ya no existe | `{"error": "la salida del trabajo ... no esta disponible..."}` | Revisar que no se hayan borrado archivos de `data/` en el servicio |
+| El servicio se está cerrando | `{"error": "el servicio se esta cerrando; no acepta trabajos nuevos"}` | Esperar a que vuelva a iniciar y repetir |
+| Subcomando mal escrito | `invalid choice: '...' (choose from 'submit', 'status', 'list', 'cancel', 'output', 'health')` | Usar uno de los seis subcomandos |
 | `submit` sin comando | `the following arguments are required: argv` | Escribir el comando después de `--` |
 | Opciones sin `--` (por ejemplo `submit ls -l`) | `unrecognized arguments: -l` | Escribir `--` antes del comando |
 
@@ -181,6 +246,6 @@ El servicio registra cada evento en `data/jobrunner.log`. El formato, los tipos 
 
 Se actualizan en las release notes de cada versión.
 
-- Solo funciona en la misma computadora; el acceso en red llega en el Avance 3.
+- El acceso en red no autentica ni cifra: solo se limita por la red de origen (`--allow`). Úsalo en `localhost`, en una red privada o en una VPN, nunca expuesto a Internet.
 - Un trabajo que terminó justo antes de una caída del servicio queda como `FAILED` «interrumpido por reinicio», porque su resultado no alcanzó a guardarse.
-- El servicio atiende a un cliente a la vez; un cliente que se conecta y no envía nada retrasa a los demás hasta 5 segundos.
+- Una solicitud de más de 64 KiB se rechaza, y una conexión que no envía nada durante 30 segundos se cierra; mientras tanto no retrasa a los demás clientes.

@@ -174,6 +174,11 @@ class Red:
         self._escuchas = []
 
     # -- uso desde el servidor -------------------------------------------
+    def estadisticas(self):
+        """Contadores para `health`: conexiones abiertas ahora (Unix y TCP, incluida la del
+        cliente que pregunta) y conexiones TCP rechazadas por origen no permitido."""
+        return {"clientes": len(self._conexiones), "rechazados": self.rechazadas}
+
     def escuchar(self, sock):
         """Registra un socket de escucha (Unix o TCP) ya enlazado."""
         sock.setblocking(False)

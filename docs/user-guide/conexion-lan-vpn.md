@@ -134,7 +134,7 @@ export JOBRUNNER_PORT=7070
 royito list
 ```
 
-Los comandos y las respuestas son los mismos que en local.
+Los comandos y las respuestas son los mismos que en local, incluidos `royito output <id>` y `royito health`. Si no conecta, `royito` indica a qué `HOST:PUERTO` no pudo llegar.
 
 ### 6. Comprobar en la bitácora del servidor
 
@@ -171,7 +171,7 @@ Si no se puede usar Tailscale, los dos equipos se conectan a la misma red privad
 | `red no permitida: ... no es privada` | `--allow` con una red pública | Usa la IP del cliente con `/32` o una red privada |
 | `--allow solo tiene efecto con --listen` | Falta `--listen` | Agrega `--listen HOST:PUERTO` |
 | El cliente no conecta y `curl` del paso 3 tampoco | Problema de red: Tailscale apagado, cuentas distintas o firewall | `tailscale status` en ambos equipos; en modo `mirrored`, revisa la regla del paso 1.2 |
-| El cliente recibe «Connection reset by peer» o la conexión se cierra sin respuesta | La IP del cliente no está en `--allow`; en el servidor aparece `acceso_rechazado` | Agrega la IP del cliente con `--allow` y reinicia el servidor |
+| El cliente muestra «cerro la conexion sin responder» (o «Connection reset by peer» en un cliente propio) | La IP del cliente no está en `--allow`; en el servidor aparece `acceso_rechazado` | Agrega la IP del cliente con `--allow` y reinicia el servidor |
 | Una conexión TCP desde el propio servidor se rechaza | Con `--allow`, solo entran las redes indicadas, y `127.0.0.1` ya no está | Usa `royito` sin `--host` (socket local) o agrega `--allow 127.0.0.1` |
 
 Más casos en la [guía de diagnóstico](diagnostico.md).

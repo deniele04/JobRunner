@@ -8,7 +8,7 @@ from pathlib import Path
 
 from . import bitacora, red
 from .executor import (
-    DEFAULT_MAX_JOBS, DEFAULT_QUEUE_SIZE, Cerrando, ColaLlena, JobManager,
+    DEFAULT_MAX_JOBS, DEFAULT_QUEUE_SIZE, MAX_SALIDA, Cerrando, ColaLlena, JobManager,
     RequestIdEnUso, validar_request_id,
 )
 from .store import Store
@@ -48,7 +48,9 @@ def _instalar_senales(cierre):
     return restaurar
 
 
-def handle_request(manager, request):
+def handle_request(manager, request, red_servidor=None):
+    """Atiende una solicitud ya validada. `red_servidor` (red.Red) aporta a health los clientes
+    conectados y los accesos rechazados; sin el, health los informa en 0."""
     cmd = request.get("cmd")
 
     if cmd == "submit":
@@ -81,8 +83,13 @@ def handle_request(manager, request):
 
     if cmd == "list":
         state = request.get("state")
+        if state is not None and not isinstance(state, str):
+            return {"error": "state debe ser texto (QUEUED, RUNNING, SUCCEEDED, FAILED o CANCELED)"}
         manager.tick()
-        return {"jobs": manager.list(state=state)}
+        try:
+            return {"jobs": manager.list(state=state)}
+        except ValueError as e:   # estado desconocido: es un error del usuario, no del servicio
+            return {"error": str(e)}
 
     if cmd == "cancel":
         job_id = request.get("id")
@@ -91,9 +98,30 @@ def handle_request(manager, request):
         try:
             return manager.cancel(job_id)
         except KeyError as e:
-            return {"error": str(e)}
+            return {"error": e.args[0]}   # str(e) agregaria comillas al mensaje
         except ValueError as e:
             return {"error": str(e)}
+
+    if cmd == "output":
+        job_id = request.get("id")
+        if not job_id:
+            return {"error": "falta id"}
+        try:
+            return manager.output(job_id, request.get("stream", "stdout"),
+                                  request.get("max_bytes", MAX_SALIDA))
+        except KeyError as e:
+            return {"error": e.args[0]}
+        except ValueError as e:
+            return {"error": str(e)}
+
+    if cmd == "health":
+        manager.tick()
+        respuesta = manager.health()
+        redes = red_servidor.estadisticas() if red_servidor is not None \
+            else {"clientes": 0, "rechazados": 0}
+        respuesta["clients"] = redes["clientes"]
+        respuesta["rejected_access"] = redes["rechazados"]
+        return respuesta
 
     return {"error": "comando desconocido: " + str(cmd)}
 
@@ -114,7 +142,7 @@ def _version_soportada(request):
     return type(version) is int and version == red.VERSION_PROTOCOLO
 
 
-def responder(manager, linea):
+def responder(manager, linea, red_servidor=None):
     """Procesa una solicitud completa (una linea de bytes) y devuelve el dict de respuesta."""
     try:
         request = json.loads(linea.decode("utf-8"))
@@ -130,7 +158,7 @@ def responder(manager, linea):
         return _con_version({"error": "version de protocolo no soportada: " + json.dumps(request["v"])
                              + " (soportada: " + str(red.VERSION_PROTOCOLO) + ")"})
     try:
-        return _con_version(handle_request(manager, request))
+        return _con_version(handle_request(manager, request, red_servidor))
     except Exception as e:
         bitacora.error("error_interno", motivo=e)
         return _con_version({"error": "error interno: " + str(e)})
@@ -153,7 +181,8 @@ def serve(socket_path=DEFAULT_SOCKET_PATH, max_jobs=DEFAULT_MAX_JOBS, queue_size
     bitacora.configurar(socket_path.parent)
     manager.recuperar()
 
-    servidor_red = red.Red(lambda linea: responder(manager, linea), permitidas=permitidas)
+    servidor_red = red.Red(lambda linea: responder(manager, linea, servidor_red),
+                           permitidas=permitidas)
     detalles = {"socket": socket_path}
     try:
         unix = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)

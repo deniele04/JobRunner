@@ -6,7 +6,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from . import bitacora
+from . import __version__, bitacora
 from .jobs import (
     Job, QUEUED, RUNNING, SUCCEEDED, FAILED, CANCELED, FINAL_STATES, now_iso,
 )
@@ -16,6 +16,8 @@ VALID_STATES = {QUEUED, RUNNING, SUCCEEDED, FAILED, CANCELED}
 DEFAULT_MAX_JOBS = 3      # trabajos corriendo a la vez (ADR-0004)
 DEFAULT_QUEUE_SIZE = 10   # trabajos esperando en la cola (ADR-0004)
 ESPERA_SIGKILL = 5.0      # segundos entre SIGTERM y SIGKILL al cancelar (ADR-0006)
+MAX_SALIDA = 64 * 1024    # bytes maximos que devuelve output (el final de la salida)
+STREAMS = {"stdout": "stdout_path", "stderr": "stderr_path"}
 
 
 class ColaLlena(Exception):
@@ -58,6 +60,7 @@ class JobManager:
         self._cancelando = {}              # id -> instante (monotonic) del SIGKILL
         self._cerrando = False             # True durante el cierre controlado (ADR-0006)
         self._store = store
+        self._inicio = time.monotonic()    # para el tiempo activo de health
 
     def _guardar(self, job):
         if self._store is not None:
@@ -184,6 +187,72 @@ class JobManager:
     def get(self, job_id):
         job = self._jobs.get(job_id)
         return job.to_dict() if job else None
+
+    def output(self, job_id, stream="stdout", max_bytes=MAX_SALIDA):
+        """Final de la salida de un trabajo: {id, stream, data, truncated}.
+
+        stream es "stdout" o "stderr". Se devuelven como mucho max_bytes bytes (por defecto y
+        como maximo 64 KiB) tomados del FINAL del archivo; truncated indica que habia mas al
+        principio. data es texto UTF-8; los bytes que no lo sean se sustituyen. Un trabajo en
+        cola todavia no tiene archivos: devuelve data vacio. Solo lee: no cambia ningun estado.
+        """
+        if stream not in STREAMS:
+            raise ValueError("stream debe ser stdout o stderr")
+        if type(max_bytes) is not int or not 1 <= max_bytes <= MAX_SALIDA:
+            raise ValueError("max_bytes debe ser un entero de 1 a " + str(MAX_SALIDA))
+        job = self._jobs.get(job_id)
+        if job is None:
+            raise KeyError("No existe el trabajo " + str(job_id))
+        ruta = getattr(job, STREAMS[stream])
+        datos, truncado = b"", False
+        try:
+            with open(ruta, "rb") as archivo:
+                archivo.seek(0, os.SEEK_END)
+                tamano = archivo.tell()
+                inicio = max(0, tamano - max_bytes)
+                archivo.seek(inicio)
+                datos = archivo.read(tamano - inicio)
+                truncado = inicio > 0
+        except (FileNotFoundError, TypeError):   # TypeError: ruta None
+            if job.state != QUEUED:
+                raise ValueError("la salida del trabajo " + str(job_id) + " no esta disponible: "
+                                 "no existe su archivo " + str(ruta))
+        except OSError as e:
+            raise ValueError("no se pudo leer la salida del trabajo " + str(job_id) + ": "
+                             + (e.strerror or str(e)))
+        if truncado:   # el corte puede caer a la mitad de un caracter UTF-8: se descarta ese pedazo
+            while datos and 0x80 <= datos[0] < 0xC0:
+                datos = datos[1:]
+        return {"id": job_id, "stream": stream,
+                "data": datos.decode("utf-8", errors="replace"), "truncated": truncado}
+
+    def health(self):
+        """Resumen de salud del servicio (RF-24), sin los datos de red (los agrega el servidor).
+
+        version del software, tiempo activo, trabajos por estado, en ejecucion contra
+        max_jobs, en cola contra queue_size y estado de la base de datos.
+        """
+        por_estado = {estado: 0 for estado in (QUEUED, RUNNING, SUCCEEDED, FAILED, CANCELED)}
+        for job in self._jobs.values():
+            por_estado[job.state] += 1
+        if self._store is None:
+            base = "no configurada"
+        else:
+            try:
+                self._store.verificar()
+                base = "ok"
+            except Exception as e:   # sqlite3.Error, base cerrada, etc.
+                base = "error: " + str(e)
+        return {
+            "version": __version__,
+            "uptime_seconds": round(time.monotonic() - self._inicio, 1),
+            "jobs_by_state": por_estado,
+            "running": por_estado[RUNNING],
+            "max_jobs": self.max_jobs,
+            "queued": por_estado[QUEUED],
+            "queue_size": self.queue_size,
+            "database": base,
+        }
 
     def list(self, state=None):
         jobs = self._jobs.values()
