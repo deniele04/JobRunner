@@ -133,8 +133,12 @@ Incluye RF-01 a RF-30 y RNF-01 a RNF-34 (el PDF 05 exige RF-01…RF-24 y RNF-01�
 
 ## Pendiente
 
-| Pendiente | Efecto en la verificación |
-|---|---|
-| TC-010, TC-011, TC-012, TC-013, TC-015 y TC-023 | Hito 3 (acceso remoto) o verificación documental: quedan `Pendiente`. |
-| RNF-06, RNF-16, RNF-17, RNF-18 | El PDF 05 no les asigna TC. Hay que definirlo con Producto o aceptarlo como inspección. |
-| Prioridad de cada requisito | Solo ocho filas la tienen (matriz de muestra del PDF 05). Producto debe completarla. |
+| Pendiente | Quién | Efecto en la matriz |
+|---|---|---|
+| Ejecución formal final de `verify.sh` y `actualizar_matriz.py` sobre el commit final | Diego | Llena la columna Resultado: hoy está en `Pendiente` porque la última ejecución formal (`20261030-v0.2.0`) es del Avance 2 |
+| Pruebas del cliente remoto (`test_tc010_*.py`) y de `health` (`test_tc013_*.py`) | Juan (U3) | TC-010 y TC-013 quedan `BLOCKED` hasta que existan |
+| Evidencia de la operación entre dos equipos, `verif/results/<run-id>-remoto/` | Josué (J9) y Diego | TC-010 queda `BLOCKED` sin ella; también RNF-26 |
+| `seguridad.md` (modelo de amenazas y mínimo privilegio) | Josué (J7) | INS-016 queda `BLOCKED` sin él (RNF-16) |
+| Registro manual de usabilidad, `verif/manual/TC-015.md`, llenado por una persona ajena a la guía | Persona evaluadora | TC-015 queda `BLOCKED` mientras esté sin llenar (RNF-23) |
+| Prioridad de cada requisito | Producto (Daniel) | Solo ocho filas la tienen (matriz de muestra del PDF 05) |
+| Requisitos del CR-001, si agrega alguno | Daniel (N2) | Se agregan filas a esta matriz |
