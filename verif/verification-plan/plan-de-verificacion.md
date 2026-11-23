@@ -203,6 +203,14 @@ La versión `v1.0.0` se acepta cuando la ejecución formal final de `verify.sh` 
 
 ## 10. Pendientes por confirmar con el equipo
 
-- **Requisitos RF/RNF:** la matriz lista RF-01 a RF-24 y RNF-01 a RNF-26, pero el texto de cada requisito y su TC faltan: están en los PDF y el repositorio solo tiene los códigos citados en los ADR. Además, los ADR citan RNF-28, RNF-31 y RNF-32, fuera del rango.
-- **Otros TC citados en los ADR:** TC-002 (ADR-0001, concurrencia), TC-007 y TC-022 (ADR-0002, escrituras en SQLite) y TC-023 (ADR-0003). Corresponden a los Hitos 2 y 3 y no se definen aquí.
-- **Numeración de TC:** TC-005 (cancelación) y TC-006 (código de salida) siguen el PDF 05. El resto de la numeración, en particular TC-008, hay que confirmarla contra ese PDF: el ADR-0003 cita TC-008 como prueba del contrato de mensajes JSON, y aquí cubre las entradas inválidas.
+| Pendiente | Quién | Efecto en la verificación |
+|---|---|---|
+| Contenido del Change Request CR-001 (se confirma con el profesor) | Daniel | Si agrega requisitos, se agregan filas a la matriz y casos a este plan antes de implementarlo |
+| Si se agrega un token compartido como segunda capa de acceso | Josué (en el ADR-0008) | Obligaría a casos nuevos en TC-011 y a actualizar el modelo de amenazas (INS-016) |
+| Modo de red de WSL para la demostración entre dos equipos (Tailscale dentro de WSL o `mirrored`) | Daniel y Josué | Define cómo se hace la evidencia `verif/results/<run-id>-remoto/` |
+| Pruebas del cliente remoto y de `health` (`test_tc010_*.py` y `test_tc013_*.py`) | Juan | TC-010 y TC-013 quedan `BLOCKED` hasta que existan; `verify.sh` las toma por nombre de archivo |
+| Documentos de los casos TC-010, TC-011, TC-012, TC-013, TC-015 y TC-023 | Josué y Juan | Sus pruebas ya se ejecutan, pero falta su descripción en `verif/test-cases/` |
+| `seguridad.md` (modelo de amenazas y mínimo privilegio) | Josué | INS-016 queda `BLOCKED` sin él |
+| Persona que evalúa TC-015 (idealmente del otro equipo) | Diego | El caso queda `BLOCKED` hasta que llene `verif/manual/TC-015.md` |
+| Prioridad de cada requisito | Producto (Daniel) | Solo ocho filas la tienen (matriz de muestra del PDF 05) |
+
