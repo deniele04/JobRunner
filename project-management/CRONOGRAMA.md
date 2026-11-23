@@ -1,8 +1,10 @@
 # Cronograma
 
-**Versión:** 6 — entrega final
+**Versión:** 7 — entrega final
 **Responsable del documento:** Daniel Alejandro Huerta Camberos
 
+> **Control de cambios (v6 → v7):** Se actualiza el estado de los bloques con los PR #91, #92 y #101 a #103, y el de los riesgos 14 y 15.
+>
 > **Control de cambios (v5 → v6):** Se registra la RT-2 como realizada. Los Hitos 3 y 4 se replanifican por bloques según la minuta de planeación de la entrega final y se agrega su plan con el estado de cada parte. Se actualiza el estado de los riesgos 4 y 8, se agregan los riesgos 13 a 17 (red de WSL, exposición del servicio, conflictos de integración, verificación cruzada y bitácora) y las dependencias de la operación remota.
 >
 > **Control de cambios (v4 → v5):** Se registra la entrega del Avance 2 (`v0.2.0`), se actualizan las actividades del 29/10 y del 30/10 según la minuta del 29/10/2026, se agrega el estado de cada riesgo con su evidencia y se agrega el riesgo 12.
@@ -65,15 +67,19 @@ El trabajo se organiza en cuatro bloques, según la minuta de planeación de la 
 | | `request_id` según el ADR-0007 y compatibilidad con Python 3.12 | Integrado (PR #89 y PR #86) |
 | | Cliente remoto (`--host`, `--port` y variables de entorno) | Pendiente de PR |
 | | Prueba de conexión entre dos equipos con Tailscale e instructivo | Instructivo listo; prueba pendiente |
-| | DEF-005 y plan de verificación para la versión final | Pendiente de PR |
+| | DEF-005 y plan de verificación para la versión final | DEF-005 integrado (PR #101); plan pendiente |
 | | Issues, cronograma, riesgos y CR-001 | En curso (CR-001: contenido por confirmar con el profesor) |
 | 2 — Funciones | Lista de acceso (`--allow`) y rechazo de interfaces públicas | Integrado (PR #90) |
-| | Versión del protocolo (`v`) | En revisión (PR #91) |
-| | Cierre controlado con TCP | En revisión (PR #92) |
+| | Versión del protocolo (`v`) | Integrado (PR #91) |
+| | Cierre controlado con TCP | Integrado (PR #92) |
 | | Comandos `output` y `health` | Pendiente de PR |
-| 3 — Casos y documentos | TC-010 a TC-013, TC-015, TC-023 y el caso de RNF-06; inspecciones de RNF-16, RNF-17, RNF-18 y RNF-34 | En curso |
+| 3 — Casos y documentos | TC-011, TC-012 y TC-023 | Integrado (PR #102) |
+| | TC-010, TC-013, TC-015 y el caso de RNF-06; inspecciones de RNF-16, RNF-17, RNF-18 y RNF-34 | Pendiente |
 | | `verify.sh` final y matriz de trazabilidad completa | Pendiente |
-| | README, guía de usuario, conexión LAN/VPN, bitácora de red, defectos y limitaciones, diagnóstico y AI-LOG | En curso |
+| | Guía técnica del protocolo v1 y guía de seguridad | Integrado (PR #103) |
+| | Conexión LAN/VPN, defectos y limitaciones, índice de incidentes y diagnóstico | Integrado (PR #100) |
+| | Bitácora de red y AI-LOG | Integrado con esta versión del cronograma |
+| | README y guía de usuario | Pendiente: esperan el cliente remoto, `output` y `health` |
 | 4 — Entrega | Versión candidata, verificación cruzada, ejecución formal, `v1.0.0`, release notes y ensayo de la demostración | Pendiente |
 
 ## Riesgos identificados
@@ -93,8 +99,8 @@ El trabajo se organiza en cuatro bloques, según la minuta de planeación de la 
 | 11 | Pérdida o corrupción de trabajos al reiniciar o ante una falla | Media | Alto | Transacciones de SQLite; al arrancar, los trabajos interrumpidos se marcan y su grupo de procesos se termina (ADR-0005); pruebas TC-007 y TC-022 | Josué Said Delgadillo Gutiérrez | Mitigado: TC-007 y TC-022 |
 | 12 | Pruebas que dependen de tiempos (señales, procesos que terminan rápido) dan resultados distintos entre ejecuciones | Media | Medio | Usar procesos que ignoran SIGTERM cuando la prueba necesita un trabajo vivo; esperas con límite en lugar de pausas fijas; correr `verify.sh` más de una vez antes de la ejecución formal | Diego Armando Durán Hernández | En seguimiento |
 | 13 | La red de WSL no es alcanzable desde otro equipo | Media | Alto | Tailscale dentro de WSL o modo de red `mirrored` (ADR-0008); prueba de conexión entre dos equipos sin JobRunner antes de la demostración; instructivo `docs/user-guide/conexion-lan-vpn.md` | Daniel Alejandro Huerta Camberos | En seguimiento: instructivo listo, prueba pendiente |
-| 14 | El servicio queda expuesto a una red no autorizada o a Internet | Baja | Alto | El servidor se niega a arrancar con `0.0.0.0`, `::` o direcciones públicas en `--listen` y `--allow`; conexiones de orígenes no permitidos se cierran y se registran (`acceso_rechazado`); no se abren puertos en el router (ADR-0008) | Josué Said Delgadillo Gutiérrez | Mitigado en el código (PR #90, `test_acceso_tcp.py`); TC-011 en elaboración |
-| 15 | Conflictos de integración por varios PR en paralelo sobre `server.py`, `red.py` y `AI-LOG.md` | Alta | Medio | `git pull origin main` antes de abrir cada PR; declarar en la descripción si un PR depende de otro; integrar en el orden de la minuta; correr `./scripts/test.sh` sobre la combinación antes de aprobar | Daniel Alejandro Huerta Camberos | En seguimiento: conflictos de los PR #87, #89, #90, #91 y #92 resueltos sin pérdida de cambios |
+| 14 | El servicio queda expuesto a una red no autorizada o a Internet | Baja | Alto | El servidor se niega a arrancar con `0.0.0.0`, `::` o direcciones públicas en `--listen` y `--allow`; conexiones de orígenes no permitidos se cierran y se registran (`acceso_rechazado`); no se abren puertos en el router (ADR-0008) | Josué Said Delgadillo Gutiérrez | Mitigado: código (PR #90) y TC-011 (PR #102) |
+| 15 | Conflictos de integración por varios PR en paralelo sobre `server.py`, `red.py` y `AI-LOG.md` | Alta | Medio | `git pull origin main` antes de abrir cada PR; declarar en la descripción si un PR depende de otro; integrar en el orden de la minuta; correr `./scripts/test.sh` sobre la combinación antes de aprobar | Daniel Alejandro Huerta Camberos | En seguimiento: conflictos de los PR #87, #89, #90, #91, #92, #102 y #103 resueltos sin pérdida de cambios |
 | 16 | Defectos reportados en la verificación cruzada | Media | Alto | Congelar la versión candidata en la minuta 3; cada defecto como Issue `[Defecto] VC-NN` con responsable del módulo; corrección con prueba de regresión o justificación documentada | Diego Armando Durán Hernández | Pendiente (Bloque 4) |
 | 17 | Muchas conexiones rechazadas llenan la bitácora | Baja | Bajo | El servicio solo escucha en loopback, redes privadas o la VPN; límite de 64 KiB por mensaje y cierre por inactividad (ADR-0009); se documenta como limitación | Josué Said Delgadillo Gutiérrez | Aceptado: limitación documentada en `docs/defectos-y-limitaciones.md` |
 

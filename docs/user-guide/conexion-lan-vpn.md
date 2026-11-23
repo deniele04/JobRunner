@@ -102,16 +102,18 @@ cd ~/JobRunner
 | Opción | Qué hace |
 |---|---|
 | `--listen HOST:PUERTO` | Además del socket Unix local, escucha por TCP en esa dirección. Sin `--listen` no se abre ningún puerto. `--listen` sin valor usa `127.0.0.1:7070` |
-| `--allow RED` | Red de origen permitida, en notación CIDR. `/32` es una sola IP. Se puede repetir. `127.0.0.1` y `::1` siempre se permiten |
+| `--allow RED` | Red de origen permitida, en notación CIDR. `/32` es una sola IP. Se puede repetir. Sin `--allow` solo se permiten `127.0.0.1` y `::1`; con `--allow`, **solo** las redes indicadas (para conectarte también por TCP desde el mismo equipo, agrega `--allow 127.0.0.1`) |
 
 Debe aparecer:
 
 ```
 JobRunner escuchando en data/jobrunner.sock
-JobRunner escuchando en 100.101.102.103:7070 (TCP); origenes permitidos: 127.0.0.1/32,::1/128,100.90.80.70/32
+JobRunner escuchando en 100.101.102.103:7070 (TCP); origenes permitidos: 100.90.80.70/32
 ```
 
 Para permitir a todos los equipos de la red de Tailscale se puede usar `--allow 100.64.0.0/10`, pero es más seguro permitir solo la IP del cliente.
+
+En el servidor, `royito` sin `--host` sigue funcionando por el socket local: `--allow` solo filtra las conexiones TCP.
 
 ### 5. Usar JobRunner desde el cliente
 
@@ -170,5 +172,6 @@ Si no se puede usar Tailscale, los dos equipos se conectan a la misma red privad
 | `--allow solo tiene efecto con --listen` | Falta `--listen` | Agrega `--listen HOST:PUERTO` |
 | El cliente no conecta y `curl` del paso 3 tampoco | Problema de red: Tailscale apagado, cuentas distintas o firewall | `tailscale status` en ambos equipos; en modo `mirrored`, revisa la regla del paso 1.2 |
 | El cliente recibe «Connection reset by peer» o la conexión se cierra sin respuesta | La IP del cliente no está en `--allow`; en el servidor aparece `acceso_rechazado` | Agrega la IP del cliente con `--allow` y reinicia el servidor |
+| Una conexión TCP desde el propio servidor se rechaza | Con `--allow`, solo entran las redes indicadas, y `127.0.0.1` ya no está | Usa `royito` sin `--host` (socket local) o agrega `--allow 127.0.0.1` |
 
 Más casos en la [guía de diagnóstico](diagnostico.md).
