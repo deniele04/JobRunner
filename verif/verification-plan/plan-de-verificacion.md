@@ -182,7 +182,11 @@ Los casos sin enlace (TC-010, TC-011, TC-012, TC-013, TC-015 y TC-023) todavía 
 
 ## 8. Defectos
 
-Un FAIL se registra con la plantilla de Issue "defecto" (`.github/ISSUE_TEMPLATE/defecto.md`) y se lista en la sección "Defectos abiertos" de la [matriz de trazabilidad](matriz-trazabilidad.md) hasta que se corrija y el caso vuelva a pasar.
+Un FAIL se registra con la plantilla de Issue «defecto» (`.github/ISSUE_TEMPLATE/defecto.md`), se lista en la sección «Defectos» de la [matriz de trazabilidad](matriz-trazabilidad.md) y, cuando exista, en `docs/defectos-y-limitaciones.md` (que mantiene Producto). Un defecto que reporta el otro equipo sigue además el proceso de la sección 12.
+
+- **Severidad.** Alta: pierde o corrompe datos, tira el servicio, deja procesos sueltos o expone el servicio a una red no permitida. Media: un requisito no se cumple pero hay forma de seguir usando el producto. Baja: un mensaje, un texto o un caso borde sin consecuencia para los datos.
+- **Cierre.** Un defecto se cierra con una corrección **y** una prueba de regresión que falla sin ella, en el mismo PR. Si no se corrige, se justifica como limitación aceptada con quién lo decidió y por qué; queda en las release notes.
+- **Ningún FAIL sin defecto.** Si un caso falla en una ejecución formal, antes de la siguiente debe existir su Issue.
 
 ## 9. Criterios de salida del Avance 1
 
