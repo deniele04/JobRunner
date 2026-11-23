@@ -69,11 +69,11 @@ El detalle requisito por requisito (método, caso, evidencia y resultado) está 
 
 ## 4. Entorno de verificación
 
-- Linux (Ubuntu 22.04 / 24.04) o WSL2.
+- Linux (Ubuntu 22.04 / 24.04) o WSL2. La verificación formal se hace siempre desde un clon limpio en Linux (riesgo 5 del cronograma). Las pruebas de procesos y de sockets **no son válidas** en Git Bash con Python de Windows.
+- En WSL, el repositorio va dentro de la carpeta personal (`~/JobRunner`), no en `/mnt/c/...`: en las carpetas de Windows el socket Unix no funciona.
 - Python 3.10 o superior, solo biblioteca estándar (ADR-0001).
 - Sin privilegios de root.
-
-La verificación formal se hace siempre desde un clon limpio en Linux (riesgo 5 del cronograma).
+- **Red.** Las pruebas automáticas de red usan `127.0.0.1` y `127.0.0.2`, sin salir de la máquina. La operación entre dos equipos usa una LAN privada o la VPN (Tailscale, red `100.64.0.0/10`) y se registra en `verif/results/<run-id>-remoto/`. En WSL hace falta Tailscale dentro de WSL o el modo de red `mirrored`. Nunca se abren puertos en el router.
 
 ## 5. Formato de un caso de prueba
 
