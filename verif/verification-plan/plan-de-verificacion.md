@@ -245,3 +245,26 @@ Un servicio que ejecuta procesos de otras personas y recibe solicitudes por red 
 | Un comando que no existe | El trabajo queda `FAILED` y el servicio sigue; queda `no_se_pudo_iniciar` | TC-008 |
 
 **Qué no se inyecta.** Disco lleno, base de datos corrupta y cambios del reloj del sistema: quedan fuera de esta entrega y no se afirma nada sobre ellos.
+
+## 12. Verificación cruzada
+
+Otro equipo recibe la versión candidata, la construye, la usa y trata de romperla sin conocer el código. Verificación coordina el proceso; cada defecto lo atiende el responsable del módulo afectado.
+
+**Cómo se recibe.** Verificación ejecuta `verify.sh` sobre el commit candidato y entrega al otro equipo el hash de ese commit, el README y la guía de usuario. El otro equipo clona, construye con `./scripts/setup.sh` (debe terminar con «Construcción OK») y prueba **solo con esos documentos**: si necesita preguntar algo al equipo, eso ya es un hallazgo de usabilidad.
+
+**Cómo se registra.** Cada defecto que reporte el otro equipo se registra de dos formas:
+
+1. Una Issue `[Defecto] VC-NN`, con la plantilla de defecto, asignada al responsable del módulo. Los módulos y sus responsables son: red, protocolo y persistencia (`server.py`, `red.py`, `store.py`), Josué; cola, cancelación, `output`, `health` y cliente (`executor.py`, `cli.py`), Juan; pruebas, `verify.sh` y `procesos.sh`, Diego; bitácora y documentación, Daniel.
+2. Un archivo `verif/revision-cruzada/VC-NN.md` (plantilla en `verif/revision-cruzada/PLANTILLA.md`) con cuatro partes: **reporte** (qué se hizo, qué se esperaba y qué pasó, con la versión probada), **análisis** (si es un defecto, una limitación o un uso incorrecto, con la causa), **respuesta** y **regresiones ejecutadas**.
+
+**Cómo se responde.** El responsable del módulo da una de tres respuestas, siempre con su justificación:
+
+| Respuesta | Qué debe incluir |
+|---|---|
+| **Corregido** | El PR de la corrección y la prueba de regresión nueva, que falla sin ella |
+| **No es defecto** | El requisito, ADR o documento que muestra que el comportamiento es el esperado, y si hay que aclarar la guía |
+| **Limitación aceptada** | Quién lo decidió, por qué se acepta, y su entrada en la lista de limitaciones y en las release notes |
+
+**Cómo se regresa.** Tras una corrección se ejecuta `./scripts/test.sh` (sin `FAILED`) y se repiten **la prueba de regresión del defecto y las pruebas del caso afectado**; el resultado queda en `VC-NN.md`. El defecto pasa a «Cerrado» en la matriz y en la lista de defectos solo cuando esas regresiones están en `PASS`. Si la corrección toca un módulo compartido, se corre además `verify.sh` completo para descartar efectos en otros casos.
+
+**Cómo se cierra.** Verificación mantiene la lista de `VC-NN`, avisa de los que siguen sin respuesta y comprueba el criterio 7 de la sección 9: cada defecto con su respuesta y su regresión en `PASS`, o con su justificación. Lo que se corrija después de la versión candidata obliga a repetir la ejecución formal sobre el commit final.
