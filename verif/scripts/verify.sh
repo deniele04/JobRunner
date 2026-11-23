@@ -354,6 +354,16 @@ tc013="$(combinar \
     test_el_bitacora_registra_el_puerto_tcp)" \
   "$(estado_archivo test_tc013)")"
 
+# TC-015 es de usabilidad: la parte automática (ayuda y códigos de salida) más el registro manual
+# de una persona ajena a la guía, verif/manual/TC-015.md. Sin ese registro llenado queda BLOCKED.
+tc015="$(combinar \
+  "$(estado_pruebas \
+    test_la_ayuda_lleva_el_nombre_royito \
+    test_status_y_list_exitosos_terminan_con_codigo_0 \
+    test_status_de_id_inexistente_da_error_y_codigo_distinto_de_cero)" \
+  "$(estado_manual TC-015)")"
+[ -f verif/manual/TC-015.md ] && cp verif/manual/TC-015.md "$OUT/manual-TC-015.md"
+
 # La herramienta que detecta zombis y huérfanos también se verifica: si procesos.sh
 # fallara, el resultado «sin zombis ni huérfanos» no valdría (DEF-005).
 procesos_sh="$(estado_pruebas \
@@ -395,7 +405,7 @@ conocidos="$(awk -F'\t' '$1 == "XFAIL" { n++ } END { print n + 0 }' "$OUT/unit-r
   echo "| TC-012 | $tc012 | unittest.log, unit-resultados.tsv |"
   echo "| TC-013 | $tc013 | unittest.log; falta test_tc013_*.py de Juan (configuración y health) si aparece BLOCKED |"
   echo "| TC-014 | $tc014 | tc-014-clon-limpio.log |"
-  echo "| TC-015 | $tc015 | unittest.log, unit-resultados.tsv |"
+  echo "| TC-015 | $tc015 | unittest.log, manual-TC-015.md (registro de la persona evaluadora; BLOCKED mientras esté sin llenar) |"
   echo "| TC-016 | $tc016 | unittest.log, unit-resultados.tsv |"
   echo "| TC-017 | $tc017 | unittest.log, unit-resultados.tsv |"
   echo "| TC-018 | $tc018 | unittest.log, unit-resultados.tsv |"
