@@ -24,6 +24,7 @@
 | [IA-014](IA-014-restriccion-de-acceso-allow.md) | 19/11/2026 | Josué Said Delgadillo Gutiérrez | Restricción de acceso por red (--allow) y validación de --listen | 4 |
 | [IA-015](IA-015-version-del-protocolo.md) | 20/11/2026 | Josué Said Delgadillo Gutiérrez | Versión del protocolo (campo v) | 4 |
 | [IA-016](IA-016-cierre-controlado-con-tcp.md) | 21/11/2026 | Josué Said Delgadillo Gutiérrez | Cierre controlado con TCP | 4 |
+| [IA-017](IA-017-casos-tc011-tc012-tc023.md) | 21/11/2026 | Josué Said Delgadillo Gutiérrez | Casos TC-011, TC-012 y TC-023 y corrección de `--allow` | 4 |
 | [IA-018](IA-018-guia-protocolo-v1-y-seguridad.md) | 22/11/2026 | Josué Said Delgadillo Gutiérrez | Guía técnica del protocolo v1 y de seguridad | 4 |
 ## Cómo agregar un registro
 

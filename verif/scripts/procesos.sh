@@ -10,8 +10,13 @@
 #                   (--servidor, por defecto 'jobrunner\.server'): el servidor
 #                   no recogió a un hijo que ya terminó.
 #         HUERFANO  proceso líder de sesión (los trabajos se lanzan con
-#                   start_new_session) cuyo padre es PID 1, es decir, su padre
-#                   murió. Sin --base solo se considera si coincide con --patron.
+#                   start_new_session) cuyo padre ya no es el servidor: su padre
+#                   murió y lo adoptó otro proceso. En Linux lo adopta el PID 1,
+#                   pero en WSL (y con systemd de usuario) puede adoptarlo otro
+#                   proceso, así que no se exige PPID 1 (DEF-005). Un trabajo
+#                   cuyo padre sigue siendo el servidor no es huérfano. Los
+#                   procesos del propio servidor solo cuentan con PPID 1.
+#                   Sin --base solo se considera si coincide con --patron.
 #       --base      ignora los PID del archivo guardado (lo que ya existía).
 #       --patron    solo cuenta huérfanos cuya línea de comando coincide con la
 #                   expresión regular (p. ej. 'sleep 300').
@@ -68,6 +73,15 @@ hallazgos="$(
       for (i = 5; i <= n; i++) salida = salida (i > 5 ? " " : "") campos[i]
       return salida
     }
+    # El padre de la fila i es el servidor si su línea de comando coincide con --servidor.
+    function padre_es_servidor(i) {
+      return (ppid[i] in arg) && arg[ppid[i]] ~ servidor
+    }
+    function huerfano(i) {
+      if (ppid[i] == 1) return 1
+      if (args_de(linea[i]) ~ servidor) return 0
+      return !padre_es_servidor(i)
+    }
     BEGIN {
       if (base != "") while ((getline p < base) > 0) existia[p] = 1
     }
@@ -79,8 +93,11 @@ hallazgos="$(
         # Zombi: estado Z y el padre es el servidor.
         if (stat[i] ~ /^Z/ && (ppid[i] in arg) && arg[ppid[i]] ~ servidor)
           printf "ZOMBI\t%s\tpadre=%s\t%s\n", pid[i], ppid[i], a
-        # Huérfano: líder de sesión adoptado por PID 1.
-        else if (ppid[i] == 1 && sid[i] == pid[i] && stat[i] !~ /^Z/ && (patron == "" || a ~ patron))
+        # Huérfano: líder de sesión (lo es todo trabajo lanzado por el servidor) cuyo padre
+        # ya no es el servidor. Con PPID 1 siempre; si lo adoptó otro proceso (WSL), también.
+        # Un trabajo vivo tiene como padre al servidor y no cuenta. El servidor mismo, si
+        # aparece como líder de sesión, solo cuenta con PPID 1.
+        else if (sid[i] == pid[i] && stat[i] !~ /^Z/ && (patron == "" || a ~ patron) && huerfano(i))
           printf "HUERFANO\t%s\tsid=%s\t%s\n", pid[i], sid[i], a
       }
     }'
