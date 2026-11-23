@@ -43,7 +43,7 @@ class TestTC024Estres(ConLineaBase):
             for i in range(POR_OLEADA):
                 argv = programas[i % 3]
                 respuesta = self.enviar_rapido(argv)
-                self.assertNotEqual(list(respuesta), ["error"], respuesta)
+                self.assertNotEqual([k for k in respuesta if k != "v"], ["error"], respuesta)
                 esperados["FAILED" if argv[0] == "sh" else "SUCCEEDED"] += 1
             self.esperar_sin_activos()
 
@@ -62,7 +62,7 @@ class TestTC024Estres(ConLineaBase):
         aceptados, rechazados = [], 0
         for _ in range(20):
             respuesta = self.enviar_rapido(["sleep", "300"])
-            if list(respuesta) == ["error"]:
+            if [k for k in respuesta if k != "v"] == ["error"]:
                 self.assertIn("cola llena", respuesta["error"])
                 rechazados += 1
             else:

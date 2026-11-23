@@ -22,6 +22,7 @@
 | [IA-012](IA-012-servidor-tcp-con-selectors.md) | 19/11/2026 | Josué Said Delgadillo Gutiérrez | Servidor TCP con varios clientes (selectors, --listen) | 4 |
 | [IA-013](IA-013-request-id-segun-adr-0007.md) | 19/11/2026 | Josué Said Delgadillo Gutiérrez | request_id según el ADR-0007 (duplicado, otro comando, largo) | 4 |
 | [IA-014](IA-014-restriccion-de-acceso-allow.md) | 19/11/2026 | Josué Said Delgadillo Gutiérrez | Restricción de acceso por red (--allow) y validación de --listen | 4 |
+| [IA-015](IA-015-version-del-protocolo.md) | 20/11/2026 | Josué Said Delgadillo Gutiérrez | Versión del protocolo (campo v) | 4 |
 | [IA-016](IA-016-cierre-controlado-con-tcp.md) | 21/11/2026 | Josué Said Delgadillo Gutiérrez | Cierre controlado con TCP | 4 |
 ## Cómo agregar un registro
 

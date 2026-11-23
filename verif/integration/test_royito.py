@@ -60,7 +60,7 @@ class TestRoyito(PruebaDeIntegracion):
             enlace.symlink_to(ROYITO)
             codigo, salida, err = royito("--socket", self.servidor.socket, "list", comando=enlace)
         self.assertEqual(codigo, 0, err)
-        self.assertEqual(json.loads(salida), {"jobs": []})
+        self.assertEqual(json.loads(salida), {"v": 1, "jobs": []})
 
     def test_sin_socket_indicado_apunta_al_socket_del_repositorio(self):
         # El valor por defecto es <repositorio>/data/jobrunner.sock, igual que ./scripts/run.sh.
