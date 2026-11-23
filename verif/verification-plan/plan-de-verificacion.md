@@ -1,8 +1,10 @@
 # Plan de Verificación — JobRunner
 
-**Alcance de esta versión:** Avance 1 — Núcleo local
+**Alcance de esta versión:** Entrega final (`v1.0.0`): operación local y remota en red privada
 **Responsable:** Diego Armando Durán Hernández (Verificación)
-**Documentos relacionados:** [Matriz de trazabilidad](matriz-trazabilidad.md) · [ADR](../../docs/decisions/) · [README](../../README.md)
+**Documentos relacionados:** [Matriz de trazabilidad](matriz-trazabilidad.md) · [Casos de prueba](../test-cases/) · [Inspecciones](../inspecciones/) · [Revisión cruzada](../revision-cruzada/) · [ADR](../../docs/decisions/) · [README](../../README.md)
+
+> **Control de cambios:** esta versión reemplaza al plan del Avance 1, que solo cubría el núcleo local. Cambian el alcance (secciones 1 y 2), la estrategia (3), el entorno (4), el formato de los casos (5), la ejecución y la evidencia (6), el catálogo de casos (7), los defectos (8), los criterios de aceptación (9) y los pendientes (10); se agregan las secciones 11 (pruebas de robustez e inyección de fallas) y 12 (verificación cruzada).
 
 ## 1. Propósito
 
