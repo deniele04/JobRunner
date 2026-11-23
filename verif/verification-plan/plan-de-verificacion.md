@@ -146,17 +146,39 @@ Sin `run-id` se usa la fecha y hora (`AAAAMMDD-HHMMSS`). Para una ejecución for
 
 ## 7. Casos de prueba
 
-El catálogo completo (TC-001 a TC-025, con los requisitos que cubre cada uno) está en la [matriz de trazabilidad](matriz-trazabilidad.md); `verify.sh` calcula el estado de cada caso. Los del Avance 1:
+El catálogo (TC-001 a TC-026, más las cuatro inspecciones) sigue la numeración del PDF 05, con [TC-025](../test-cases/TC-025.md) y [TC-026](../test-cases/TC-026.md) agregados por el equipo. Las pruebas automatizadas de cada caso, y su estado en la última ejecución formal, están en la [matriz de trazabilidad](matriz-trazabilidad.md); `verify.sh` calcula el estado de cada uno.
 
-| TC | Título | Nivel | Automatización |
-|---|---|---|---|
-| [TC-001](../test-cases/TC-001.md) | Enviar un trabajo y obtener un ID único | Integración | `verif/integration/test_tc001_enviar_trabajo.py`. Complemento unitario: `test_ids_unicos.py` |
-| [TC-003](../test-cases/TC-003.md) | Estados y transiciones de un trabajo | Unitario | `test_ciclo_vida.py` |
-| [TC-004](../test-cases/TC-004.md) | Consultar estado y listar trabajos desde el CLI | Integración | `verif/integration/test_tc004_consultar_listar.py` |
-| [TC-005](../test-cases/TC-005.md) | Cancelación de un trabajo | Unitario | `test_ciclo_vida.py` |
-| [TC-006](../test-cases/TC-006.md) | Ejecución como proceso separado y código de salida | Unitario | `test_ciclo_vida.py` |
-| [TC-008](../test-cases/TC-008.md) | Entradas inválidas sin tumbar el gestor | Unitario | `test_ciclo_vida.py` |
-| [TC-014](../test-cases/TC-014.md) | Construcción desde un clon limpio | Clon limpio | `verify.sh` |
+| Caso | Título | Nivel |
+|---|---|---|
+| [TC-001](../test-cases/TC-001.md) | Enviar un trabajo válido | Integración |
+| [TC-002](../test-cases/TC-002.md) | Cola y límite de concurrencia | Unitario |
+| [TC-003](../test-cases/TC-003.md) | Estados y tiempos | Unitario |
+| [TC-004](../test-cases/TC-004.md) | Consultar y listar | Integración |
+| [TC-005](../test-cases/TC-005.md) | Cancelar en cola y en ejecución | Unitario |
+| [TC-006](../test-cases/TC-006.md) | Proceso separado, stdout/stderr y código de salida | Unitario |
+| [TC-007](../test-cases/TC-007.md) | Reinicio y recuperación | Unitario |
+| [TC-008](../test-cases/TC-008.md) | Aislamiento de fallo | Unitario e integración |
+| [TC-009](../test-cases/TC-009.md) | Cierre controlado, también con TCP | Integración y unitario |
+| TC-010 | Flujo remoto completo en LAN/VPN | Integración y manual con evidencia (dos equipos) |
+| TC-011 | Restricción de red | Integración y unitario |
+| TC-012 | Fragmentación y desconexión | Unitario e integración |
+| TC-013 | Configuración y salud | Integración |
+| [TC-014](../test-cases/TC-014.md) | Construcción desde un clon limpio | Clon limpio |
+| TC-015 | Usabilidad documental | Integración y manual |
+| [TC-016](../test-cases/TC-016.md) | Saturación de cola y rechazo explícito | Unitario |
+| [TC-017](../test-cases/TC-017.md) | Cancelaciones concurrentes | Unitario |
+| [TC-018](../test-cases/TC-018.md) | Solicitud duplicada | Unitario |
+| [TC-019](../test-cases/TC-019.md) | Desconexión durante una solicitud | Integración |
+| [TC-020](../test-cases/TC-020.md) | Terminación inesperada del proceso hijo | Integración |
+| [TC-021](../test-cases/TC-021.md) | Escalamiento de cancelación | Unitario |
+| [TC-022](../test-cases/TC-022.md) | Interrupción durante la persistencia | Unitario |
+| TC-023 | Compatibilidad de protocolo | Integración |
+| [TC-024](../test-cases/TC-024.md) | Liberación de recursos bajo carga | Integración |
+| [TC-025](../test-cases/TC-025.md) | Bitácora de eventos (caso del equipo) | Unitario |
+| [TC-026](../test-cases/TC-026.md) | 500 registros sin pérdida de metadatos (caso de Verificación) | Integración y unitario |
+| [INS-016](../inspecciones/INS-016.md), [INS-017](../inspecciones/INS-017.md), [INS-018](../inspecciones/INS-018.md), [INS-034](../inspecciones/INS-034.md) | Inspecciones de RNF-16, RNF-17, RNF-18 y RNF-34 | Inspección |
+
+Los casos sin enlace (TC-010, TC-011, TC-012, TC-013, TC-015 y TC-023) todavía no tienen su documento en `verif/test-cases/`; los escriben Josué (TC-011, TC-012 y TC-023) y Juan (TC-010, TC-013 y TC-015). Mientras tanto sus pruebas ya se ejecutan desde `verify.sh`.
 
 ## 8. Defectos
 
