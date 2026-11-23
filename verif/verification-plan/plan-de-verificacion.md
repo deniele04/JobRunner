@@ -14,18 +14,35 @@ El plan responde cinco preguntas: qué se verifica (sección 2), con qué métod
 
 ## 2. Qué se verifica
 
-Los criterios del Avance 1:
+### 2.1 En alcance
 
-1. Enviar un trabajo y obtener un ID único.
-2. Ejecutar el trabajo como proceso separado.
-3. Consultar estado y listar trabajos.
-4. Cancelar un trabajo.
-5. Obtener el código de salida.
-6. Manejar comandos inválidos sin terminar el servicio.
-7. Respetar los estados y transiciones del modelo (`QUEUED → RUNNING → SUCCEEDED | FAILED | CANCELED`).
-8. Construcción reproducible desde un clon limpio (requisito para el tag `v0.1.0`, ver cronograma).
+| Capacidad | Requisitos | Casos |
+|---|---|---|
+| Enviar un trabajo, ID único y rechazo de entradas inválidas | RF-01, RF-02 | TC-001 |
+| Cola FIFO, límite de concurrencia y rechazo explícito con la cola llena | RF-03, RF-04, RF-05, RF-23, RF-25, RNF-04, RNF-07, RNF-29 | TC-002, TC-016 |
+| Estados, tiempos, consulta y listado | RF-06 a RF-09, RNF-05 | TC-003, TC-004 |
+| Salida estándar y de error, y código de salida | RF-07, RF-11 | TC-006 |
+| Cancelación sin bloqueo, escalamiento y cancelaciones concurrentes | RF-10, RF-26, RF-30, RNF-27 | TC-005, TC-017, TC-021 |
+| Persistencia, recuperación al arrancar y 500 registros | RF-12, RF-13, RNF-06, RNF-10, RNF-11, RNF-28, RNF-31 | TC-007, TC-022, TC-026 |
+| Bitácora de eventos | RF-14, RNF-15, RNF-22 | TC-025 |
+| Inicio y cierre controlados, sin procesos huérfanos | RF-15, RNF-25, RNF-30 | TC-009 |
+| Solicitudes duplicadas, desconexiones y muerte inesperada del hijo | RF-27, RF-28, RF-29, RNF-08, RNF-09 | TC-008, TC-018, TC-019, TC-020 |
+| Liberación de recursos bajo carga | RNF-33 | TC-024 |
+| Cliente: ayuda, códigos de salida y mensajes de error | RF-17, RNF-21, RNF-23 | TC-001, TC-004, TC-015 |
+| Operación remota con la misma semántica que la local | RF-18, RF-19, RNF-26 | TC-010 |
+| Restricción de acceso a localhost, redes privadas y VPN | RF-20, RNF-12, RNF-13 | TC-011 |
+| Protocolo: mensajes delimitados y fragmentados, desconexiones, límites y versión | RF-21, RF-22, RNF-14, RNF-24, RNF-32 | TC-012, TC-019, TC-023 |
+| Configuración y resumen de salud | RF-16, RF-24 | TC-013 |
+| Construcción y ejecución reproducibles | RNF-01, RNF-02, RNF-03, RNF-19, RNF-20 | TC-014 |
+| Calidad del código y de la documentación | RNF-16, RNF-17, RNF-18, RNF-34 | INS-016, INS-017, INS-018, INS-034 |
 
-Fuera del alcance de esta versión: concurrencia, persistencia con SQLite y operación remota (Hitos 2 y 3).
+El detalle requisito por requisito (método, caso, evidencia y resultado) está en la [matriz de trazabilidad](matriz-trazabilidad.md), que es la fuente de verdad. Si un Change Request agrega requisitos, se agregan filas a la matriz y casos a este plan antes de implementarlos.
+
+### 2.2 Fuera de alcance
+
+- **Autenticación de personas y cifrado del tráfico.** El acceso se limita por red de origen y se recomienda la VPN (ADR-0008); no se verifica un control que el servicio no tiene.
+- **Exposición a Internet.** El servicio se niega a escuchar en `0.0.0.0`, `::` o direcciones públicas, y eso es lo que se verifica (TC-011). Nunca se prueba con puertos abiertos en un router ni con direcciones públicas.
+- **Rendimiento más allá de los requisitos.** Solo se verifican los umbrales de RNF-04, RNF-05 y RNF-06 (3 trabajos simultáneos, consulta en 1 s con 100 trabajos y 500 registros).
 
 ## 3. Estrategia
 
