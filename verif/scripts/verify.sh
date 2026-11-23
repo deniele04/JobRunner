@@ -319,6 +319,9 @@ tc012="$(estado_pruebas \
   test_varias_solicitudes_en_una_conexion_tcp \
   test_mensaje_mayor_de_64_kib_recibe_error_y_el_servidor_sigue)"
 
+# TC-023 vive entero en un archivo (test_tc023_version_protocolo.py): cualquier prueba que se agregue cuenta.
+tc023="$(estado_archivo test_tc023_version_protocolo)"
+
 # La herramienta que detecta zombis y huérfanos también se verifica: si procesos.sh
 # fallara, el resultado «sin zombis ni huérfanos» no valdría (DEF-005).
 procesos_sh="$(estado_pruebas \
@@ -366,6 +369,7 @@ conocidos="$(awk -F'\t' '$1 == "XFAIL" { n++ } END { print n + 0 }' "$OUT/unit-r
   echo "| TC-020 | $tc020 | unittest.log, unit-resultados.tsv |"
   echo "| TC-021 | $tc021 | unittest.log, unit-resultados.tsv |"
   echo "| TC-022 | $tc022 | unittest.log, unit-resultados.tsv |"
+  echo "| TC-023 | $tc023 | unittest.log, unit-resultados.tsv |"
   echo "| TC-024 | $tc024 | unittest.log, unit-resultados.tsv |"
   echo "| TC-025 | $tc025 | unittest.log, unit-resultados.tsv |"
   echo "| Sin zombis ni huérfanos tras las pruebas | $limpieza | procesos.log |"
