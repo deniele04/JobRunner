@@ -82,20 +82,26 @@ Cada caso vive en `verif/test-cases/TC-XXX.md` y tiene estos campos:
 | Campo | Contenido |
 |---|---|
 | Identificador | `TC-XXX` |
-| Requisitos cubiertos | Criterio del Avance 1 y, cuando se asigne, el RF/RNF correspondiente |
+| Requisitos cubiertos | RF y RNF que comprueba, según el PDF 05 y la [matriz](matriz-trazabilidad.md) |
 | Objetivo | Qué comportamiento se comprueba |
 | Precondiciones | Estado inicial, datos y configuración |
-| Pasos | Acciones numeradas, reproducibles |
+| Pasos | Acciones numeradas, reproducibles, con la forma automática y la manual |
 | Resultado esperado | Resultado medible que satisface el requisito |
+| Pruebas automatizadas | Nombres de las pruebas que `verify.sh` busca |
 | Resultado observado | Lo que realmente ocurrió, con el `run-id` de la ejecución |
 | Evidencia | Ruta en `verif/results/<run-id>/` |
-| Estado | `PASS`, `FAIL` o `BLOCKED` |
+| Estado | `PASS`, `FAIL`, `BLOCKED` o `Pendiente` |
+
+**Inspecciones.** Los requisitos que el PDF 05 asigna al método «Inspección» tienen un archivo `verif/inspecciones/INS-0NN.md` con sus criterios de aceptación, y su resultado sale de `inspecciones.py`. Cuentan en la matriz como un caso más.
+
+**Casos manuales.** Lo que no se puede automatizar entero (usabilidad de la guía, TC-015) se registra en `verif/manual/TC-0NN.md`: quién lo evaluó, cuándo, con qué versión y dónde está la evidencia. Sin esos datos, `verify.sh` no lo da por cumplido.
 
 **Estados**
 
 - **PASS:** el resultado observado coincide con el esperado y existe evidencia.
 - **FAIL:** el caso se ejecutó y el resultado difiere del esperado. Todo FAIL debe quedar registrado como defecto (sección 8).
-- **BLOCKED:** no se puede ejecutar porque falta una dependencia (por ejemplo, el CLI). Se indica cuál.
+- **BLOCKED:** no se puede ejecutar porque falta una dependencia (una prueba que otra persona aún no integró, un documento, una evidencia manual). `resumen.md` indica cuál. En la ejecución formal final no debe quedar ninguno sin una excepción documentada en las release notes.
+- **Pendiente:** solo en la matriz: el caso aún no tiene resultado porque no se ha hecho con él la ejecución formal.
 
 ## 6. Ejecución y evidencia
 
