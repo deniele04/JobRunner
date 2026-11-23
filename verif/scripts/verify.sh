@@ -378,6 +378,20 @@ procesos_sh="$(estado_pruebas \
   test_si_el_servidor_muere_de_golpe_el_trabajo_queda_huerfano \
   test_servidor_inactivo_no_deja_zombis)"
 
+# Inspecciones documentales de RNF-16, RNF-17, RNF-18 y RNF-34 (INS-016, INS-017, INS-018 e
+# INS-034): el criterio de cada una está en verif/inspecciones/ y el detalle queda en inspecciones.log.
+python3 verif/scripts/inspecciones.py --tsv "$OUT/inspecciones.tsv" > "$OUT/inspecciones.log" 2>&1
+ins_rc=$?
+estado_inspeccion() {
+  local e
+  e="$(awk -F'\t' -v id="$1" '$1 == id { print $2 }' "$OUT/inspecciones.tsv" 2>/dev/null)"
+  echo "${e:-BLOCKED}"
+}
+ins016="$(estado_inspeccion INS-016)"
+ins017="$(estado_inspeccion INS-017)"
+ins018="$(estado_inspeccion INS-018)"
+ins034="$(estado_inspeccion INS-034)"
+
 # 4. Las pruebas no deben dejar zombis ni huérfanos (RNF-30, RNF-33).
 sleep 1
 verif/scripts/procesos.sh revisar --base "$BASE_PROCESOS" --patron 'sleep|jobrunner' > "$OUT/procesos.log" 2>&1
@@ -417,6 +431,10 @@ conocidos="$(awk -F'\t' '$1 == "XFAIL" { n++ } END { print n + 0 }' "$OUT/unit-r
   echo "| TC-024 | $tc024 | unittest.log, unit-resultados.tsv |"
   echo "| TC-025 | $tc025 | unittest.log, unit-resultados.tsv |"
   echo "| TC-026 | $tc026 | unittest.log, unit-resultados.tsv |"
+  echo "| INS-016 | $ins016 | inspecciones.log (RNF-16; BLOCKED si falta seguridad.md) |"
+  echo "| INS-017 | $ins017 | inspecciones.log (RNF-17) |"
+  echo "| INS-018 | $ins018 | inspecciones.log (RNF-18) |"
+  echo "| INS-034 | $ins034 | inspecciones.log (RNF-34) |"
   echo "| Sin zombis ni huérfanos tras las pruebas | $limpieza | procesos.log |"
   echo "| procesos.sh detecta zombis y huérfanos, también adoptados por otro proceso (DEF-005) | $procesos_sh | unittest.log, unit-resultados.tsv |"
   echo
@@ -432,4 +450,5 @@ status=0
 [ "$unit_rc" -ne 0 ] && status=1
 [ "$tc014" = "FAIL" ] && status=1
 [ "$limpieza" = "FAIL" ] && status=1
+[ "$ins_rc" -ne 0 ] && status=1
 exit "$status"
