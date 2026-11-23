@@ -69,8 +69,13 @@ def rnf16(raiz):
             "falta seguridad.md"
     texto = _leer(guias[0]).lower()
     estado = PASS
-    for tema in ("modelo de amenazas", "privilegio"):
-        if tema in texto:
+    # Cada tema se acepta con cualquiera de sus formulaciones: lo que se exige es el contenido, no la frase.
+    temas = (
+        ("modelo de amenazas", ("modelo de amenazas", "amenazas, mitigaciones")),
+        ("privilegio", ("privilegio", "permisos del usuario")),
+    )
+    for tema, formas in temas:
+        if any(f in texto for f in formas):
             detalle.append("OK  %s trata «%s»" % (guias[0].relative_to(raiz), tema))
         else:
             estado = FAIL

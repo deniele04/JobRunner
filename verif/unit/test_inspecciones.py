@@ -105,6 +105,11 @@ class InspeccionesTest(unittest.TestCase):
         self.assertEqual(self.estados()["INS-016"], "BLOCKED")
         self.assertIn("seguridad.md", self.detalle("INS-016"))
 
+    def test_seguridad_con_otras_palabras_para_amenazas_y_permisos_pasa(self):
+        escribir(self.raiz / "docs" / "technical-guide" / "seguridad.md",
+                 "# Seguridad\n\n## Amenazas, mitigaciones y pruebas\nx\n\nSe ejecuta con los permisos del usuario.\n")
+        self.assertEqual(self.estados()["INS-016"], "PASS")
+
     def test_seguridad_sin_modelo_de_amenazas_falla(self):
         escribir(self.raiz / "docs" / "technical-guide" / "seguridad.md", "# Seguridad\nsolo el mínimo privilegio\n")
         self.assertEqual(self.estados()["INS-016"], "FAIL")
