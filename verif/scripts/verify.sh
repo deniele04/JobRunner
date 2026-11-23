@@ -347,6 +347,13 @@ tc010="$(combinar \
   "$(estado_archivo test_tc010)")"
 tc010="$(con_evidencia "$tc010" "verif/results/*-remoto")"
 
+tc013="$(combinar \
+  "$(estado_pruebas \
+    test_direccion_invalida_no_arranca \
+    test_puerto_ocupado_no_arranca_y_no_deja_el_socket_unix \
+    test_el_bitacora_registra_el_puerto_tcp)" \
+  "$(estado_archivo test_tc013)")"
+
 # La herramienta que detecta zombis y huérfanos también se verifica: si procesos.sh
 # fallara, el resultado «sin zombis ni huérfanos» no valdría (DEF-005).
 procesos_sh="$(estado_pruebas \
@@ -386,6 +393,7 @@ conocidos="$(awk -F'\t' '$1 == "XFAIL" { n++ } END { print n + 0 }' "$OUT/unit-r
   echo "| TC-010 | $tc010 | unittest.log; falta el cliente remoto de Juan (test_tc010_*.py) y verif/results/<run-id>-remoto/ si aparece BLOCKED |"
   echo "| TC-011 | $tc011 | unittest.log, unit-resultados.tsv (acceso por red probado en 127.0.0.1) |"
   echo "| TC-012 | $tc012 | unittest.log, unit-resultados.tsv |"
+  echo "| TC-013 | $tc013 | unittest.log; falta test_tc013_*.py de Juan (configuración y health) si aparece BLOCKED |"
   echo "| TC-014 | $tc014 | tc-014-clon-limpio.log |"
   echo "| TC-015 | $tc015 | unittest.log, unit-resultados.tsv |"
   echo "| TC-016 | $tc016 | unittest.log, unit-resultados.tsv |"
