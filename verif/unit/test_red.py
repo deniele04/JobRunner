@@ -269,6 +269,49 @@ class RedAccesoRechazadoTest(RedBase):
         self.assertEqual(self.red.rechazadas, 5)
 
 
+class RedEstadisticasTest(RedBase):
+    """Contadores que usa `health` (U2): clientes conectados y accesos rechazados."""
+
+    def esperar(self, condicion, limite=3.0):
+        fin = time.monotonic() + limite
+        while time.monotonic() < fin:
+            if condicion():
+                return True
+            time.sleep(0.02)
+        return condicion()
+
+    def test_sin_conexiones_los_contadores_estan_en_cero(self):
+        self.assertEqual(self.red.estadisticas(), {"clientes": 0, "rechazados": 0})
+
+    def test_cuenta_las_conexiones_abiertas_de_unix_y_de_tcp(self):
+        unix, tcp = self.cliente_unix(), self.cliente_tcp()
+        for c in (unix, tcp):
+            c.sendall(b"hola" + NL)
+            leer_linea(c)
+        self.assertEqual(self.red.estadisticas()["clientes"], 2)
+
+    def test_una_conexion_cerrada_deja_de_contar(self):
+        unix, tcp = self.cliente_unix(), self.cliente_tcp()
+        for c in (unix, tcp):
+            c.sendall(b"hola" + NL)
+            leer_linea(c)
+        tcp.close()
+        self.assertTrue(self.esperar(lambda: self.red.estadisticas()["clientes"] == 1))
+
+
+class RedEstadisticasRechazosTest(RedBase):
+    permitidas = [red.parsear_red("10.0.0.0/8")]   # sin loopback
+
+    def test_los_accesos_rechazados_se_cuentan_y_no_son_clientes(self):
+        for _ in range(3):
+            try:
+                self.cliente_tcp().sendall(b"x" + NL)
+            except OSError:
+                pass
+        time.sleep(0.3)
+        self.assertEqual(self.red.estadisticas(), {"clientes": 0, "rechazados": 3})
+
+
 class RedAccesoPermitidoTest(RedBase):
     permitidas = [red.parsear_red("127.0.0.0/8")]
 
