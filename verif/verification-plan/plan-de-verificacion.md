@@ -214,3 +214,34 @@ La versión `v1.0.0` se acepta cuando la ejecución formal final de `verify.sh` 
 | Persona que evalúa TC-015 (idealmente del otro equipo) | Diego | El caso queda `BLOCKED` hasta que llene `verif/manual/TC-015.md` |
 | Prioridad de cada requisito | Producto (Daniel) | Solo ocho filas la tienen (matriz de muestra del PDF 05) |
 
+## 11. Pruebas de robustez e inyección de fallas
+
+Un servicio que ejecuta procesos de otras personas y recibe solicitudes por red debe seguir en pie y coherente cuando algo sale mal. Estas pruebas **provocan la falla a propósito** y comprueban lo que queda después. No basta con que el servicio no se caiga: tras cada falla se revisan cuatro cosas.
+
+1. **Estado:** `status` y `list` muestran el estado correcto de cada trabajo (por ejemplo `FAILED` con la señal como diagnóstico, no `CANCELED`, si nadie pidió cancelar).
+2. **Procesos:** `procesos.sh` no encuentra zombis ni huérfanos.
+3. **Bitácora:** queda el evento correspondiente (`terminado`, `escalamiento`, `recuperado`, `acceso_rechazado`, `cliente_desconectado`, `servicio_detenido`...).
+4. **Recursos:** el servidor no acumuló descriptores de archivo y el socket o el puerto quedaron libres.
+
+**Cómo se inyecta.** Cada prueba levanta su propio servidor aislado (`ServidorDePrueba`) y provoca la falla de forma determinista: señales al proceso del trabajo (`kill -9`, `kill -15`), `SIGKILL` al servidor (`matar()`), `SIGINT` y `SIGTERM` al servidor (`detener()`), un trabajo que ignora `SIGTERM` (`sh -c 'trap "" TERM; sleep 60'`), clientes que cierran la conexión a mitad de una solicitud, bytes que no son texto válido, mensajes de más de 64 KiB o partidos en varias lecturas, un origen de red no permitido (`127.0.0.2`) y opciones peligrosas al arrancar. Las pruebas con tiempos usan esperas con límite y se repiten antes de la ejecución formal.
+
+| Falla inyectada | Resultado esperado | Casos |
+|---|---|---|
+| Un proceso hijo muere por una señal ajena (`kill -9` o `kill -15`) | El trabajo queda `FAILED` con `exit_code` y la señal como diagnóstico; sin zombi; los demás siguen; su lugar lo ocupa el siguiente de la cola | TC-020 |
+| Un trabajo ignora `SIGTERM` al cancelarlo | `cancel` responde al instante; a los 5 s se envía `SIGKILL`; queda `CANCELED` con -9; no bloquea a los demás | TC-021, TC-009 |
+| El servidor muere de golpe (`kill -9`) con trabajos corriendo y en cola | Antes de reiniciar, `procesos.sh` detecta al huérfano; al arrancar, los `RUNNING` pasan a `FAILED` «interrumpido por reinicio» y su grupo se termina, los `QUEUED` se reanudan y el historial sigue completo | TC-007, `test_procesos.py` (DEF-005) |
+| Cierre con Ctrl+C o `SIGTERM`, y un segundo Ctrl+C | Se cancelan los `RUNNING`, se conserva la cola, se borra el socket, se libera el puerto TCP y no queda ningún huérfano | TC-009 |
+| Interrupción durante una escritura en la base | Lo confirmado sobrevive; lo no confirmado no deja rastro ni estado parcial | TC-022 |
+| El cliente se desconecta sin leer la respuesta, a mitad de una solicitud, o en ráfaga | El servidor sigue; la solicitud completa se aplica una sola vez; la incompleta se descarta; no se acumulan descriptores | TC-019, TC-012 (INC-001) |
+| JSON mal formado, bytes inválidos o una solicitud que no es un objeto | Error explícito con la versión del protocolo; el servidor sigue | TC-008, TC-023 |
+| Mensaje de más de 64 KiB, sin salto de línea o partido en varias lecturas | Se reensambla lo fragmentado; lo excesivo recibe error y se cierra esa conexión sin afectar a las demás | TC-012 |
+| Cliente lento, inactivo o que no lee una respuesta enorme | No retrasa a los demás; la conexión inactiva se cierra a los 30 s | TC-012 |
+| Versión de protocolo desconocida | Error exacto con la versión soportada; no se ejecuta nada | TC-023 |
+| Conexión desde un origen no permitido | Se cierra sin leer, queda `acceso_rechazado` en la bitácora y no se crea ningún trabajo | TC-011 |
+| Opciones peligrosas (`--listen 0.0.0.0`, una IP pública, `--allow` abierto) | El servicio se niega a arrancar | TC-011 |
+| Más trabajos de los que caben, y cancelación masiva | Rechazo explícito de los que no caben; sin zombis, huérfanos ni fugas | TC-016, TC-024 |
+| Solicitudes duplicadas y cancelaciones concurrentes | Un solo trabajo por `request_id`; un solo estado final por trabajo | TC-018, TC-017 |
+| 500 trabajos y un reinicio | Ninguno se pierde ni cambia un campo | TC-026 |
+| Un comando que no existe | El trabajo queda `FAILED` y el servicio sigue; queda `no_se_pudo_iniciar` | TC-008 |
+
+**Qué no se inyecta.** Disco lleno, base de datos corrupta y cambios del reloj del sistema: quedan fuera de esta entrega y no se afirma nada sobre ellos.
