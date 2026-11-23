@@ -21,12 +21,12 @@ Cadena obligatoria del Plan de Verificación: Requisito → Método → Caso →
 | [TC-007](../test-cases/TC-007.md) | Reinicio y recuperación | `verif/unit/test_persistencia.py`, `test_reinicio_servidor.py`, `test_store.py` | PASS |
 | [TC-008](../test-cases/TC-008.md) | Aislamiento de fallo | `verif/unit/test_ciclo_vida.py`, `test_servidor_robusto.py`, `verif/integration/test_tc001_enviar_trabajo.py` | PASS |
 | [TC-009](../test-cases/TC-009.md) | Cierre controlado | `verif/integration/test_tc009_cierre_controlado.py`, `test_procesos.py`, `verif/unit/test_cierre.py` | PASS |
-| TC-010 | Flujo remoto completo en LAN/VPN | sin automatizar todavía | Pendiente |
+| [TC-010](../test-cases/TC-010.md) | Flujo remoto completo en LAN/VPN | `verif/integration/test_tc010_operacion_remota.py`, `test_cliente_remoto.py`, `test_output_health_cli.py`, `test_acceso_tcp.py` | Pendiente |
 | TC-011 | Restricción de red | sin automatizar todavía | Pendiente |
 | TC-012 | Fragmentación y desconexión | sin automatizar todavía | Pendiente |
-| TC-013 | Configuración y salud | sin automatizar todavía | Pendiente |
+| [TC-013](../test-cases/TC-013.md) | Configuración y salud | `verif/integration/test_tc013_salud_y_configuracion.py`, `test_output_health_cli.py`, `verif/unit/test_output_health.py` | Pendiente |
 | [TC-014](../test-cases/TC-014.md) | Construcción desde clon limpio | `verif/scripts/verify.sh` | PASS |
-| TC-015 | Usabilidad documental | sin automatizar todavía | Pendiente |
+| [TC-015](../test-cases/TC-015.md) | Usabilidad documental | `verif/integration/test_tc015_ayuda_y_errores.py`, `verif/unit/test_cli.py` (RNF-23: demostración manual con una persona ajena al equipo) | Pendiente |
 | [TC-016](../test-cases/TC-016.md) | Saturación de cola y rechazo explícito | `verif/unit/test_cola.py`, `test_servidor_cola.py` | PASS |
 | [TC-017](../test-cases/TC-017.md) | Cancelaciones concurrentes | `verif/unit/test_cola.py` | PASS |
 | [TC-018](../test-cases/TC-018.md) | Solicitud duplicada | `verif/unit/test_persistencia.py`, `test_reinicio_servidor.py`, `test_store.py` | PASS |
