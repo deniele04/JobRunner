@@ -48,10 +48,24 @@ El detalle requisito por requisito (método, caso, evidencia y resultado) está 
 
 | Nivel | Qué cubre | Cómo |
 |---|---|---|
-| Unitario | `Job` y `JobManager` (estados, transiciones, ejecución, cancelación, entradas inválidas, unicidad de IDs) | `unittest` en `verif/unit/` |
-| Clon limpio | Que un externo pueda clonar y construir siguiendo el README | `verif/scripts/verify.sh` clona el repositorio y ejecuta `./scripts/setup.sh` |
-| Integración / extremo a extremo | Servidor y CLI reales comunicándose por socket Unix | `unittest` en `verif/integration/`: `helpers.py` levanta un servidor aislado (directorio y socket temporales) por prueba y usa el CLI como una persona. Casos TC-001 y TC-004 |
-| Procesos | Zombis y huérfanos que deje el servicio | `verif/scripts/procesos.sh` (ver sección 6) y `verif/integration/test_procesos.py` |
+| Unitario | `JobManager`, `Store`, la capa de red `Red`, la bitácora y las propias herramientas de verificación (`inspecciones.py`, `actualizar_matriz.py`) | `unittest` en `verif/unit/` |
+| Integración local | Servidor y CLI reales por socket Unix, como los usaría una persona | `unittest` en `verif/integration/`: `helpers.py` levanta un servidor aislado (directorio y socket temporales) por prueba |
+| Integración en red | Servidor real con `--listen` y `--allow`; clientes TCP desde `127.0.0.1` (permitido) y `127.0.0.2` (otro origen, rechazado) | `unittest` en `verif/integration/` (`test_servidor_tcp.py`, `test_acceso_tcp.py`) |
+| Procesos | Zombis y huérfanos que deje el servicio, también en WSL | `verif/scripts/procesos.sh` (sección 6) y `test_procesos.py` |
+| Clon limpio | Que alguien externo pueda clonar, construir y probar solo con el README | `verify.sh` clona el último commit y ejecuta `./scripts/setup.sh` (TC-014) |
+| Robustez e inyección de fallas | Qué pasa cuando algo sale mal a propósito (sección 11) | Pruebas de integración que provocan la falla y revisan el estado, los procesos y la bitácora |
+| Inspección | Calidad del código y de la documentación donde no hay comportamiento que ejecutar (RNF-16, 17, 18 y 34) | `verif/scripts/inspecciones.py`, con el criterio de cada una en `verif/inspecciones/` |
+| Manual con evidencia | Lo que solo una persona o dos equipos pueden comprobar: usabilidad de la guía (TC-015) y operación entre dos equipos (TC-010) | Registro en `verif/manual/` y carpeta `verif/results/<run-id>-remoto/`; `verify.sh` los exige |
+| Verificación cruzada | Que otro equipo, sin conocer el código, pueda construir, usar y romper el producto (sección 12) | Versión candidata, Issues `[Defecto] VC-NN` y `verif/revision-cruzada/` |
+
+**Principios**
+
+1. **La evidencia sale de la ejecución, no de la redacción.** Un caso es `PASS` solo si `verify.sh` lo calculó a partir del resultado de sus pruebas. Si falta una prueba, una inspección o una evidencia manual, el caso es `BLOCKED` y dice qué falta; nunca se da por cumplido.
+2. **Las pruebas se buscan por nombre.** `verify.sh` asocia cada caso con los nombres de sus pruebas. Ninguna prueba cambia de nombre sin actualizar `verify.sh` y avisar a Verificación.
+3. **Una prueba que no puede fallar no prueba nada.** Las pruebas de la verificación se comprueban rompiendo a propósito lo que verifican (por ejemplo, quitar un campo del almacén hace fallar TC-026, y cada inspección tiene una prueba que la hace fallar).
+4. **Las pruebas con tiempos se repiten.** Antes de la ejecución formal se corre `verify.sh` más de una vez para descartar pruebas intermitentes (riesgo 12 del cronograma). Las esperas tienen límite; no se usan pausas fijas.
+5. **Cada prueba tiene su servidor y su directorio.** Nada comparte estado entre pruebas ni toca `data/` del repositorio.
+6. **La red solo se prueba en localhost, LAN privada o VPN.**
 
 ## 4. Entorno de verificación
 
