@@ -192,8 +192,19 @@ class Red:
         self._cerrar_inactivas()
 
     def cerrar(self):
-        """Cierra todas las conexiones y los sockets de escucha."""
+        """Cierra todas las conexiones y los sockets de escucha; devuelve cuantas conexiones cerro.
+
+        Es el primer paso del cierre controlado (ADR-0006): ya no se acepta nada nuevo, ningun
+        cliente queda colgado y los puertos TCP quedan libres. Lo que ya estaba listo para
+        enviarse a un cliente se intenta mandar una vez, sin esperar.
+        """
+        cerradas = len(self._conexiones)
         for con in list(self._conexiones):
+            if con.salida:
+                try:
+                    con.sock.send(con.salida)
+                except OSError:
+                    pass
             self._cerrar(con)
         for sock in self._escuchas:
             try:
@@ -203,6 +214,7 @@ class Red:
             sock.close()
         self._escuchas = []
         self._sel.close()
+        return cerradas
 
     # -- internos ----------------------------------------------------------
     def _aceptar(self, escucha):
