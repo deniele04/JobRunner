@@ -268,7 +268,9 @@ tc025="$(estado_pruebas \
 
 # Casos de la entrega final (Hitos 3 y 4). Los nombres de prueba vienen de Josué (red y protocolo)
 # y de Juan (cliente remoto, output y health); si alguien los cambia, se actualizan aquí.
-tc011="$(estado_pruebas \
+tc011="$(combinar \
+  "$(estado_archivo test_tc011_restriccion_acceso)" \
+  "$(estado_pruebas \
   test_loopback_si_y_otro_origen_no \
   test_el_rechazo_se_registra_con_la_ip_y_no_se_crea_trabajo \
   test_el_servidor_sigue_atendiendo_despues_de_muchos_rechazos \
@@ -290,7 +292,6 @@ tc011="$(estado_pruebas \
   test_un_rechazo_no_afecta_al_servicio \
   test_origen_dentro_de_la_red_permitida_es_atendido \
   test_por_defecto_solo_127_0_0_1_y_loopback_ipv6 \
-  test_allow_agrega_redes_y_conserva_el_loopback \
   test_una_ip_suelta_cuenta_como_red_de_un_solo_equipo \
   test_ipv4_mapeada_en_ipv6_y_ambito_se_normalizan \
   test_direccion_que_no_es_ip_no_se_permite \
@@ -299,7 +300,7 @@ tc011="$(estado_pruebas \
   test_una_red_invalida_en_la_lista_impide_construirla \
   test_direcciones_privadas_son_validas \
   test_todas_las_interfaces_y_las_publicas_se_rechazan \
-  test_nombre_que_no_se_resuelve_se_rechaza)"
+  test_nombre_que_no_se_resuelve_se_rechaza)")"
 
 tc012="$(estado_pruebas \
   test_responde_por_unix_y_por_tcp \
@@ -414,10 +415,10 @@ conocidos="$(awk -F'\t' '$1 == "XFAIL" { n++ } END { print n + 0 }' "$OUT/unit-r
   echo "| TC-007 | $tc007 | unittest.log, unit-resultados.tsv |"
   echo "| TC-008 | $tc008 | unittest.log, unit-resultados.tsv |"
   echo "| TC-009 | $tc009 | unittest.log, unit-resultados.tsv, procesos.log |"
-  echo "| TC-010 | $tc010 | unittest.log. Si es BLOCKED falta test_tc010_*.py (cliente remoto, Juan) o verif/results/<run-id>-remoto/ (Josué y Diego) |"
+  echo "| TC-010 | $tc010 | unittest.log. Si es BLOCKED falta verif/results/<run-id>-remoto/ (evidencia entre dos equipos, Josué y Diego) o falla alguna prueba |"
   echo "| TC-011 | $tc011 | unittest.log, unit-resultados.tsv (acceso por red probado en 127.0.0.1) |"
   echo "| TC-012 | $tc012 | unittest.log, unit-resultados.tsv |"
-  echo "| TC-013 | $tc013 | unittest.log. Si es BLOCKED falta test_tc013_*.py (configuración y health, Juan) |"
+  echo "| TC-013 | $tc013 | unittest.log, unit-resultados.tsv |"
   echo "| TC-014 | $tc014 | tc-014-clon-limpio.log |"
   echo "| TC-015 | $tc015 | unittest.log, manual-TC-015.md. Si es BLOCKED falta llenar el registro de la persona evaluadora |"
   echo "| TC-016 | $tc016 | unittest.log, unit-resultados.tsv |"
