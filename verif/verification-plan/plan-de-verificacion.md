@@ -108,6 +108,7 @@ Cada caso vive en `verif/test-cases/TC-XXX.md` y tiene estos campos:
 ```bash
 ./scripts/test.sh                      # pruebas unitarias + integración + verify.sh
 verif/scripts/verify.sh [run-id]       # solo la verificación y su evidencia
+python3 verif/scripts/inspecciones.py  # solo las inspecciones (RNF-16, 17, 18 y 34)
 ```
 
 Cada ejecución de `verify.sh` crea `verif/results/<run-id>/` con:
@@ -119,9 +120,11 @@ Cada ejecución de `verify.sh` crea `verif/results/<run-id>/` con:
 | `unit-resultados.tsv` | Resultado de cada prueba: `PASS`, `FAIL` o `XFAIL` (fallo esperado y conocido, `expectedFailure`) |
 | `procesos.log` | Zombis y huérfanos que dejaron las pruebas |
 | `tc-014-clon-limpio.log` | Clonado y construcción desde un clon limpio |
-| `resumen.md` | Estado de cada TC en esa ejecución |
+| `inspecciones.log` y `inspecciones.tsv` | Detalle y estado de INS-016, INS-017, INS-018 e INS-034 |
+| `manual-TC-015.md` | Copia del registro manual de usabilidad |
+| `resumen.md` | Estado de cada TC e inspección en esa ejecución, con el motivo de cada `BLOCKED` |
 
-Además, `verify.sh` comprueba al final con `procesos.sh` que las pruebas no dejaron zombis ni huérfanos (`procesos.log`), y reemplaza la ruta del repositorio por `<repo>` en los registros para que la evidencia no lleve rutas personales.
+Además, `verify.sh` comprueba al final con `procesos.sh` que las pruebas no dejaron zombis ni huérfanos (`procesos.log`) y que la propia herramienta funciona (pruebas de `test_procesos.py`, DEF-005), y reemplaza la ruta del repositorio por `<repo>` en los registros para que la evidencia no lleve rutas personales. Termina con código 1 si alguna prueba, TC o inspección falla; los `BLOCKED` no cuentan como fallo pero aparecen en el resumen.
 
 **Zombis y huérfanos (`verif/scripts/procesos.sh`).** Solo lectura. Se guarda una línea base antes de la prueba y se revisa después:
 
@@ -135,9 +138,11 @@ verif/scripts/procesos.sh revisar --base base.txt [--patron 'sleep 300']
 - **HUERFANO:** líder de sesión (los trabajos se lanzan con `start_new_session`) cuyo padre ya no es el servidor, es decir, su padre murió y lo adoptó otro proceso. En Linux lo adopta el PID 1, pero en WSL puede adoptarlo otro proceso de la sesión, por eso no se exige PPID 1 (DEF-005). Un trabajo vivo tiene como padre al servidor y no cuenta.
 - Código de salida: 0 limpio, 1 hallazgos, 2 uso incorrecto. Detalle en la cabecera del script.
 
-Al terminar una ejecución formal, `python3 verif/scripts/actualizar_matriz.py <run-id>` copia el estado de cada TC (de `resumen.md`) a la [matriz de trazabilidad](matriz-trazabilidad.md): la columna Estado de los casos y la columna Resultado de cada RF y RNF (el peor estado de sus casos).
+**Operación entre dos equipos.** `verify.sh` prueba la red sobre `127.0.0.1`. La operación entre dos equipos se registra aparte, en `verif/results/<run-id>-remoto/`: bitácora de ambos lados, salida de los comandos y `health`. TC-010 no es `PASS` sin esa carpeta.
 
-Sin `run-id` se usa la fecha y hora (`AAAAMMDD-HHMMSS`). Para una ejecución formal conviene un nombre explícito, por ejemplo `20261002-avance1`, y confirmar los cambios antes de correrla, porque el clon limpio parte del último commit. Solo las ejecuciones formales se agregan al repositorio.
+**De la ejecución a la matriz.** Al terminar una ejecución formal, `python3 verif/scripts/actualizar_matriz.py <run-id>` copia el estado de cada caso e inspección (de `resumen.md`) a la [matriz de trazabilidad](matriz-trazabilidad.md): la columna Estado de los casos y la columna Resultado de cada RF y RNF (el peor estado de sus casos).
+
+Sin `run-id` se usa la fecha y hora (`AAAAMMDD-HHMMSS`). Para una ejecución formal conviene un nombre explícito, por ejemplo `20261030-v0.2.0`, y confirmar los cambios antes de correrla, porque el clon limpio parte del último commit. Solo las ejecuciones formales se agregan al repositorio.
 
 ## 7. Casos de prueba
 
