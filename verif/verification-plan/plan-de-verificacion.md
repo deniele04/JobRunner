@@ -8,7 +8,9 @@
 
 ## 1. Propósito
 
-Definir cómo se comprueba que el núcleo local de JobRunner cumple los criterios del Avance 1 (README, sección "Alcance actual"), con qué casos de prueba, en qué entorno y dónde queda la evidencia.
+Definir cómo se comprueba que JobRunner `v1.0.0` cumple los 30 requisitos funcionales (RF) y los 34 no funcionales (RNF) y los criterios de aceptación de la entrega final: operación local y remota entre dos equipos en LAN privada o VPN, concurrencia con cola, persistencia y recuperación, cancelación con escalamiento, cierre controlado y robustez ante fallas.
+
+El plan responde cinco preguntas: qué se verifica (sección 2), con qué métodos y casos (3 y 7), en qué entorno (4), dónde queda la evidencia y cómo se calcula (6), y cómo se atiende lo que encuentre quien verifica desde fuera (12). Toda afirmación de «cumple» sale de una ejecución de `verify.sh` o de una ejecución remota registrada; no se prepara evidencia a mano.
 
 ## 2. Qué se verifica
 
