@@ -301,6 +301,24 @@ tc011="$(estado_pruebas \
   test_todas_las_interfaces_y_las_publicas_se_rechazan \
   test_nombre_que_no_se_resuelve_se_rechaza)"
 
+tc012="$(estado_pruebas \
+  test_responde_por_unix_y_por_tcp \
+  test_dos_solicitudes_en_una_conexion_se_responden_en_orden \
+  test_mensaje_fragmentado_se_reensambla \
+  test_cliente_conectado_sin_enviar_no_retrasa_a_los_demas \
+  test_lineas_en_blanco_se_ignoran \
+  test_solicitud_incompleta_al_cerrar_no_se_procesa \
+  test_respuesta_enorme_a_un_cliente_que_no_lee_no_bloquea_a_los_demas \
+  test_cliente_que_se_va_sin_leer_la_respuesta_no_tumba_la_red \
+  test_mensaje_sin_salto_de_linea_mayor_al_maximo_recibe_error_y_se_cierra \
+  test_linea_completa_mayor_al_maximo_tambien_se_rechaza \
+  test_mensaje_justo_en_el_maximo_si_se_procesa \
+  test_conexion_inactiva_se_cierra \
+  test_conexion_con_actividad_no_se_cierra \
+  test_dos_clientes_conectados_a_la_vez_reciben_respuesta_sin_esperarse \
+  test_varias_solicitudes_en_una_conexion_tcp \
+  test_mensaje_mayor_de_64_kib_recibe_error_y_el_servidor_sigue)"
+
 # La herramienta que detecta zombis y huérfanos también se verifica: si procesos.sh
 # fallara, el resultado «sin zombis ni huérfanos» no valdría (DEF-005).
 procesos_sh="$(estado_pruebas \
@@ -338,6 +356,7 @@ conocidos="$(awk -F'\t' '$1 == "XFAIL" { n++ } END { print n + 0 }' "$OUT/unit-r
   echo "| TC-008 | $tc008 | unittest.log, unit-resultados.tsv |"
   echo "| TC-009 | $tc009 | unittest.log, unit-resultados.tsv, procesos.log |"
   echo "| TC-011 | $tc011 | unittest.log, unit-resultados.tsv (acceso por red probado en 127.0.0.1) |"
+  echo "| TC-012 | $tc012 | unittest.log, unit-resultados.tsv |"
   echo "| TC-014 | $tc014 | tc-014-clon-limpio.log |"
   echo "| TC-015 | $tc015 | unittest.log, unit-resultados.tsv |"
   echo "| TC-016 | $tc016 | unittest.log, unit-resultados.tsv |"
