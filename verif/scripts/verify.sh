@@ -54,6 +54,43 @@ estado_pruebas() {
   echo "$resultado"
 }
 
+# Estado de un caso cuyas pruebas viven en un archivo test_tcNNN_*.py: todas las pruebas de
+# ese archivo deben pasar. Sin archivo todavía el caso queda BLOCKED. Sirve para los casos que
+# otra persona del equipo está escribiendo y cuyos nombres de prueba aún no se conocen.
+estado_archivo() {
+  awk -F'\t' -v pre="^$1" '
+    $2 ~ pre { n++; if ($1 == "FAIL") f++; else if ($1 != "PASS" && $1 != "XFAIL") b++ }
+    END { if (n == 0) print "BLOCKED"; else if (f > 0) print "FAIL"; else if (b > 0) print "BLOCKED"; else print "PASS" }
+  ' "$OUT/unit-resultados.tsv" 2>/dev/null
+}
+
+# Combina el estado de las pruebas automáticas (1.er argumento) con una evidencia manual que
+# debe existir: un registro de la verificación hecha por una persona o una carpeta de
+# resultados de otra máquina. Si las pruebas pasan pero falta la evidencia, el caso es BLOCKED.
+con_evidencia() {
+  local estado="$1" patron="$2" f
+  [ "$estado" = "PASS" ] || { echo "$estado"; return; }
+  for f in $patron; do [ -e "$f" ] && { echo "PASS"; return; }; done
+  echo "BLOCKED"
+}
+
+# Estado de un caso verificado a mano (usabilidad documental): se lee de su registro en
+# verif/manual/TC-NNN.md. Solo es PASS o FAIL si dice quién lo evaluó y dónde está la evidencia;
+# con el registro sin llenar o incompleto el caso queda BLOCKED.
+estado_manual() {
+  local f="verif/manual/$1.md"
+  [ -f "$f" ] || { echo "BLOCKED"; return; }
+  awk -F'|' '
+    function limpio(s) { gsub(/^[ \t*]+|[ \t*]+$/, "", s); return s }
+    limpio($2) == "Estado"    { estado = limpio($3) }
+    limpio($2) == "Evaluó"    { quien = limpio($3) }
+    limpio($2) == "Evidencia" { donde = limpio($3) }
+    END {
+      if ((estado == "PASS" || estado == "FAIL") && quien != "" && donde != "") print estado
+      else print "BLOCKED"
+    }' "$f"
+}
+
 # 2. TC-014: construcción desde un clon limpio, siguiendo el README.
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
