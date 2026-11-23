@@ -54,6 +54,19 @@ estado_pruebas() {
   echo "$resultado"
 }
 
+# El peor de varios estados: FAIL, si no BLOCKED, si no PASS.
+combinar() {
+  local e resultado="PASS"
+  for e in "$@"; do
+    case "$e" in
+      FAIL) echo "FAIL"; return ;;
+      PASS) ;;
+      *) resultado="BLOCKED" ;;
+    esac
+  done
+  echo "$resultado"
+}
+
 # Estado de un caso cuyas pruebas viven en un archivo test_tcNNN_*.py: todas las pruebas de
 # ese archivo deben pasar. Sin archivo todavía el caso queda BLOCKED. Sirve para los casos que
 # otra persona del equipo está escribiendo y cuyos nombres de prueba aún no se conocen.
