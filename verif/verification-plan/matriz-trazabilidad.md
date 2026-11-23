@@ -91,35 +91,35 @@ Incluye RF-01 a RF-30 y RNF-01 a RNF-34 (el PDF 05 exige RF-01…RF-24 y RNF-01�
 | RNF-03 | Sin privilegios de root | Por definir | Prueba/Inspección | [TC-014](../test-cases/TC-014.md) | tc-014-clon-limpio.log | PASS | — |
 | RNF-04 | Al menos 3 trabajos simultáneos con límite 3 | Por definir | Prueba | [TC-002](../test-cases/TC-002.md) | unittest.log, unit-resultados.tsv | PASS | — |
 | RNF-05 | Consulta de estado en máximo 1 s con 100 trabajos | Por definir | Prueba | [TC-004](../test-cases/TC-004.md) | unittest.log, unit-resultados.tsv | PASS | — |
-| RNF-06 | Soportar 500 registros sin pérdida de metadatos | Por definir | Prueba | sin TC | pendiente | Sin TC | El PDF 05 no asigna TC; falta definir el caso |
+| RNF-06 | Soportar 500 registros sin pérdida de metadatos | Por definir | Prueba | [TC-026](../test-cases/TC-026.md) | unittest.log, unit-resultados.tsv | Pendiente | El PDF 05 no asigna TC; Verificación define [TC-026](../test-cases/TC-026.md) |
 | RNF-07 | No iniciar más procesos que el límite | Por definir | Prueba | [TC-002](../test-cases/TC-002.md) | unittest.log, unit-resultados.tsv | PASS | — |
 | RNF-08 | Solicitud inválida o desconexión no termina el servicio | Por definir | Prueba | [TC-008](../test-cases/TC-008.md) | unittest.log, unit-resultados.tsv | PASS | — |
 | RNF-09 | Terminación anormal de un trabajo no afecta a otros | Crítica | Prueba | [TC-008](../test-cases/TC-008.md) | unittest.log, unit-resultados.tsv | PASS | — |
 | RNF-10 | Tras reinicio no reportar RUNNING lo que ya no se controla | Por definir | Prueba | [TC-007](../test-cases/TC-007.md) | unittest.log, unit-resultados.tsv | PASS | — |
 | RNF-11 | Escritura persistente sin estado parcial | Por definir | Prueba | [TC-007](../test-cases/TC-007.md), [TC-022](../test-cases/TC-022.md) | unittest.log, unit-resultados.tsv | PASS | — |
-| RNF-12 | No escuchar en interfaces públicas por defecto | Por definir | Prueba/Inspección | TC-011 | pendiente | Pendiente | Hito 3 |
-| RNF-13 | Acceso remoto limitado a localhost, redes privadas o VPN | Por definir | Prueba/Análisis | TC-011 | pendiente | Pendiente | Hito 3 |
-| RNF-14 | Validar longitud y formato de mensajes de red | Por definir | Prueba | TC-012 | pendiente | Pendiente | Hito 3 |
+| RNF-12 | No escuchar en interfaces públicas por defecto | Por definir | Prueba/Inspección | TC-011 | unittest.log, unit-resultados.tsv | Pendiente | — |
+| RNF-13 | Acceso remoto limitado a localhost, redes privadas o VPN | Por definir | Prueba/Análisis | TC-011 | unittest.log, unit-resultados.tsv | Pendiente | — |
+| RNF-14 | Validar longitud y formato de mensajes de red | Por definir | Prueba | TC-012 | unittest.log, unit-resultados.tsv | Pendiente | — |
 | RNF-15 | Registros sin secretos ni configuración sensible | Por definir | Prueba/Inspección | [TC-025](../test-cases/TC-025.md) | unittest.log, unit-resultados.tsv | PASS | [TC-025](../test-cases/TC-025.md) lo define el equipo; no está en el PDF 05 |
-| RNF-16 | Mínimo privilegio y modelo de amenazas básico | Por definir | Inspección | sin TC | pendiente | Sin TC | El PDF 05 no asigna TC; es de inspección documental |
-| RNF-17 | Código modular, sin archivos monolíticos injustificados | Por definir | Inspección | sin TC | pendiente | Sin TC | El PDF 05 no asigna TC; es de inspección |
-| RNF-18 | Interfaces y decisiones documentadas | Por definir | Inspección | sin TC | pendiente | Sin TC | El PDF 05 no asigna TC; es de inspección (ADR, guías) |
+| RNF-16 | Mínimo privilegio y modelo de amenazas básico | Por definir | Inspección | [INS-016](../inspecciones/INS-016.md) | inspecciones.log | Pendiente | El PDF 05 no asigna TC; inspección con `seguridad.md` de Josué (BLOCKED mientras no exista) |
+| RNF-17 | Código modular, sin archivos monolíticos injustificados | Por definir | Inspección | [INS-017](../inspecciones/INS-017.md) | inspecciones.log | Pendiente | El PDF 05 no asigna TC; inspección de tamaño y cantidad de módulos |
+| RNF-18 | Interfaces y decisiones documentadas | Por definir | Inspección | [INS-018](../inspecciones/INS-018.md) | inspecciones.log | Pendiente | El PDF 05 no asigna TC; inspección de ADR, guías y comandos documentados |
 | RNF-19 | Compilar sin advertencias nuevas | Por definir | Prueba/Inspección | [TC-014](../test-cases/TC-014.md) | tc-014-clon-limpio.log | PASS | El PDF 05 no asigna TC; se propone [TC-014](../test-cases/TC-014.md) (`compileall`) |
 | RNF-20 | Pruebas con un único comando documentado | Por definir | Inspección | [TC-014](../test-cases/TC-014.md) | tc-014-clon-limpio.log | PASS | El PDF 05 no asigna TC; se propone [TC-014](../test-cases/TC-014.md) (`./scripts/test.sh`) |
-| RNF-21 | Mensajes de error con operación, causa y acción | Por definir | Inspección/Demo | TC-015 | pendiente | Pendiente | — |
+| RNF-21 | Mensajes de error con operación, causa y acción | Por definir | Inspección/Demo | TC-015 | unittest.log, unit-resultados.tsv, manual-TC-015.md | Pendiente | — |
 | RNF-22 | Bitácora que correlaciona solicitud y trabajo | Por definir | Prueba | [TC-025](../test-cases/TC-025.md) | unittest.log, unit-resultados.tsv | PASS | [TC-025](../test-cases/TC-025.md) lo define el equipo; no está en el PDF 05 |
-| RNF-23 | Guía de usuario sin asistencia del equipo | Por definir | Demo | TC-015 | pendiente | Pendiente | — |
-| RNF-24 | Protocolo con mensajes fragmentados y solicitudes secuenciales | Por definir | Prueba | TC-012 | pendiente | Pendiente | Hito 3 |
+| RNF-23 | Guía de usuario sin asistencia del equipo | Por definir | Demo | TC-015 | manual-TC-015.md | Pendiente | Lo evalúa una persona ajena a la guía (registro manual) |
+| RNF-24 | Protocolo con mensajes fragmentados y solicitudes secuenciales | Por definir | Prueba | TC-012 | unittest.log, unit-resultados.tsv | Pendiente | — |
 | RNF-25 | Liberar sockets y procesos hijos al cerrar | Por definir | Prueba | [TC-009](../test-cases/TC-009.md) | unittest.log, procesos.log | PASS | — |
-| RNF-26 | Demostración remota solo en red privada o VPN | Crítica | Inspección/Demo | TC-010, TC-011 | pendiente | Pendiente | Hito 3 |
+| RNF-26 | Demostración remota solo en red privada o VPN | Crítica | Inspección/Demo | TC-010, TC-011 | unittest.log, unit-resultados.tsv, verif/results/<run-id>-remoto/ | Pendiente | Necesita la ejecución entre dos equipos en red privada o VPN |
 | RNF-27 | Transiciones consistentes ante concurrencia | Por definir | Prueba | [TC-017](../test-cases/TC-017.md) | unittest.log, unit-resultados.tsv | PASS | — |
 | RNF-28 | Actualizaciones persistentes atómicas o recuperables | Por definir | Prueba | [TC-022](../test-cases/TC-022.md) | unittest.log, unit-resultados.tsv | PASS | — |
 | RNF-29 | Backpressure o rechazo explícito en los límites | Por definir | Prueba | [TC-016](../test-cases/TC-016.md) | unittest.log, unit-resultados.tsv | PASS | — |
 | RNF-30 | Sin procesos huérfanos tras un cierre o falla | Por definir | Prueba | [TC-020](../test-cases/TC-020.md), [TC-009](../test-cases/TC-009.md) | unittest.log, procesos.log; unittest.log, unit-resultados.tsv | PASS | — |
 | RNF-31 | Recuperación que distingue pendientes, terminados e interrumpidos | Por definir | Prueba | [TC-022](../test-cases/TC-022.md), [TC-007](../test-cases/TC-007.md) | unittest.log, unit-resultados.tsv | PASS | — |
-| RNF-32 | Compatibilidad de versión del protocolo | Por definir | Prueba | TC-023 | pendiente | Pendiente | Hito 3 |
+| RNF-32 | Compatibilidad de versión del protocolo | Por definir | Prueba | TC-023 | unittest.log, unit-resultados.tsv | Pendiente | — |
 | RNF-33 | Pruebas de estrés con liberación de recursos | Por definir | Prueba | [TC-024](../test-cases/TC-024.md) | unittest.log, unit-resultados.tsv | PASS | — |
-| RNF-34 | Decisiones de seguridad, consistencia o recuperación con riesgo y prueba | Por definir | Inspección | sin TC | pendiente | Sin TC | Se verifica en la sección Consecuencias de cada ADR (ADR-0002, 0005, 0006, 0007) |
+| RNF-34 | Decisiones de seguridad, consistencia o recuperación con riesgo y prueba | Por definir | Inspección | [INS-034](../inspecciones/INS-034.md) | inspecciones.log | Pendiente | Inspección de la sección Consecuencias de cada ADR (ADR-0002 a ADR-0009) |
 
 ## Defectos
 
