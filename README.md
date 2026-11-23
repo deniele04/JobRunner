@@ -20,7 +20,7 @@ Detalle de responsabilidades en [`project-management/ROLES.md`](project-manageme
 ## Arquitectura (resumen)
 
 - **Servicio (`jobrunner.server`)**: proceso que recibe solicitudes, valida, asigna un ID a cada trabajo, lo ejecuta como proceso hijo y controla su ciclo de vida.
-- **Cliente (`royito`, módulo `jobrunner.cli`)**: comandos `submit`, `status`, `list` y `cancel`.
+- **Cliente (`royito`, módulo `jobrunner.cli`)**: comandos `submit`, `status`, `list`, `cancel`, `output` y `health`, por socket Unix o por TCP (`--host`, `--port`).
 - **Comunicación**: socket Unix con mensajes JSON de una línea ([ADR-0003](docs/decisions/0003-mecanismo-de-comunicacion.md)).
 - **Estados de un trabajo**: `QUEUED → RUNNING → SUCCEEDED | FAILED | CANCELED`.
 - **Persistencia**: SQLite, a partir del Hito 2 ([ADR-0002](docs/decisions/0002-modelo-de-persistencia.md)).
@@ -73,8 +73,12 @@ royito submit -- sleep 10
 royito status <id>
 royito list
 royito cancel <id>
+royito output <id>
+royito health
 royito --help
 ```
+
+Para usar un servicio de otro equipo (iniciado con `./scripts/run.sh --listen HOST:PUERTO`): `royito --host HOST --port PUERTO list`, o con las variables `JOBRUNNER_HOST` y `JOBRUNNER_PORT`. Solo en `localhost`, una red privada o una VPN; ver [la guía](docs/user-guide/conexion-lan-vpn.md).
 
 `royito` es un lanzador de `scripts/royito`; equivale a `PYTHONPATH=src python3 -m jobrunner.cli` y sigue funcionando de esa forma.
 
