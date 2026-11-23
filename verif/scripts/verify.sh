@@ -266,77 +266,40 @@ tc025="$(estado_pruebas \
   test_comando_inexistente_registra_un_error \
   test_no_registra_los_argumentos_del_trabajo)"
 
-# Casos de la entrega final (U3): operación remota, salud y configuración, ayuda y errores.
-tc010="$(estado_pruebas \
-  test_submit_por_tcp_y_por_unix_dan_la_misma_respuesta \
-  test_status_de_un_trabajo_da_lo_mismo_por_los_dos_transportes \
-  test_list_es_identico_por_los_dos_transportes \
-  test_output_es_identico_por_los_dos_transportes \
-  test_cancel_por_tcp_y_por_unix_dan_la_misma_respuesta_y_el_mismo_final \
-  test_cancelar_dos_veces_por_tcp_devuelve_el_estado_sin_error \
-  test_request_id_enviado_por_un_transporte_se_reconoce_en_el_otro \
-  test_lo_que_se_hace_por_un_transporte_se_ve_por_el_otro \
-  test_id_inexistente_en_status_cancel_y_output \
-  test_estado_desconocido_en_list \
-  test_cola_llena \
-  test_cancelar_un_trabajo_ya_terminado \
-  test_request_id_con_otro_comando \
-  test_submit_status_list_y_cancel_funcionan_con_host_y_puerto \
-  test_trabajo_fallido_por_tcp_sale_con_0 \
-  test_jobrunner_host_y_jobrunner_port \
-  test_output_devuelve_la_salida_por_unix_y_por_tcp \
+# Casos de la entrega final (Hitos 3 y 4). Los nombres de prueba vienen de Josué (red y protocolo)
+# y de Juan (cliente remoto, output y health); si alguien los cambia, se actualizan aquí.
+tc011="$(estado_pruebas \
+  test_loopback_si_y_otro_origen_no \
+  test_el_rechazo_se_registra_con_la_ip_y_no_se_crea_trabajo \
+  test_el_servidor_sigue_atendiendo_despues_de_muchos_rechazos \
+  test_el_socket_unix_no_depende_de_allow \
+  test_el_resumen_de_inicio_muestra_los_origenes_permitidos \
+  test_allow_con_una_ip_deja_pasar_solo_a_esa \
+  test_allow_con_cidr_cubre_todo_el_rango \
+  test_allow_repetido_suma_redes \
+  test_un_cliente_permitido_puede_enviar_y_cancelar \
   test_listen_en_todas_las_interfaces_no_arranca \
-  test_listen_en_una_direccion_publica_no_arranca)"
-tc013="$(estado_pruebas \
-  test_health_informa_los_limites_configurados \
-  test_health_refleja_corriendo_en_cola_y_rechazados \
-  test_health_sigue_los_cambios_de_estado \
-  test_health_informa_version_tiempo_activo_y_base \
-  test_el_estado_de_health_sobrevive_al_reinicio_del_servicio \
-  test_sin_opciones_los_limites_son_3_y_10 \
-  test_max_jobs_1_ejecuta_de_uno_en_uno \
-  test_queue_size_0_rechaza_en_cuanto_no_hay_lugar_para_correr \
-  test_sin_listen_el_proceso_no_tiene_puertos_tcp_en_escucha \
-  test_con_listen_el_puerto_indicado_queda_abierto \
-  test_listen_sin_valor_usa_el_puerto_por_defecto_7070 \
-  test_al_cerrar_el_servicio_el_puerto_queda_libre \
-  test_max_jobs_menor_que_1 \
-  test_queue_size_negativo \
-  test_valores_que_no_son_numeros \
-  test_listen_que_abriria_el_servicio_a_cualquier_red \
-  test_allow_sin_listen \
-  test_health_por_unix_y_por_tcp \
-  test_health_cuenta_los_clientes_conectados \
-  test_health_refleja_los_trabajos_por_tcp \
-  test_los_accesos_rechazados_se_cuentan \
-  test_campos_y_limites \
-  test_refleja_los_trabajos_por_estado \
-  test_base_con_problemas_se_informa_sin_romper_health \
-  test_health_agrega_los_datos_de_red)"
-tc015="$(estado_pruebas \
-  test_la_ayuda_general_lista_los_comandos_y_las_opciones_de_red \
-  test_la_ayuda_general_explica_los_codigos_de_salida \
-  test_cada_comando_tiene_ayuda_con_su_nombre_y_una_descripcion \
-  test_la_ayuda_de_cada_comando_documenta_sus_opciones \
-  test_la_ayuda_no_necesita_el_servicio \
-  test_0_cuando_la_operacion_se_hizo \
-  test_0_aunque_el_trabajo_haya_fallado \
-  test_1_cuando_el_servicio_rechaza_la_operacion \
-  test_2_cuando_el_comando_esta_mal_escrito \
-  test_el_error_de_uso_nombra_los_comandos_validos \
-  test_cada_error_del_servicio_dice_operacion_causa_y_accion \
-  test_cancelar_un_trabajo_terminado \
-  test_output_fuera_de_rango \
-  test_request_id_invalido \
-  test_sin_servicio_local_dice_que_iniciar \
-  test_sin_servicio_remoto_dice_a_donde_y_que_revisar \
-  test_la_guia_explica_cada_comando \
-  test_la_guia_explica_cada_opcion_del_cliente_y_del_servicio \
-  test_la_guia_explica_los_codigos_de_salida_y_los_errores \
-  test_la_guia_explica_la_salud_campo_por_campo \
-  test_los_comandos_royito_de_los_ejemplos_son_validos \
-  test_lleva_operacion_causa_y_accion \
-  test_cada_error_conocido_tiene_su_accion)"
+  test_listen_en_una_direccion_publica_no_arranca \
+  test_allow_publico_o_abierto_no_arranca \
+  test_allow_mal_escrito_no_arranca \
+  test_allow_sin_listen_es_un_error_de_uso \
+  test_un_allow_invalido_gana_aunque_el_listen_sea_valido \
+  test_sin_listen_no_se_abre_ningun_puerto_tcp \
+  test_origen_no_permitido_se_cierra_sin_leer_y_se_cuenta \
+  test_el_socket_unix_no_pasa_por_la_lista_de_origenes \
+  test_un_rechazo_no_afecta_al_servicio \
+  test_origen_dentro_de_la_red_permitida_es_atendido \
+  test_por_defecto_solo_127_0_0_1_y_loopback_ipv6 \
+  test_allow_agrega_redes_y_conserva_el_loopback \
+  test_una_ip_suelta_cuenta_como_red_de_un_solo_equipo \
+  test_ipv4_mapeada_en_ipv6_y_ambito_se_normalizan \
+  test_direccion_que_no_es_ip_no_se_permite \
+  test_redes_aceptables \
+  test_redes_rechazadas \
+  test_una_red_invalida_en_la_lista_impide_construirla \
+  test_direcciones_privadas_son_validas \
+  test_todas_las_interfaces_y_las_publicas_se_rechazan \
+  test_nombre_que_no_se_resuelve_se_rechaza)"
 
 # La herramienta que detecta zombis y huérfanos también se verifica: si procesos.sh
 # fallara, el resultado «sin zombis ni huérfanos» no valdría (DEF-005).
@@ -374,8 +337,7 @@ conocidos="$(awk -F'\t' '$1 == "XFAIL" { n++ } END { print n + 0 }' "$OUT/unit-r
   echo "| TC-007 | $tc007 | unittest.log, unit-resultados.tsv |"
   echo "| TC-008 | $tc008 | unittest.log, unit-resultados.tsv |"
   echo "| TC-009 | $tc009 | unittest.log, unit-resultados.tsv, procesos.log |"
-  echo "| TC-010 | $tc010 | unittest.log, unit-resultados.tsv |"
-  echo "| TC-013 | $tc013 | unittest.log, unit-resultados.tsv |"
+  echo "| TC-011 | $tc011 | unittest.log, unit-resultados.tsv (acceso por red probado en 127.0.0.1) |"
   echo "| TC-014 | $tc014 | tc-014-clon-limpio.log |"
   echo "| TC-015 | $tc015 | unittest.log, unit-resultados.tsv |"
   echo "| TC-016 | $tc016 | unittest.log, unit-resultados.tsv |"
