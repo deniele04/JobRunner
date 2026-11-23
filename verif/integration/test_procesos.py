@@ -159,6 +159,16 @@ class TestProcesosConServidor(BaseConLineaBase):
         codigo, salida, _ = self.revisar("--patron", "sleep|jobrunner")
         self.assertEqual(codigo, 0, salida)
 
+    def test_un_trabajo_en_ejecucion_no_es_un_huerfano(self):
+        """DEF-005: al no exigir PPID 1, un trabajo vivo no debe confundirse con un huérfano.
+
+        Es lider de sesion, pero su padre sigue siendo el servidor.
+        """
+        self.servidor.enviar("--", "sleep", "301")
+        self.assertTrue(pids_con(r"^sleep 301$"), "el trabajo no esta corriendo")
+        codigo, salida, _ = self.revisar("--patron", "sleep 301")
+        self.assertEqual(codigo, 0, salida)
+
     def test_si_el_servidor_muere_de_golpe_el_trabajo_queda_huerfano(self):
         # Falla dura (kill -9): el script debe detectar al hijo huérfano.
         # Es el caso que cubre ADR-0005 al arrancar de nuevo (RNF-30).
