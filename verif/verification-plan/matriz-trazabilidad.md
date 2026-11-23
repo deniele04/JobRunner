@@ -66,15 +66,15 @@ Incluye RF-01 a RF-30 y RNF-01 a RNF-34 (el PDF 05 exige RF-01…RF-24 y RNF-01�
 | RF-13 | Recuperar historial y marcar trabajos interrumpidos | Por definir | Prueba | [TC-007](../test-cases/TC-007.md) | unittest.log, unit-resultados.tsv | PASS | — |
 | RF-14 | Bitácora con marca temporal e ID de trabajo | Por definir | Prueba | [TC-025](../test-cases/TC-025.md) | unittest.log, unit-resultados.tsv | PASS | [TC-025](../test-cases/TC-025.md) lo define el equipo; no está en el PDF 05 |
 | RF-15 | Inicio y cierre controlados, sin aceptar trabajos durante el cierre | Por definir | Prueba | [TC-009](../test-cases/TC-009.md) | unittest.log, procesos.log | PASS | — |
-| RF-16 | Configuración de directorio, concurrencia, interfaz y puerto | Por definir | Prueba/Inspección | TC-013 | pendiente | Pendiente | Hito 3 (interfaz y puerto) |
-| RF-17 | Ayuda de uso y códigos de salida del cliente | Por definir | Prueba/Inspección | [TC-001](../test-cases/TC-001.md), [TC-004](../test-cases/TC-004.md), TC-015 | pendiente; unittest.log, unit-resultados.tsv | Pendiente | — |
-| RF-18 | Operación remota con protocolo documentado | Alta | Prueba/Demo | TC-010 | pendiente | Pendiente | Hito 3 |
-| RF-19 | Misma semántica local y remota | Por definir | Prueba/Demo | TC-010 | pendiente | Pendiente | Hito 3 |
-| RF-20 | Acceso remoto restringido a LAN/VPN autorizada | Crítica | Prueba/Análisis | TC-011 | pendiente | Pendiente | Hito 3 |
-| RF-21 | Protocolo con mensajes delimitados y lecturas parciales | Por definir | Prueba | TC-012, TC-023 | pendiente | Pendiente | Hito 3 |
-| RF-22 | Desconexiones de cliente sin terminar el servicio | Por definir | Prueba | TC-012, [TC-019](../test-cases/TC-019.md) | pendiente; unittest.log, unit-resultados.tsv | Pendiente | — |
+| RF-16 | Configuración de directorio, concurrencia, interfaz y puerto | Por definir | Prueba/Inspección | TC-013 | unittest.log, unit-resultados.tsv | Pendiente | Salud (`health`) y configuración; depende de las pruebas de Juan (U3) |
+| RF-17 | Ayuda de uso y códigos de salida del cliente | Por definir | Prueba/Inspección | [TC-001](../test-cases/TC-001.md), [TC-004](../test-cases/TC-004.md), TC-015 | unittest.log, unit-resultados.tsv, manual-TC-015.md | Pendiente | — |
+| RF-18 | Operación remota con protocolo documentado | Alta | Prueba/Demo | TC-010 | unittest.log, unit-resultados.tsv, verif/results/<run-id>-remoto/ | Pendiente | Necesita el cliente remoto de Juan y la ejecución entre dos equipos |
+| RF-19 | Misma semántica local y remota | Por definir | Prueba/Demo | TC-010 | unittest.log, unit-resultados.tsv, verif/results/<run-id>-remoto/ | Pendiente | Necesita el cliente remoto de Juan y la ejecución entre dos equipos |
+| RF-20 | Acceso remoto restringido a LAN/VPN autorizada | Crítica | Prueba/Análisis | TC-011 | unittest.log, unit-resultados.tsv | Pendiente | — |
+| RF-21 | Protocolo con mensajes delimitados y lecturas parciales | Por definir | Prueba | TC-012, TC-023 | unittest.log, unit-resultados.tsv | Pendiente | — |
+| RF-22 | Desconexiones de cliente sin terminar el servicio | Por definir | Prueba | TC-012, [TC-019](../test-cases/TC-019.md) | unittest.log, unit-resultados.tsv | Pendiente | — |
 | RF-23 | Rechazar y registrar solicitudes que excedan límites | Por definir | Prueba | [TC-016](../test-cases/TC-016.md) | unittest.log, unit-resultados.tsv | PASS | El PDF 05 no asigna TC; se propone [TC-016](../test-cases/TC-016.md) (cola llena) |
-| RF-24 | Resumen de salud del servicio | Por definir | Prueba | TC-013 | pendiente | Pendiente | Hito 3 |
+| RF-24 | Resumen de salud del servicio | Por definir | Prueba | TC-013 | unittest.log, unit-resultados.tsv | Pendiente | Depende del comando `health` y de sus pruebas (Juan) |
 | RF-25 | Cola llena: rechazo explícito sin perder trabajos | Por definir | Prueba | [TC-016](../test-cases/TC-016.md) | unittest.log, unit-resultados.tsv | PASS | — |
 | RF-26 | Cancelaciones concurrentes con estado final coherente | Por definir | Prueba | [TC-017](../test-cases/TC-017.md) | unittest.log, unit-resultados.tsv | PASS | — |
 | RF-27 | Solicitudes duplicadas sin estados contradictorios | Por definir | Prueba | [TC-018](../test-cases/TC-018.md) | unittest.log, unit-resultados.tsv | PASS | — |
