@@ -20,13 +20,13 @@ Cadena obligatoria del Plan de Verificación: Requisito → Método → Caso →
 | [TC-006](../test-cases/TC-006.md) | Proceso separado, stdout/stderr y código de salida | `verif/unit/test_ciclo_vida.py` | PASS |
 | [TC-007](../test-cases/TC-007.md) | Reinicio y recuperación | `verif/unit/test_persistencia.py`, `test_reinicio_servidor.py`, `test_store.py` | PASS |
 | [TC-008](../test-cases/TC-008.md) | Aislamiento de fallo | `verif/unit/test_ciclo_vida.py`, `test_servidor_robusto.py`, `verif/integration/test_tc001_enviar_trabajo.py` | PASS |
-| [TC-009](../test-cases/TC-009.md) | Cierre controlado | `verif/integration/test_tc009_cierre_controlado.py`, `test_procesos.py`, `verif/unit/test_cierre.py` | PASS |
-| [TC-010](../test-cases/TC-010.md) | Flujo remoto completo en LAN/VPN | `verif/integration/test_tc010_operacion_remota.py`, `test_cliente_remoto.py`, `test_output_health_cli.py`, `test_acceso_tcp.py` | Pendiente |
-| TC-011 | Restricción de red | sin automatizar todavía | Pendiente |
-| TC-012 | Fragmentación y desconexión | sin automatizar todavía | Pendiente |
-| [TC-013](../test-cases/TC-013.md) | Configuración y salud | `verif/integration/test_tc013_salud_y_configuracion.py`, `test_output_health_cli.py`, `verif/unit/test_output_health.py` | Pendiente |
+| [TC-009](../test-cases/TC-009.md) | Cierre controlado | `verif/integration/test_tc009_cierre_controlado.py`, `test_procesos.py`, `test_tc009_cierre_tcp.py` (cierre con TCP, Josué), `verif/unit/test_cierre.py`, `test_red.py` | PASS |
+| TC-010 | Flujo remoto completo en LAN/VPN | `verif/integration/test_servidor_tcp.py`, `test_acceso_tcp.py` (servidor TCP); cliente remoto `test_tc010_*.py` (Juan); evidencia entre dos equipos en `verif/results/<run-id>-remoto/` | Pendiente |
+| TC-011 | Restricción de red | `verif/integration/test_acceso_tcp.py`, `test_servidor_tcp.py`, `verif/unit/test_red.py` | Pendiente |
+| TC-012 | Fragmentación y desconexión | `verif/unit/test_red.py`, `verif/integration/test_servidor_tcp.py` | Pendiente |
+| TC-013 | Configuración y salud | `verif/integration/test_acceso_tcp.py`, `test_servidor_tcp.py` (configuración); salud: `test_tc013_*.py` (Juan) | Pendiente |
 | [TC-014](../test-cases/TC-014.md) | Construcción desde clon limpio | `verif/scripts/verify.sh` | PASS |
-| [TC-015](../test-cases/TC-015.md) | Usabilidad documental | `verif/integration/test_tc015_ayuda_y_errores.py`, `verif/unit/test_cli.py` (RNF-23: demostración manual con una persona ajena al equipo) | Pendiente |
+| TC-015 | Usabilidad documental | `verif/integration/test_royito.py`, `test_tc004_consultar_listar.py`, `test_tc001_enviar_trabajo.py`; registro manual `verif/manual/TC-015.md` | Pendiente |
 | [TC-016](../test-cases/TC-016.md) | Saturación de cola y rechazo explícito | `verif/unit/test_cola.py`, `test_servidor_cola.py` | PASS |
 | [TC-017](../test-cases/TC-017.md) | Cancelaciones concurrentes | `verif/unit/test_cola.py` | PASS |
 | [TC-018](../test-cases/TC-018.md) | Solicitud duplicada | `verif/unit/test_persistencia.py`, `test_reinicio_servidor.py`, `test_store.py` | PASS |
@@ -34,7 +34,7 @@ Cadena obligatoria del Plan de Verificación: Requisito → Método → Caso →
 | [TC-020](../test-cases/TC-020.md) | Terminación inesperada del proceso hijo | `verif/integration/test_tc020_trabajo_muere.py` | PASS |
 | [TC-021](../test-cases/TC-021.md) | Escalamiento de cancelación | `verif/unit/test_cola.py` | PASS |
 | [TC-022](../test-cases/TC-022.md) | Interrupción durante la persistencia | `verif/unit/test_interrupcion_escritura.py` | PASS |
-| TC-023 | Compatibilidad de protocolo | sin automatizar todavía | Pendiente |
+| TC-023 | Compatibilidad de protocolo | `verif/integration/test_tc023_version_protocolo.py` | Pendiente |
 | [TC-024](../test-cases/TC-024.md) | Liberación de recursos bajo carga | `verif/integration/test_tc024_estres.py` | PASS |
 | [TC-025](../test-cases/TC-025.md) | Bitácora de eventos (caso del equipo) | `verif/unit/test_bitacora.py` | PASS |
 
