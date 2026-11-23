@@ -322,6 +322,19 @@ tc012="$(estado_pruebas \
 # TC-023 vive entero en un archivo (test_tc023_version_protocolo.py): cualquier prueba que se agregue cuenta.
 tc023="$(estado_archivo test_tc023_version_protocolo)"
 
+tc026="$(estado_pruebas \
+  test_los_500_trabajos_terminan_y_quedan_registrados \
+  test_500_trabajos_sobreviven_al_reinicio_con_todos_sus_metadatos \
+  test_cada_metadato_obligatorio_sigue_presente_tras_el_reinicio \
+  test_los_archivos_de_salida_siguen_ahi_tras_el_reinicio \
+  test_un_segundo_reinicio_no_cambia_nada \
+  test_status_por_id_responde_con_los_mismos_datos_tras_el_reinicio \
+  test_un_trabajo_nuevo_tras_el_reinicio_no_borra_los_anteriores \
+  test_el_almacen_guarda_y_recupera_500_trabajos_sin_perder_campos \
+  test_cada_estado_conserva_su_cantidad_tras_reabrir \
+  test_actualizar_500_veces_no_duplica_ni_pierde_registros \
+  test_500_trabajos_enviados_al_gestor_sobreviven_al_reinicio)"
+
 # La herramienta que detecta zombis y huérfanos también se verifica: si procesos.sh
 # fallara, el resultado «sin zombis ni huérfanos» no valdría (DEF-005).
 procesos_sh="$(estado_pruebas \
@@ -372,6 +385,7 @@ conocidos="$(awk -F'\t' '$1 == "XFAIL" { n++ } END { print n + 0 }' "$OUT/unit-r
   echo "| TC-023 | $tc023 | unittest.log, unit-resultados.tsv |"
   echo "| TC-024 | $tc024 | unittest.log, unit-resultados.tsv |"
   echo "| TC-025 | $tc025 | unittest.log, unit-resultados.tsv |"
+  echo "| TC-026 | $tc026 | unittest.log, unit-resultados.tsv |"
   echo "| Sin zombis ni huérfanos tras las pruebas | $limpieza | procesos.log |"
   echo "| procesos.sh detecta zombis y huérfanos, también adoptados por otro proceso (DEF-005) | $procesos_sh | unittest.log, unit-resultados.tsv |"
   echo
