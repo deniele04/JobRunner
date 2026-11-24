@@ -17,15 +17,13 @@ Registro único de los defectos encontrados en JobRunner, su estado, y las limit
 | DEF-005 | `procesos.sh` no detecta procesos huérfanos en WSL: busca huérfanos con PPID 1, pero en WSL el proceso huérfano puede quedar adoptado por otro proceso de la sesión. En la ejecución formal del Avance 2 fallaron `test_detecta_un_huerfano` y `test_si_el_servidor_muere_de_golpe_el_trabajo_queda_huerfano` | RNF-30 | `verif/results/20261030-v0.2.0/unittest.log` | Diego Armando Durán Hernández | **Cerrado** en el PR #101. Un huérfano es un líder de sesión cuyo padre ya no es el servidor. Regresión: `test_detecta_un_huerfano_adoptado_por_otro_proceso_que_no_es_el_pid_1` y `test_un_trabajo_en_ejecucion_no_es_un_huerfano`; se confirma en WSL en la ejecución formal |
 | DEF-006 | Al cancelar un ID que no existe, el mensaje sale entre comillas: `"error": "'No existe el trabajo <id>'"`. `server.py` convierte el `KeyError` con `str(e)`, que agrega las comillas | RNF-23 | Revisión de los PR #91 y #92 | Ingeniería | **Cerrado** (U2). `handle_request` usa `e.args[0]`; pruebas: `test_cancelar_un_id_inexistente_no_pone_comillas_en_el_mensaje`, `test_output_de_id_inexistente_sin_comillas` |
 | DEF-007 | Un estado inválido en `list --state` responde `"error interno: Estado desconocido: ..."`, aunque es un error del usuario y no del servicio | RNF-23 | Revisión de los PR #91 y #92 | Ingeniería | **Cerrado** (U2). `list` responde `Estado desconocido: <X>` como error del usuario; pruebas: `test_list_con_estado_desconocido_no_es_un_error_interno`, `test_list_con_estado_que_no_es_texto` |
-| DEF-008 | Se puede iniciar un segundo servidor con la misma carpeta `data/` mientras el primero sigue vivo. El segundo borra el socket del primero, recupera sus trabajos en `RUNNING` como `FAILED` «interrumpido por reinicio» y termina sus procesos; el primero queda corriendo sin que ningún cliente pueda alcanzarlo | RF-15, RNF-08 | Revisión de los PR #91 y #92 (reproducido sobre `main` con #91 y #92) | Josué Said Delgadillo Gutiérrez | **Abierto.** Corrección propuesta: al arrancar, si el socket existe y responde, negarse a iniciar (o un candado `fcntl.flock` sobre `data/jobrunner.lock`) |
+| DEF-008 | Se puede iniciar un segundo servidor con la misma carpeta `data/` mientras el primero sigue vivo. El segundo borra el socket del primero, recupera sus trabajos en `RUNNING` como `FAILED` «interrumpido por reinicio» y termina sus procesos; el primero queda corriendo sin que ningún cliente pueda alcanzarlo | RF-15, RNF-08 | Revisión de los PR #91 y #92 (reproducido sobre `main` con #91 y #92) | Josué Said Delgadillo Gutiérrez | **Abierto, aceptado para `v1.0.0`** (severidad media, Issue #105). Se evita iniciando un solo servidor por carpeta `data/`; la guía de diagnóstico explica cómo detectarlo (`pgrep -af jobrunner.server`) y recuperarse. Corrección propuesta para una versión posterior: al arrancar, si el socket existe y responde, negarse a iniciar (o un candado `fcntl.flock` sobre `data/jobrunner.lock`) |
 
 ## Defectos de la verificación cruzada
 
-Cada defecto que reporte el otro equipo se registra como Issue `[Defecto] VC-NN` y en `verif/revision-cruzada/`, con su análisis, la respuesta, la corrección o justificación y las pruebas de regresión ejecutadas.
+En `v1.0.0` **no se realizó verificación cruzada** con otro equipo, así que no hay defectos VC-NN. Se declara como excepción en las release notes de `v1.0.0`. En su lugar, la versión se verificó con la ejecución formal de `verify.sh`, la prueba entre equipos por VPN (`verif/results/20261123-remoto/`) y la evaluación de la guía de usuario por un integrante que no la escribió (TC-015).
 
-| ID | Issue | Descripción | Responsable | Respuesta | Estado |
-|---|---|---|---|---|---|
-| — | — | Se agregan al recibir la verificación cruzada | — | — | — |
+Si en una versión posterior se hace, cada defecto que reporte el otro equipo se registra como Issue `[Defecto] VC-NN`, con su análisis, la respuesta, la corrección o justificación y las pruebas de regresión ejecutadas (plan de verificación, sección 12).
 
 ## Limitaciones vigentes
 
@@ -47,3 +45,5 @@ Cada defecto que reporte el otro equipo se registra como Issue `[Defecto] VC-NN`
 |---|---|
 | 1 | Se reúnen en un solo documento DEF-001 a DEF-004 (antes en la matriz de trazabilidad), DEF-005 (minuta de planeación de la entrega final) y los defectos y limitaciones encontrados al revisar la operación remota |
 | 2 | DEF-005 pasa a Cerrado (PR #101) |
+| 3 | DEF-006 y DEF-007 pasan a Cerrado con el cliente remoto, `output` y `health` (PR #110) |
+| 4 | Cierre de `v1.0.0`: DEF-008 queda abierto y aceptado; no hubo verificación cruzada |
