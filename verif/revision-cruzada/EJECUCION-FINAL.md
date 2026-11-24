@@ -2,15 +2,13 @@
 
 Pasos de Verificación sobre el commit final integrado (versión `v1.0.0`). Se hace en WSL/Linux, nunca en Windows nativo.
 
-## Estado al 23/11/2026
+## Estado al cierre de `v1.0.0`
 
-**La ejecución formal todavía no se hizo.** Está pendiente de:
-
-- la verificación cruzada: el otro equipo aún no recibe la versión candidata ni devuelve su retroalimentación (`verif/revision-cruzada/README.md` no tiene defectos registrados porque todavía no hay reportes);
-- el registro manual de TC-015 (`verif/manual/TC-015.md`);
-- el commit final integrado de la entrega.
-
-La evidencia de la operación entre dos equipos de la prueba por VPN ya existe (`verif/results/20261123-remoto/`, probada sobre el commit a4d48aa); si el código cambia después, se repite.
+- La ejecución formal se hizo en WSL: `verif/results/20261123-v1.0.0/` sobre el commit `b7b8aab`.
+- La ejecución `20261123` (PR #124) fue previa y se hizo en Linux, no en WSL.
+- No hubo verificación cruzada con otro equipo (`docs/defectos-y-limitaciones.md`).
+- TC-015 queda `BLOCKED` hasta evaluarlo con una persona de otro equipo; es una excepción en las release notes de `v1.0.0`.
+- La evidencia de la operación entre dos equipos es `verif/results/20261123-remoto/`.
 
 ## Antes
 

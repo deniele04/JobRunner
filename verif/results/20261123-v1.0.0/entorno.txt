@@ -1,0 +1,5 @@
+run-id: 20261123-v1.0.0
+fecha: 2026-11-23T20:31:40-06:00
+commit: b7b8aab1ad4d43e510f8dc7f47aaa399186bf875
+python: Python 3.14.4
+sistema: Linux 6.18.33.2-microsoft-standard-WSL2

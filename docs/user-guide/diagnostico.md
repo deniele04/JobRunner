@@ -36,7 +36,6 @@ En la columna `STAT` de `ps`: `S` o `R` = normal, `Z` = zombi, `T` = detenido (p
 | `Error: no se pudo conectar al servidor en data/jobrunner.sock...` y `pgrep` no muestra nada | `tail data/jobrunner.log`: ¿la última línea es `servicio_detenido`? | Sin `servicio_detenido`: el servidor murió de golpe (`kill -9` o un error). Con `servicio_detenido`: alguien lo detuvo | Busca un `Traceback` en la terminal del servidor y reinícialo con `./scripts/run.sh`. Al arrancar recupera los trabajos (sección 2.3) |
 | El mismo error, pero `pgrep` muestra el servidor | ¿Acaba de arrancar? | Está recuperando trabajos: puede tardar unos segundos mientras termina los procesos que quedaron vivos | Espera a `JobRunner escuchando` |
 | `royito` se queda esperando y no responde | `ps -o stat -p <pid del servidor>` muestra `T` | El servidor está detenido con `SIGSTOP` | `kill -CONT <pid del servidor>`. Los trabajos y las solicitudes siguen donde iban |
-| `pgrep` muestra **dos** servidores | `grep servicio_iniciado data/jobrunner.log \| tail -2` | Se inició un segundo servidor con la misma carpeta `data/`. El segundo tomó el socket y marcó los trabajos del primero como interrumpidos (DEF-008) | Detén los dos (Ctrl+C o `kill -INT`), revisa con `procesos.sh` que no queden trabajos sueltos y arranca uno solo |
 | `Permission denied` al correr un script | — | Se perdió el permiso de ejecución | `chmod +x scripts/royito scripts/*.sh verif/scripts/*.sh` |
 
 ### 2.1 Desde otro equipo (TCP)

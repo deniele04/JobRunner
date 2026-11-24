@@ -1,0 +1,4 @@
+INS-016	PASS	documento de seguridad y código sin privilegios
+INS-017	PASS	7 módulos, ninguno de más de 400 líneas
+INS-018	PASS	9 ADR y 4 guías
+INS-034	PASS	8 ADR con riesgo, mitigación y prueba

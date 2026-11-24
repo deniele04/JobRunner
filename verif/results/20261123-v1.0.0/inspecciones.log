@@ -1,0 +1,33 @@
+INS-016  RNF-16 Mínimo privilegio y modelo de amenazas: PASS
+    OK  docs/technical-guide/seguridad.md trata «modelo de amenazas»
+    OK  docs/technical-guide/seguridad.md trata «privilegio»
+    OK  12 archivos de src/ y scripts/ sin sudo, setuid, chown ni permisos 777
+INS-017  RNF-17 Código modular: PASS
+    OK  bitacora.py: 63 líneas
+    OK  cli.py: 280 líneas
+    OK  executor.py: 389 líneas
+    OK  jobs.py: 52 líneas
+    OK  red.py: 332 líneas
+    OK  server.py: 317 líneas
+    OK  store.py: 114 líneas
+INS-018  RNF-18 Interfaces y decisiones documentadas: PASS
+    OK  9 ADR con todas sus secciones
+    OK  existe docs/technical-guide/arquitectura.md
+    OK  existe docs/technical-guide/modelo-estados.md
+    OK  existe docs/technical-guide/protocolo-y-persistencia.md
+    OK  existe docs/user-guide/guia-de-usuario.md
+    OK  la guía del protocolo documenta el comando «cancel»
+    OK  la guía del protocolo documenta el comando «health»
+    OK  la guía del protocolo documenta el comando «list»
+    OK  la guía del protocolo documenta el comando «output»
+    OK  la guía del protocolo documenta el comando «status»
+    OK  la guía del protocolo documenta el comando «submit»
+INS-034  RNF-34 Riesgo y prueba en cada ADR: PASS
+    OK  ADR-0002: 3 riesgo(s) con mitigación y prueba (1 con la prueba «ninguna» como riesgo aceptado y documentado)
+    OK  ADR-0003: 1 riesgo(s) con mitigación y prueba
+    OK  ADR-0004: 3 riesgo(s) con mitigación y prueba
+    OK  ADR-0005: 2 riesgo(s) con mitigación y prueba
+    OK  ADR-0006: 10 riesgo(s) con mitigación y prueba
+    OK  ADR-0007: 4 riesgo(s) con mitigación y prueba
+    OK  ADR-0008: 5 riesgo(s) con mitigación y prueba
+    OK  ADR-0009: 6 riesgo(s) con mitigación y prueba

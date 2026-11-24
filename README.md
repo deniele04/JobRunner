@@ -118,8 +118,9 @@ Para buscar procesos zombis y huérfanos tras una prueba: `verif/scripts/proceso
 - [x] Cierre controlado con TCP: conexiones cerradas y puerto liberado
 - [x] Cliente remoto (`--host`, `--port`, `JOBRUNNER_HOST`, `JOBRUNNER_PORT`)
 - [x] Comandos `output` (salida de un trabajo) y `health` (resumen de salud)
-- [ ] Change Request CR-001
-- [ ] Operación verificada entre dos equipos y verificación cruzada
+- [x] Operación verificada entre dos equipos por VPN (`verif/results/20261123-remoto/`)
+
+Las excepciones de `v1.0.0` están en las [release notes](docs/release-notes.md). El Change Request [CR-001](docs/change-requests/CR-001-token-compartido.md) (token compartido) se analizó y se aplazó. No se hizo verificación cruzada con otro equipo (ver [defectos y limitaciones](docs/defectos-y-limitaciones.md)).
 
 **Fuera de alcance:** interfaz web, acceso por Internet público, autenticación de usuarios y ejecución distribuida (ver Project Brief).
 
@@ -135,16 +136,18 @@ Para buscar procesos zombis y huérfanos tras una prueba: `verif/scripts/proceso
 │   ├── technical-guide/      # Arquitectura, protocolo, estados
 │   ├── decisions/            # ADR (registros de decisiones)
 │   ├── ai-usage/             # Registros de uso de IA y AI-LOG
-│   ├── change-requests/      # Solicitudes de cambio del cliente
+│   ├── change-requests/      # Solicitudes de cambio y su análisis de impacto (CR-001)
 │   ├── incidents/            # Incidentes y su resolución
 │   ├── defectos-y-limitaciones.md
 │   └── release-notes.md
 ├── verif/
 │   ├── verification-plan/    # Plan y matriz de trazabilidad
 │   ├── test-cases/           # Casos TC-XXX
-│   ├── scripts/              # verify.sh, procesos.sh y automatización
+│   ├── scripts/              # verify.sh, procesos.sh, inspecciones.py y automatización
+│   ├── inspecciones/         # Inspecciones de RNF-16, RNF-17, RNF-18 y RNF-34
+│   ├── manual/               # Registro manual de TC-015
 │   ├── unit/, integration/   # Pruebas automatizadas
-│   └── results/              # Evidencia por ejecución
+│   └── results/              # Evidencia por ejecución (incluida la remota)
 ├── project-management/       # Roles, cronograma, minutas y participación
 └── .github/ISSUE_TEMPLATE/   # Plantillas de Issues
 ```

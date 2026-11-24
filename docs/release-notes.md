@@ -1,5 +1,87 @@
 # Release Notes — JobRunner
 
+## v1.0.0 — Entrega final: operación remota privada
+
+**Fecha:** 23/11/2026
+**Equipo:** Seriedad
+
+### Funciones incluidas
+
+- Servicio accesible por TCP además del socket Unix local, con el mismo protocolo y los mismos comandos (`--listen HOST:PUERTO`; sin `--listen` no se abre ningún puerto) (RF-18, RF-19, ADR-0008).
+- Varios clientes a la vez en un solo hilo con `selectors`: mensajes fragmentados, varias solicitudes por conexión, límite de 64 KiB por mensaje y cierre por 30 s de inactividad; un cliente lento no detiene a los demás (RF-21, RF-22, RNF-14, RNF-24, ADR-0009).
+- Restricción de acceso: el servicio se niega a escuchar en `0.0.0.0`, `::` o direcciones públicas; `--allow RED` (CIDR, repetible) define los orígenes permitidos; una conexión no autorizada se cierra y queda `acceso_rechazado` en la bitácora (RF-20, RNF-12, RNF-13, ADR-0008).
+- Versión del protocolo: toda respuesta lleva `"v": 1` y una versión distinta recibe un error claro (RNF-32, ADR-0009).
+- Cliente remoto: `royito --host --port` o las variables `JOBRUNNER_HOST` y `JOBRUNNER_PORT`, con mensajes claros si no conecta o si la IP no está permitida (RF-18, RF-19, RF-17).
+- `royito output <id>`: la salida de un trabajo (últimos 64 KiB, `--stderr`, `--raw`) (ADR-0009).
+- `royito health`: versión, tiempo activo, trabajos por estado, límites, base de datos, clientes conectados y accesos rechazados (RF-16, RF-24).
+- Mensajes de error del cliente con operación, causa y qué hacer (RF-17, RNF-21).
+- `request_id` según el ADR-0007: el mismo comando devuelve el trabajo existente con `"duplicado": true`; otro comando con el mismo `request_id` se rechaza (RF-27).
+- Cierre controlado con TCP: deja de aceptar conexiones, cierra las abiertas, libera el puerto y cancela los trabajos en ejecución (RF-15, RNF-25, ADR-0006).
+- Un solo servicio por carpeta de datos: un segundo servicio sobre la misma carpeta se niega a arrancar (candado `jobrunner.lock`) (RF-15, RNF-08).
+
+### Cómo reproducir
+
+    git clone https://github.com/deniele04/JobRunner.git
+    cd JobRunner
+    ./scripts/setup.sh
+    ./scripts/test.sh                                   # pruebas y evidencia en verif/results/
+
+En el equipo servidor (IP de Tailscale o privada):
+
+    ./scripts/run.sh --listen <IP del servidor>:7070 --allow <IP del cliente>/32
+
+En el equipo cliente (`export PATH="$PWD/scripts:$PATH"` habilita `royito`):
+
+    export JOBRUNNER_HOST=<IP del servidor>
+    export JOBRUNNER_PORT=7070
+    royito health
+    royito submit -- sh -c 'echo hola'
+    royito list
+    royito output <id>
+    royito cancel <id>
+
+Pasos completos de la red en `docs/user-guide/conexion-lan-vpn.md`.
+
+### Verificación
+
+- Ejecución formal: `verif/results/20261123-v1.0.0/` sobre el commit `b7b8aab`, con `verify.sh` en WSL.
+- 245 pruebas unitarias y 219 de integración, todas en PASS.
+- Casos de prueba TC-001 a TC-026 e inspecciones INS-016, INS-017, INS-018 e INS-034 (RNF-16, RNF-17, RNF-18 y RNF-34), todos en `PASS` salvo TC-015, que queda `BLOCKED` (ver Excepciones); el estado de cada uno está en el `resumen.md` de la ejecución formal.
+- Matriz de trazabilidad completa en `verif/verification-plan/matriz-trazabilidad.md`: los 30 RF y los 34 RNF con su caso o inspección.
+- Operación entre dos equipos por la VPN Tailscale en `verif/results/20261123-remoto/` (servidor y cliente en computadoras distintas; pruebas P1 a P6 en PASS, salvo P4, que no aplicó por haber un solo cliente). La evidencia se revisa con `verif/scripts/revisar_evidencia_remota.py 20261123` (`verif/revision-cruzada/EVIDENCIA-REMOTA.md`).
+- Revisión de zombis y huérfanos al final de las pruebas (`procesos.log`), también válida en WSL (DEF-005).
+
+### Documentación
+
+- ADR-0008 (transporte de red y restricción de acceso) y ADR-0009 (protocolo v1), y actualización de ADR-0003 y ADR-0007.
+- Guía técnica: arquitectura, modelo de estados, protocolo v1 y persistencia, y seguridad (modelo de amenazas).
+- Guía de usuario con la operación remota, instructivo de conexión entre equipos (`conexion-lan-vpn.md`), bitácora con los eventos de red y guía de diagnóstico.
+- Defectos y limitaciones (`docs/defectos-y-limitaciones.md`) e índice de incidentes (`docs/incidents/`).
+- Plan de verificación final, inspecciones y registro manual de TC-015.
+- AI-LOG, cronograma y riesgos, minutas de la entrega final y participación del equipo (`project-management/participacion.md`).
+
+### Resuelto en esta versión
+
+- DEF-005: `procesos.sh` no detectaba huérfanos en WSL (PR #101).
+- DEF-006: el mensaje de cancelar un ID inexistente salía entre comillas (PR #110).
+- DEF-007: un estado inválido en `list --state` respondía «error interno» (PR #110).
+- DEF-008: un segundo servidor con la misma carpeta `data/` tomaba el socket del primero y marcaba sus trabajos como interrumpidos; ahora se niega a arrancar (PR #117).
+- Limitaciones de la v0.2.0: ya hay operación remota en LAN/VPN, y un cliente que se conecta sin enviar nada ya no retrasa a los demás.
+
+### Excepciones
+
+| Excepción | Motivo | Qué se hizo en su lugar |
+|---|---|---|
+| TC-015 queda `BLOCKED` (RF-17, RNF-21 y RNF-23): falta la evaluación manual de la guía por una persona ajena a ella | No se coordinó a tiempo una persona de otro equipo para evaluarla | Su parte automática pasa (ayuda, códigos de salida y mensajes de error). Diego coordina la evaluación con otro equipo después de la entrega (`verif/manual/TC-015.md`) |
+| El Change Request [CR-001](change-requests/CR-001-token-compartido.md) (token compartido) no se implementó | Se analizó al cierre: cambiaba el protocolo y obligaba a repetir la ejecución formal y la prueba entre dos equipos | Análisis de impacto en el CR-001; queda aplazado y como limitación |
+
+### Limitaciones conocidas
+
+- El servicio no autentica personas ni cifra los mensajes: el acceso se limita por red de origen y el cifrado entre equipos lo da Tailscale (ADR-0008). El token compartido está analizado y aplazado ([CR-001](change-requests/CR-001-token-compartido.md)).
+- Solo se aceptan direcciones IPv4 de Tailscale (`100.x`); las IPv6 de Tailscale no están permitidas.
+- Un trabajo que terminó justo antes de una caída del servicio queda `FAILED` «interrumpido por reinicio» (ADR-0005).
+- La lista completa, con su justificación, está en `docs/defectos-y-limitaciones.md`.
+
 ## v0.2.0 — Avance 2: Concurrencia y persistencia
 
 **Fecha:** 30/10/2026

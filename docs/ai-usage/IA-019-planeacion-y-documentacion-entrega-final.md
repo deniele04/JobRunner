@@ -7,7 +7,7 @@
 | **Usado por** | Daniel Alejandro Huerta Camberos |
 | **Revisado por** | Pendiente de revisión |
 | **Hito** | Hitos 3 y 4 — Operación remota y candidato de entrega |
-| **Artefactos afectados** | `project-management/minutas/entrega-final-1-planeacion.md`, `project-management/CRONOGRAMA.md`, `docs/user-guide/conexion-lan-vpn.md`, `docs/user-guide/bitacora.md`, `docs/user-guide/diagnostico.md`, `docs/defectos-y-limitaciones.md`, `docs/incidents/README.md`, `docs/ai-usage/AI-LOG.md` |
+| **Artefactos afectados** | `project-management/minutas/` (minutas 1 a 4 de la entrega final), `project-management/participacion.md`, `docs/change-requests/CR-001-token-compartido.md`, `docs/release-notes.md` (v1.0.0), `README.md`, `docs/user-guide/guia-de-usuario.md`, `project-management/CRONOGRAMA.md`, `docs/user-guide/conexion-lan-vpn.md`, `docs/user-guide/bitacora.md`, `docs/user-guide/diagnostico.md`, `docs/defectos-y-limitaciones.md`, `docs/incidents/README.md`, `docs/ai-usage/AI-LOG.md` |
 | **Clasificación** | Mixto: resultados aceptados y modificados (ver sección 5) |
 
 ## 1. Objetivo
@@ -31,6 +31,8 @@ Prompts utilizados (textuales, algunos):
 > 3. "Revisa los pr de josue y dame las cosas ha revisar para tenerlo en cuenta en los siguientes pr"
 > 4. "revisa los ultimos prs de yousu y dame mis archivos de paso"
 > 5. "analiza los pr que hay, dame los documentos que puedo suibir y dime como vamos a hacer las pruebas de lo de la vpn"
+> 6. "dame un pdf para hacer todo eso de la prueba de vpn, incluye tambien lo que se debe de hacer en tailscale"
+> 7. "ok me gusta eso de la persona externa, dame los documentos necesarios para subir y acabar con el proyecto"
 
 ## 3. Resultado recibido
 
@@ -38,7 +40,8 @@ Prompts utilizados (textuales, algunos):
 2. Un PDF de tareas por integrante, con lo que necesita de otros y quién espera su trabajo.
 3. Revisión de los PR #85 a #103: orden de integración, resolución de conflictos en `AI-LOG.md` y `server.py`, pruebas manuales con el servidor real y una lista de puntos para los siguientes PR.
 4. Cronograma v6 y v7 (plan por bloques, estado y riesgos 13 a 17), instructivo de conexión con Tailscale y LAN privada, bitácora con los eventos de red, documento de defectos y limitaciones, índice de incidentes, guía de diagnóstico y AI-LOG con el PR de revisión de cada registro.
-5. Plan de la prueba entre dos equipos con Tailscale y de su evidencia.
+5. Plan de la prueba entre equipos con Tailscale (un servidor y uno o más clientes) y de su evidencia.
+6. Documentos de cierre: CR-001 (token compartido) con su análisis de impacto, release notes de `v1.0.0` con sus excepciones, participación del equipo, minutas 2 a 4, cronograma v8, README y defectos y limitaciones.
 
 ## 4. Revisión realizada
 
@@ -61,7 +64,9 @@ Prompts utilizados (textuales, algunos):
 | Observaciones a los PR de Josué (permiso de ejecución de `red.py`, regla de código de salida del CLI con el campo `v`, orden de integración) | Los dos primeros puntos quedaron resueltos en el PR #91 | **Aceptado** |
 | Instructivo de conexión, defectos y limitaciones, índice de incidentes, diagnóstico y cronograma v6 | Integrados en el PR #100 | **Aceptado** |
 | Bitácora, AI-LOG, cronograma v7 y correcciones por el cambio de `--allow` | En revisión en el PR de este registro | **Aceptado** (pendiente de aprobación) |
-| README y guía de usuario | Se integran cuando existan el cliente remoto, `output` y `health` | **Pendiente** |
+| README, guía de usuario y diagnóstico | Integrados en el PR #111, sobre la guía de Juan | **Aceptado** |
+| Documentos de cierre (CR-001, release notes, participación, minutas 2 a 4, cronograma v8) | En revisión en el PR de cierre; los números de la ejecución formal los llena Daniel con su `resumen.md` | **Aceptado** (pendiente de aprobación) |
+| Proponer una persona externa para TC-015 | El equipo no la tuvo; TC-015 queda `BLOCKED` hasta evaluarlo con otro equipo, y se declara como excepción | **Modificado** |
 | Documentar `output` y `health` antes de que existan | No se documentan hasta integrar el código de Juan (U2) | **Rechazado** |
 
 ## 6. Limitaciones del resultado de la IA
