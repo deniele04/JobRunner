@@ -4,9 +4,9 @@
 Uso: python3 verif/scripts/revisar_evidencia_remota.py <run-id>
      (revisa verif/results/<run-id>-remoto/)
 
-Comprueba que existan los archivos que pide la sección 6 del plan de verificación
-y que ninguno esté vacío. No juzga el contenido: solo avisa de lo que falta para
-que se junte antes de la ejecución formal. Termina con 0 si está completa y 1 si no.
+Comprueba que existan los archivos que pide la sección 6 del plan de verificación,
+que ninguno esté vacío, que la bitácora tenga el rechazo de un origen no permitido y
+que no aparezca una IP pública (RNF-26). No juzga lo demás: solo avisa de lo que falta. Termina con 0 si está completa y 1 si no.
 """
 import re
 import sys
@@ -14,31 +14,38 @@ from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parents[2]
 
-# (patrón del nombre, qué es)
+# Cada requisito acepta varios nombres de archivo (el de la ejecución real del equipo de Josué y
+# el de la guía). (patrones, qué es)
 REQUERIDOS = [
-    ("equipo-servidor-bitacora*", "Bitácora del equipo que corre el servicio"),
-    ("equipo-cliente-comandos*", "Salida de los comandos del equipo cliente (submit, status, list, output, cancel)"),
-    ("health*", "Salida de `health` consultada desde el equipo cliente"),
-    ("rechazo*", "Prueba de que un origen no permitido es rechazado (acceso_rechazado)"),
-    ("red*", "Dirección y tipo de red usada (LAN privada o VPN), sin datos personales"),
-    ("LEEME*", "Quién hizo la prueba, cuándo, con qué hash y qué pasó"),
+    (("jobrunner.log", "*bitacora*"), "Bitácora del servicio durante la prueba"),
+    (("prueba-vpn-servidor*", "equipo-servidor*"), "Grabación o salida del equipo que corre el servicio"),
+    (("prueba-vpn-cliente*", "equipo-cliente*"), "Salida de los comandos del equipo cliente (submit, status, list, output, cancel)"),
+    (("health*",), "Salida de `health` consultada desde el equipo cliente"),
+    (("configuracion*", "red*"), "Opciones con las que se inició el servicio y red usada (LAN privada o VPN)"),
+    (("resumen.md", "LEEME*"), "Quién hizo la prueba, cuándo, con qué commit y qué pasó"),
 ]
-PRIVADAS = re.compile(r"\b(10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.\d+\.\d+|127\.\d+\.\d+\.\d+)\b")
-IP = re.compile(r"\b\d{1,3}(\.\d{1,3}){3}\b")
+# El rechazo de un origen no permitido debe verse en la bitácora.
+EVENTO_RECHAZO = "acceso_rechazado"
+PRIVADAS = re.compile(r"(10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.\d+\.\d+|127\.\d+\.\d+\.\d+)")
+# Una IP es un grupo de cuatro números que no forma parte de otro texto (por ejemplo «6.6.87.2-microsoft»).
+IP = re.compile(r"(?<![\w.-])\d{1,3}(\.\d{1,3}){3}(?![\w-]|\.\d)")
 
 
 def revisar(carpeta):
     problemas = []
     if not carpeta.is_dir():
         return [f"No existe la carpeta {carpeta}"]
-    for patron, descripcion in REQUERIDOS:
-        hallados = sorted(carpeta.glob(patron))
+    for patrones, descripcion in REQUERIDOS:
+        hallados = sorted({f for pat in patrones for f in carpeta.glob(pat) if f.is_file()})
         if not hallados:
-            problemas.append(f"Falta {patron}: {descripcion}")
+            problemas.append(f"Falta {' o '.join(patrones)}: {descripcion}")
             continue
         for f in hallados:
-            if f.is_file() and f.stat().st_size == 0:
+            if f.stat().st_size == 0:
                 problemas.append(f"{f.name} está vacío")
+    registros = [f for pat in REQUERIDOS[0][0] for f in carpeta.glob(pat) if f.is_file()]
+    if registros and not any(EVENTO_RECHAZO in f.read_text(encoding="utf-8", errors="replace") for f in registros):
+        problemas.append(f"La bitácora no tiene ningún «{EVENTO_RECHAZO}»: falta la prueba de un origen no permitido")
     # La red debe ser privada: avisa si en la evidencia aparece una IP pública.
     for f in carpeta.glob("*"):
         if not f.is_file():
