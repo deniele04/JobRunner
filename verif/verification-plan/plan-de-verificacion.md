@@ -29,10 +29,10 @@ El plan responde cinco preguntas: qué se verifica (sección 2), con qué métod
 | Solicitudes duplicadas, desconexiones y muerte inesperada del hijo | RF-27, RF-28, RF-29, RNF-08, RNF-09 | TC-008, TC-018, TC-019, TC-020 |
 | Liberación de recursos bajo carga | RNF-33 | TC-024 |
 | Cliente: ayuda, códigos de salida y mensajes de error | RF-17, RNF-21, RNF-23 | TC-001, TC-004, TC-015 |
-| Operación remota con la misma semántica que la local | RF-18, RF-19, RNF-26 | TC-010 |
-| Restricción de acceso a localhost, redes privadas y VPN | RF-20, RNF-12, RNF-13 | TC-011 |
+| Operación remota con la misma semántica que la local | RF-18, RF-19, RNF-26 | [TC-010](../test-cases/TC-010.md) |
+| Restricción de acceso a localhost, redes privadas y VPN | RF-20, RNF-12, RNF-13 | [TC-011](../test-cases/TC-011.md) |
 | Protocolo: mensajes delimitados y fragmentados, desconexiones, límites y versión | RF-21, RF-22, RNF-14, RNF-24, RNF-32 | TC-012, TC-019, TC-023 |
-| Configuración y resumen de salud | RF-16, RF-24 | TC-013 |
+| Configuración y resumen de salud | RF-16, RF-24 | [TC-013](../test-cases/TC-013.md) |
 | Construcción y ejecución reproducibles | RNF-01, RNF-02, RNF-03, RNF-19, RNF-20 | TC-014 |
 | Calidad del código y de la documentación | RNF-16, RNF-17, RNF-18, RNF-34 | INS-016, INS-017, INS-018, INS-034 |
 
@@ -161,10 +161,10 @@ El catálogo (TC-001 a TC-026, más las cuatro inspecciones) sigue la numeració
 | [TC-009](../test-cases/TC-009.md) | Cierre controlado, también con TCP | Integración y unitario |
 | TC-010 | Flujo remoto completo en LAN/VPN | Integración y manual con evidencia (dos equipos) |
 | TC-011 | Restricción de red | Integración y unitario |
-| TC-012 | Fragmentación y desconexión | Unitario e integración |
+| [TC-012](../test-cases/TC-012.md) | Fragmentación y desconexión | Unitario e integración |
 | TC-013 | Configuración y salud | Integración |
 | [TC-014](../test-cases/TC-014.md) | Construcción desde un clon limpio | Clon limpio |
-| TC-015 | Usabilidad documental | Integración y manual |
+| [TC-015](../test-cases/TC-015.md) | Usabilidad documental | Integración y manual |
 | [TC-016](../test-cases/TC-016.md) | Saturación de cola y rechazo explícito | Unitario |
 | [TC-017](../test-cases/TC-017.md) | Cancelaciones concurrentes | Unitario |
 | [TC-018](../test-cases/TC-018.md) | Solicitud duplicada | Unitario |
@@ -172,13 +172,12 @@ El catálogo (TC-001 a TC-026, más las cuatro inspecciones) sigue la numeració
 | [TC-020](../test-cases/TC-020.md) | Terminación inesperada del proceso hijo | Integración |
 | [TC-021](../test-cases/TC-021.md) | Escalamiento de cancelación | Unitario |
 | [TC-022](../test-cases/TC-022.md) | Interrupción durante la persistencia | Unitario |
-| TC-023 | Compatibilidad de protocolo | Integración |
+| [TC-023](../test-cases/TC-023.md) | Compatibilidad de protocolo | Integración |
 | [TC-024](../test-cases/TC-024.md) | Liberación de recursos bajo carga | Integración |
 | [TC-025](../test-cases/TC-025.md) | Bitácora de eventos (caso del equipo) | Unitario |
 | [TC-026](../test-cases/TC-026.md) | 500 registros sin pérdida de metadatos (caso de Verificación) | Integración y unitario |
 | [INS-016](../inspecciones/INS-016.md), [INS-017](../inspecciones/INS-017.md), [INS-018](../inspecciones/INS-018.md), [INS-034](../inspecciones/INS-034.md) | Inspecciones de RNF-16, RNF-17, RNF-18 y RNF-34 | Inspección |
 
-Los casos sin enlace (TC-010, TC-011, TC-012, TC-013, TC-015 y TC-023) todavía no tienen su documento en `verif/test-cases/`; los escriben Josué (TC-011, TC-012 y TC-023) y Juan (TC-010, TC-013 y TC-015). Mientras tanto sus pruebas ya se ejecutan desde `verify.sh`.
 
 ## 8. Defectos
 
@@ -208,9 +207,8 @@ La versión `v1.0.0` se acepta cuando la ejecución formal final de `verify.sh` 
 | Contenido del Change Request CR-001 (se confirma con el profesor) | Daniel | Si agrega requisitos, se agregan filas a la matriz y casos a este plan antes de implementarlo |
 | Si se agrega un token compartido como segunda capa de acceso | Josué (en el ADR-0008) | Obligaría a casos nuevos en TC-011 y a actualizar el modelo de amenazas (INS-016) |
 | Modo de red de WSL para la demostración entre dos equipos (Tailscale dentro de WSL o `mirrored`) | Daniel y Josué | Define cómo se hace la evidencia `verif/results/<run-id>-remoto/` |
-| Pruebas del cliente remoto y de `health` (`test_tc010_*.py` y `test_tc013_*.py`) | Juan | TC-010 y TC-013 quedan `BLOCKED` hasta que existan; `verify.sh` las toma por nombre de archivo |
-| Documentos de los casos TC-010, TC-011, TC-012, TC-013, TC-015 y TC-023 | Josué y Juan | Sus pruebas ya se ejecutan, pero falta su descripción en `verif/test-cases/` |
-| `seguridad.md` (modelo de amenazas y mínimo privilegio) | Josué | INS-016 queda `BLOCKED` sin él |
+| Evidencia de la operación entre dos equipos, `verif/results/<run-id>-remoto/` (guía en `verif/revision-cruzada/EVIDENCIA-REMOTA.md`) | Diego y Josué (J9) | TC-010 y RNF-26 quedan `BLOCKED` hasta que exista y `revisar_evidencia_remota.py` la dé por completa |
+| Revisión de INS-016 por Josué: confirmar que `seguridad.md` basta para RNF-16 (mínimo privilegio) | Josué | La inspección ya pasa; si el equipo quiere una sección explícita de «mínimo privilegio», se agrega al documento |
 | Persona que evalúa TC-015 (idealmente del otro equipo) | Diego | El caso queda `BLOCKED` hasta que llene `verif/manual/TC-015.md` |
 | Prioridad de cada requisito | Producto (Daniel) | Solo ocho filas la tienen (matriz de muestra del PDF 05) |
 
