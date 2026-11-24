@@ -15,8 +15,8 @@ Revisar la ejecución formal, cerrar la versión `v1.0.0` y preparar la demostra
 
 | Punto | Resultado |
 |---|---|
-| Ejecución formal | `verif/results/<<RUN-ID>>/` sobre el commit `<<COMMIT>>`, en WSL (Daniel). La ejecución `20261123` del PR #124 fue previa y en Linux |
-| Pruebas | <<N UNITARIAS>> unitarias y <<N INTEGRACIÓN>> de integración en PASS |
+| Ejecución formal | `verif/results/20261123-v1.0.0/` sobre el commit `b7b8aab`, en WSL (Daniel). La ejecución `20261123` del PR #124 fue previa y en Linux |
+| Pruebas | 245 unitarias y 219 de integración en PASS |
 | Casos e inspecciones | TC-001 a TC-026 e INS-016, INS-017, INS-018 e INS-034 en PASS, salvo TC-015 en BLOCKED |
 | Matriz de trazabilidad | Actualizada con la ejecución formal |
 | Operación entre dos equipos | `verif/results/20261123-remoto/` |

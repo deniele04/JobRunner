@@ -44,8 +44,8 @@ Pasos completos de la red en `docs/user-guide/conexion-lan-vpn.md`.
 
 ### Verificación
 
-- Ejecución formal: `verif/results/<<RUN-ID>>/` sobre el commit `<<COMMIT>>`, con `verify.sh` en WSL.
-- <<N UNITARIAS>> pruebas unitarias y <<N INTEGRACIÓN>> de integración, todas en PASS.
+- Ejecución formal: `verif/results/20261123-v1.0.0/` sobre el commit `b7b8aab`, con `verify.sh` en WSL.
+- 245 pruebas unitarias y 219 de integración, todas en PASS.
 - Casos de prueba TC-001 a TC-026 e inspecciones INS-016, INS-017, INS-018 e INS-034 (RNF-16, RNF-17, RNF-18 y RNF-34), todos en `PASS` salvo TC-015, que queda `BLOCKED` (ver Excepciones); el estado de cada uno está en el `resumen.md` de la ejecución formal.
 - Matriz de trazabilidad completa en `verif/verification-plan/matriz-trazabilidad.md`: los 30 RF y los 34 RNF con su caso o inspección.
 - Operación entre dos equipos por la VPN Tailscale en `verif/results/20261123-remoto/` (servidor y cliente en computadoras distintas; pruebas P1 a P6 en PASS, salvo P4, que no aplicó por haber un solo cliente). La evidencia se revisa con `verif/scripts/revisar_evidencia_remota.py 20261123` (`verif/revision-cruzada/EVIDENCIA-REMOTA.md`).

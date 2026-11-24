@@ -4,7 +4,7 @@ Pasos de Verificación sobre el commit final integrado (versión `v1.0.0`). Se h
 
 ## Estado al cierre de `v1.0.0`
 
-- La ejecución formal se hizo en WSL: `verif/results/<<RUN-ID>>/` sobre el commit `<<COMMIT>>`.
+- La ejecución formal se hizo en WSL: `verif/results/20261123-v1.0.0/` sobre el commit `b7b8aab`.
 - La ejecución `20261123` (PR #124) fue previa y se hizo en Linux, no en WSL.
 - No hubo verificación cruzada con otro equipo (`docs/defectos-y-limitaciones.md`).
 - TC-015 queda `BLOCKED` hasta evaluarlo con una persona de otro equipo; es una excepción en las release notes de `v1.0.0`.
