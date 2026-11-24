@@ -1,0 +1,8 @@
+Commit de main: a4d48aa
+Python: Python 3.12.3
+Sistema: Linux 6.6.87.2-microsoft-standard-WSL2
+Tailscale: 1.102.3, instalado dentro de WSL
+Servidor (P2, P3, P6): ./scripts/run.sh --listen 100.90.230.53:7070 --max-jobs 2 --queue-size 1
+   con --allow 100.102.244.92/32
+Servidor (P5): ./scripts/run.sh --listen 100.90.230.53:7070 --allow 100.64.0.1/32
+Clientes: JOBRUNNER_HOST=100.90.230.53 JOBRUNNER_PORT=7070
