@@ -1,0 +1,28 @@
+2026-11-24T00:21:48Z INFO servicio_iniciado job=- socket=data/jobrunner.sock tcp=100.90.230.53:7070 permitidas=100.102.244.92/32
+2026-11-24T00:24:02Z INFO recibido job=c8f2f588-c21b-47d0-9c3e-bd738d234d6a programa=sh
+2026-11-24T00:24:02Z INFO iniciado job=c8f2f588-c21b-47d0-9c3e-bd738d234d6a pid=953
+2026-11-24T00:24:02Z INFO terminado job=c8f2f588-c21b-47d0-9c3e-bd738d234d6a estado=SUCCEEDED codigo=0
+2026-11-24T00:24:20Z INFO recibido job=644db5f3-2a9e-4d54-a415-613b14a594f9 programa=sleep
+2026-11-24T00:24:20Z INFO iniciado job=644db5f3-2a9e-4d54-a415-613b14a594f9 pid=954
+2026-11-24T00:24:22Z INFO recibido job=7485c157-3cef-40b2-8ead-b8006f3144fb programa=sleep
+2026-11-24T00:24:22Z INFO iniciado job=7485c157-3cef-40b2-8ead-b8006f3144fb pid=955
+2026-11-24T00:24:23Z INFO recibido job=31111fc6-f9ee-4594-a678-bccf4810451a programa=sleep
+2026-11-24T00:24:23Z INFO en_cola job=31111fc6-f9ee-4594-a678-bccf4810451a posicion=1
+2026-11-24T00:24:25Z ERROR rechazado job=- motivo="cola llena" programa=sleep
+2026-11-24T00:26:10Z INFO terminado job=644db5f3-2a9e-4d54-a415-613b14a594f9 estado=SUCCEEDED codigo=0
+2026-11-24T00:26:10Z INFO iniciado job=31111fc6-f9ee-4594-a678-bccf4810451a pid=958
+2026-11-24T00:26:12Z INFO terminado job=7485c157-3cef-40b2-8ead-b8006f3144fb estado=SUCCEEDED codigo=0
+2026-11-24T00:27:49Z INFO recibido job=f6e07b23-8b48-49d6-a936-147307e9d810 programa=sleep
+2026-11-24T00:27:49Z INFO iniciado job=f6e07b23-8b48-49d6-a936-147307e9d810 pid=963
+2026-11-24T00:28:02Z INFO terminado job=31111fc6-f9ee-4594-a678-bccf4810451a estado=SUCCEEDED codigo=0
+2026-11-24T00:28:10Z INFO cancelacion_solicitada job=f6e07b23-8b48-49d6-a936-147307e9d810
+2026-11-24T00:28:10Z INFO cancelado job=f6e07b23-8b48-49d6-a936-147307e9d810 codigo=-15
+2026-11-24T00:30:44Z INFO red_cerrada job=- conexiones=0 tcp=100.90.230.53:7070
+2026-11-24T00:30:44Z INFO servicio_detenido job=- cancelados=0 en_cola=0
+2026-11-24T00:30:49Z INFO servicio_iniciado job=- socket=data/jobrunner.sock tcp=100.90.230.53:7070 permitidas=100.64.0.1/32
+2026-11-24T00:31:07Z ERROR acceso_rechazado job=- ip=100.102.244.92
+2026-11-24T00:32:37Z INFO red_cerrada job=- conexiones=0 tcp=100.90.230.53:7070
+2026-11-24T00:32:37Z INFO servicio_detenido job=- cancelados=0 en_cola=0
+2026-11-24T00:32:45Z INFO servicio_iniciado job=- socket=data/jobrunner.sock tcp=100.90.230.53:7070 permitidas=100.102.244.92/32
+2026-11-24T00:33:27Z INFO red_cerrada job=- conexiones=1 tcp=100.90.230.53:7070
+2026-11-24T00:33:27Z INFO servicio_detenido job=- cancelados=0 en_cola=0

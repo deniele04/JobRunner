@@ -1,0 +1,19 @@
+{
+  "v": 1,
+  "version": "1.0.0",
+  "uptime_seconds": 74.7,
+  "jobs_by_state": {
+    "QUEUED": 0,
+    "RUNNING": 0,
+    "SUCCEEDED": 0,
+    "FAILED": 0,
+    "CANCELED": 0
+  },
+  "running": 0,
+  "max_jobs": 2,
+  "queued": 0,
+  "queue_size": 1,
+  "database": "ok",
+  "clients": 1,
+  "rejected_access": 0
+}
