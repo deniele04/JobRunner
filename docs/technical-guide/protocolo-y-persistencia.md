@@ -47,7 +47,7 @@ Toda solicitud es un objeto con el campo `cmd` (y opcionalmente `v`).
 | `submit` | `argv` (lista no vacía de textos no vacíos), `request_id` (opcional) | El trabajo |
 | `status` | `id` | El trabajo |
 | `list` | `state` (opcional: QUEUED, RUNNING, SUCCEEDED, FAILED o CANCELED) | `{"v": 1, "jobs": [...]}` |
-| `cancel` | `id` | El trabajo, ya en estado CANCELED |
+| `cancel` | `id` | El trabajo. Si estaba en cola, ya en estado CANCELED; si estaba en ejecución, todavía en RUNNING (ver «Cancelación» abajo) |
 | `output` | `id`, `stream` (opcional: `stdout` por defecto o `stderr`), `max_bytes` (opcional: entero de 1 a 65536) | `{"v": 1, "id", "stream", "data", "truncated"}` (sección 1.8) |
 | `health` | Ninguno | El resumen de salud (sección 1.8) |
 
@@ -65,6 +65,8 @@ Ejemplo (los saltos de línea son solo para leer; en el cable va todo en una lí
 ```
 
 Campos de un trabajo: `id`, `argv`, `created_at`, `state`, `exit_code`, `started_at`, `finished_at`, `stdout_path`, `stderr_path`, `error`, `request_id` y `pid`. `error` es `null` cuando no hubo error. `exit_code` negativo significa que el proceso murió por una señal (por ejemplo, `-15` es SIGTERM). Si el `submit` repite un `request_id` ya usado con el mismo comando, la respuesta es el trabajo existente con `"duplicado": true`; el primer envío no lleva ese campo.
+
+**Cancelación.** `cancel` no espera a que el proceso muera (ADR-0006). Con un trabajo en cola, lo saca de la cola y responde con `"state": "CANCELED"`. Con un trabajo en ejecución, envía SIGTERM a su grupo de procesos y responde de inmediato con `"state": "RUNNING"`; el estado pasa a `CANCELED` (con `exit_code` -15 y `"error": "SIGTERM"`) cuando el servicio recoge el proceso, normalmente en menos de 1 s. Si el trabajo ignora SIGTERM, a los 5 s se envía SIGKILL. Un cliente debe confirmar la cancelación con `status`, no con la respuesta de `cancel`. Cancelar de nuevo un trabajo que ya se está cancelando devuelve su estado actual sin enviar otra señal; cancelar uno ya terminado responde un error.
 
 Un cliente mínimo en Python (TCP):
 
