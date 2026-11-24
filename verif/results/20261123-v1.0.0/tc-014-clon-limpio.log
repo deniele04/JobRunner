@@ -1,0 +1,5 @@
+$ git clone <repositorio> JobRunner
+$ git log -1 --oneline
+b7b8aab Cierre: CR-001, TC-015 pendiente y participación final
+$ ./scripts/setup.sh
+Construcción OK: Python 3.14.4, sin dependencias externas.

@@ -2,7 +2,7 @@
 
 Cadena obligatoria del Plan de Verificación: Requisito → Método → Caso → Resultado esperado → Evidencia → PASS/FAIL. Esta matriz relaciona cada RF y RNF con sus casos de prueba y el último resultado de la ejecución formal. Plan: [plan-de-verificacion.md](plan-de-verificacion.md).
 
-**Última ejecución formal:** `verif/results/20261123/` (ver [resumen](../results/20261123/resumen.md))
+**Última ejecución formal:** `verif/results/20261123-v1.0.0/` (ver [resumen](../results/20261123-v1.0.0/resumen.md))
 
 **Numeración de TC:** alineada con el PDF 05 del Plan de Verificación ([TC-001](../test-cases/TC-001.md) a [TC-024](../test-cases/TC-024.md)). [TC-025](../test-cases/TC-025.md) (bitácora) y [TC-026](../test-cases/TC-026.md) (500 registros, RNF-06) los agregó el equipo. Los cuatro requisitos que el PDF 05 deja como inspección (RNF-16, RNF-17, RNF-18 y RNF-34) tienen una inspección, [INS-016](../inspecciones/INS-016.md), [INS-017](../inspecciones/INS-017.md), [INS-018](../inspecciones/INS-018.md) e [INS-034](../inspecciones/INS-034.md), que `verify.sh` ejecuta y cuenta como un caso más.
 
@@ -67,9 +67,9 @@ Incluye RF-01 a RF-30 y RNF-01 a RNF-34 (el PDF 05 exige RF-01…RF-24 y RNF-01�
 | RF-14 | Bitácora con marca temporal e ID de trabajo | Por definir | Prueba | [TC-025](../test-cases/TC-025.md) | unittest.log, unit-resultados.tsv | PASS | [TC-025](../test-cases/TC-025.md) lo define el equipo; no está en el PDF 05 |
 | RF-15 | Inicio y cierre controlados, sin aceptar trabajos durante el cierre | Por definir | Prueba | [TC-009](../test-cases/TC-009.md) | unittest.log, procesos.log | PASS | — |
 | RF-16 | Configuración de directorio, concurrencia, interfaz y puerto | Por definir | Prueba/Inspección | TC-013 | unittest.log, unit-resultados.tsv | PASS | Salud (`health`) y configuración; pruebas de Juan en `test_tc013_salud_y_configuracion.py` |
-| RF-17 | Ayuda de uso y códigos de salida del cliente | Por definir | Prueba/Inspección | [TC-001](../test-cases/TC-001.md), [TC-004](../test-cases/TC-004.md), TC-015 | unittest.log, unit-resultados.tsv, manual-TC-015.md | BLOCKED | — |
-| RF-18 | Operación remota con protocolo documentado | Alta | Prueba/Demo | TC-010 | unittest.log, unit-resultados.tsv, verif/results/<run-id>-remoto/ | PASS | Falta la ejecución entre dos equipos (evidencia `<run-id>-remoto`) |
-| RF-19 | Misma semántica local y remota | Por definir | Prueba/Demo | TC-010 | unittest.log, unit-resultados.tsv, verif/results/<run-id>-remoto/ | PASS | Falta la ejecución entre dos equipos (evidencia `<run-id>-remoto`) |
+| RF-17 | Ayuda de uso y códigos de salida del cliente | Por definir | Prueba/Inspección | [TC-001](../test-cases/TC-001.md), [TC-004](../test-cases/TC-004.md), TC-015 | unittest.log, unit-resultados.tsv, manual-TC-015.md | BLOCKED | BLOCKED por TC-015: falta la evaluación manual de la guía con otro equipo (excepción en las release notes); su parte automática pasa |
+| RF-18 | Operación remota con protocolo documentado | Alta | Prueba/Demo | TC-010 | unittest.log, unit-resultados.tsv, verif/results/20261123-remoto/ | PASS | Prueba entre dos equipos por Tailscale del 23/11 (`verif/results/20261123-remoto/`) |
+| RF-19 | Misma semántica local y remota | Por definir | Prueba/Demo | TC-010 | unittest.log, unit-resultados.tsv, verif/results/20261123-remoto/ | PASS | Prueba entre dos equipos por Tailscale del 23/11 (`verif/results/20261123-remoto/`) |
 | RF-20 | Acceso remoto restringido a LAN/VPN autorizada | Crítica | Prueba/Análisis | TC-011 | unittest.log, unit-resultados.tsv | PASS | — |
 | RF-21 | Protocolo con mensajes delimitados y lecturas parciales | Por definir | Prueba | TC-012, TC-023 | unittest.log, unit-resultados.tsv | PASS | — |
 | RF-22 | Desconexiones de cliente sin terminar el servicio | Por definir | Prueba | TC-012, [TC-019](../test-cases/TC-019.md) | unittest.log, unit-resultados.tsv | PASS | — |
@@ -106,12 +106,12 @@ Incluye RF-01 a RF-30 y RNF-01 a RNF-34 (el PDF 05 exige RF-01…RF-24 y RNF-01�
 | RNF-18 | Interfaces y decisiones documentadas | Por definir | Inspección | [INS-018](../inspecciones/INS-018.md) | inspecciones.log | PASS | El PDF 05 no asigna TC; inspección de ADR, guías y comandos documentados |
 | RNF-19 | Compilar sin advertencias nuevas | Por definir | Prueba/Inspección | [TC-014](../test-cases/TC-014.md) | tc-014-clon-limpio.log | PASS | El PDF 05 no asigna TC; se propone [TC-014](../test-cases/TC-014.md) (`compileall`) |
 | RNF-20 | Pruebas con un único comando documentado | Por definir | Inspección | [TC-014](../test-cases/TC-014.md) | tc-014-clon-limpio.log | PASS | El PDF 05 no asigna TC; se propone [TC-014](../test-cases/TC-014.md) (`./scripts/test.sh`) |
-| RNF-21 | Mensajes de error con operación, causa y acción | Por definir | Inspección/Demo | TC-015 | unittest.log, unit-resultados.tsv, manual-TC-015.md | BLOCKED | — |
+| RNF-21 | Mensajes de error con operación, causa y acción | Por definir | Inspección/Demo | TC-015 | unittest.log, unit-resultados.tsv, manual-TC-015.md | BLOCKED | BLOCKED por TC-015: falta la evaluación manual de la guía con otro equipo (excepción en las release notes); su parte automática pasa |
 | RNF-22 | Bitácora que correlaciona solicitud y trabajo | Por definir | Prueba | [TC-025](../test-cases/TC-025.md) | unittest.log, unit-resultados.tsv | PASS | [TC-025](../test-cases/TC-025.md) lo define el equipo; no está en el PDF 05 |
-| RNF-23 | Guía de usuario sin asistencia del equipo | Por definir | Demo | TC-015 | manual-TC-015.md | BLOCKED | Lo evalúa una persona ajena a la guía (registro manual) |
+| RNF-23 | Guía de usuario sin asistencia del equipo | Por definir | Demo | TC-015 | manual-TC-015.md | BLOCKED | BLOCKED por TC-015: falta la evaluación manual de la guía con otro equipo (excepción en las release notes); su parte automática pasa |
 | RNF-24 | Protocolo con mensajes fragmentados y solicitudes secuenciales | Por definir | Prueba | TC-012 | unittest.log, unit-resultados.tsv | PASS | — |
 | RNF-25 | Liberar sockets y procesos hijos al cerrar | Por definir | Prueba | [TC-009](../test-cases/TC-009.md) | unittest.log, procesos.log | PASS | — |
-| RNF-26 | Demostración remota solo en red privada o VPN | Crítica | Inspección/Demo | TC-010, TC-011 | unittest.log, unit-resultados.tsv, verif/results/<run-id>-remoto/ | PASS | Necesita la ejecución entre dos equipos en red privada o VPN |
+| RNF-26 | Demostración remota solo en red privada o VPN | Crítica | Inspección/Demo | TC-010, TC-011 | unittest.log, unit-resultados.tsv, verif/results/20261123-remoto/ | PASS | Prueba entre dos equipos por Tailscale del 23/11 (`verif/results/20261123-remoto/`) |
 | RNF-27 | Transiciones consistentes ante concurrencia | Por definir | Prueba | [TC-017](../test-cases/TC-017.md) | unittest.log, unit-resultados.tsv | PASS | — |
 | RNF-28 | Actualizaciones persistentes atómicas o recuperables | Por definir | Prueba | [TC-022](../test-cases/TC-022.md) | unittest.log, unit-resultados.tsv | PASS | — |
 | RNF-29 | Backpressure o rechazo explícito en los límites | Por definir | Prueba | [TC-016](../test-cases/TC-016.md) | unittest.log, unit-resultados.tsv | PASS | — |
@@ -135,9 +135,7 @@ Incluye RF-01 a RF-30 y RNF-01 a RNF-34 (el PDF 05 exige RF-01…RF-24 y RNF-01�
 
 | Pendiente | Quién | Efecto en la matriz |
 |---|---|---|
-| Ejecución formal final de `verify.sh` y `actualizar_matriz.py` sobre el commit final integrado | Diego | La matriz refleja la ejecución `20261123` (commit 3953801, Linux), previa a la verificación cruzada: si el código cambia después, se repite y se actualiza |
-| Verificación cruzada con el otro equipo (`verif/revision-cruzada/`) | Diego y el otro equipo | Los defectos que reporte pueden cambiar estados de esta matriz |
-| Confirmar `procesos.sh` (DEF-005) en un WSL real | Diego | La ejecución `20261123` se hizo en Linux; falta repetirla en WSL |
-| Registro manual de usabilidad, `verif/manual/TC-015.md`, llenado por una persona ajena a la guía | Persona evaluadora | TC-015 queda `BLOCKED` mientras esté sin llenar (RNF-23) |
+| Verificación cruzada con otro equipo (`verif/revision-cruzada/`) | Diego | No se hizo para `v1.0.0` (`docs/defectos-y-limitaciones.md`); si se hace después, los defectos que reporte pueden cambiar estados de esta matriz |
+| Registro manual de usabilidad, `verif/manual/TC-015.md`, con una persona de otro equipo | Diego | TC-015 queda `BLOCKED` mientras esté sin llenar (RF-17, RNF-21 y RNF-23); excepción en las release notes de `v1.0.0` |
 | Prioridad de cada requisito | Producto (Daniel) | Solo ocho filas la tienen (matriz de muestra del PDF 05) |
-| Requisitos del CR-001, si agrega alguno | Daniel (N2) | Se agregan filas a esta matriz |
+| CR-001 (token compartido), aplazado | Daniel | Si se implementa, cambian los criterios de RF-20 y RNF-13, se amplían TC-010 y TC-011 y se agrega TC-027 (`docs/change-requests/CR-001-token-compartido.md`) |
