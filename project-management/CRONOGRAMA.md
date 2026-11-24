@@ -3,7 +3,7 @@
 **Versión:** 8 — entrega final (cierre)
 **Responsable del documento:** Daniel Alejandro Huerta Camberos
 
-> **Control de cambios (v7 → v8):** Cierre de la entrega final: Hitos 3, 4 y 5 completados, estado final de los cuatro bloques y de los riesgos 4, 8, 13 y 16. No hubo verificación cruzada; se declara como excepción en las release notes de `v1.0.0`.
+> **Control de cambios (v7 → v8):** Cierre de la entrega final: Hitos 3, 4 y 5 completados, estado final de los cuatro bloques y de los riesgos 4, 8, 13 y 16. DEF-008 cerrado (PR #117). No hubo verificación cruzada; se declara como excepción en las release notes de `v1.0.0`.
 >
 > **Control de cambios (v6 → v7):** Se actualiza el estado de los bloques con los PR #91, #92 y #101 a #103, y el de los riesgos 14 y 15.
 >
@@ -79,13 +79,14 @@ El trabajo se organiza en cuatro bloques, según la minuta de planeación de la 
 | | TC-010, TC-013 y TC-015 | Integrado (PR #110) |
 | | TC-026 (RNF-06) e inspecciones de RNF-16, RNF-17, RNF-18 y RNF-34 | Integrado (PR #109) |
 | | `verify.sh` final y matriz de trazabilidad completa | Integrado (PR #112) |
-| | Guía técnica del protocolo v1 y guía de seguridad | Integrado (PR #103) |
+| | Guía técnica del protocolo v1 y guía de seguridad | Integrado (PR #103 y PR #115) |
 | | Conexión LAN/VPN, defectos y limitaciones, índice de incidentes y diagnóstico | Integrado (PR #100) |
 | | Bitácora de red y AI-LOG | Integrado (PR #108) |
 | | README y guía de usuario | Integrado (PR #110 y PR #111) |
-| 4 — Entrega | Evidencia entre dos equipos | Integrado (PR #114) |
+| 4 — Entrega | Evidencia entre dos equipos y su revisor | Integrado (PR #114 y PR #122) |
+| | DEF-008: un solo servicio por carpeta de datos | Integrado (PR #117) |
 | | Evaluación de la guía (TC-015), ejecución formal, release notes, participación y `v1.0.0` | Integrado con esta versión del cronograma |
-| | Verificación cruzada | No realizada (excepción en las release notes) |
+| | Verificación cruzada | No realizada (excepción en las release notes); carpeta y plantilla en el PR #116 |
 
 ## Riesgos identificados
 

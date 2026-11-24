@@ -17,6 +17,7 @@
 - Mensajes de error del cliente con operación, causa y qué hacer (RF-17, RNF-21).
 - `request_id` según el ADR-0007: el mismo comando devuelve el trabajo existente con `"duplicado": true`; otro comando con el mismo `request_id` se rechaza (RF-27).
 - Cierre controlado con TCP: deja de aceptar conexiones, cierra las abiertas, libera el puerto y cancela los trabajos en ejecución (RF-15, RNF-25, ADR-0006).
+- Un solo servicio por carpeta de datos: un segundo servicio sobre la misma carpeta se niega a arrancar (candado `jobrunner.lock`) (RF-15, RNF-08).
 
 ### Cómo reproducir
 
@@ -47,7 +48,7 @@ Pasos completos de la red en `docs/user-guide/conexion-lan-vpn.md`.
 - <<N UNITARIAS>> pruebas unitarias y <<N INTEGRACIÓN>> de integración, todas en PASS.
 - Casos de prueba TC-001 a TC-026 e inspecciones INS-016, INS-017, INS-018 e INS-034 (RNF-16, RNF-17, RNF-18 y RNF-34); el estado de cada uno está en el `resumen.md` de la ejecución formal.
 - Matriz de trazabilidad completa en `verif/verification-plan/matriz-trazabilidad.md`: los 30 RF y los 34 RNF con su caso o inspección.
-- Operación entre dos equipos por la VPN Tailscale en `verif/results/20261123-remoto/` (servidor y cliente en computadoras distintas; pruebas P1 a P6 en PASS, salvo P4, que no aplicó por haber un solo cliente).
+- Operación entre dos equipos por la VPN Tailscale en `verif/results/20261123-remoto/` (servidor y cliente en computadoras distintas; pruebas P1 a P6 en PASS, salvo P4, que no aplicó por haber un solo cliente). La evidencia se revisa con `verif/scripts/revisar_evidencia_remota.py 20261123` (`verif/revision-cruzada/EVIDENCIA-REMOTA.md`).
 - Revisión de zombis y huérfanos al final de las pruebas (`procesos.log`), también válida en WSL (DEF-005).
 
 ### Documentación
@@ -64,6 +65,7 @@ Pasos completos de la red en `docs/user-guide/conexion-lan-vpn.md`.
 - DEF-005: `procesos.sh` no detectaba huérfanos en WSL (PR #101).
 - DEF-006: el mensaje de cancelar un ID inexistente salía entre comillas (PR #110).
 - DEF-007: un estado inválido en `list --state` respondía «error interno» (PR #110).
+- DEF-008: un segundo servidor con la misma carpeta `data/` tomaba el socket del primero y marcaba sus trabajos como interrumpidos; ahora se niega a arrancar (PR #117).
 - Limitaciones de la v0.2.0: ya hay operación remota en LAN/VPN, y un cliente que se conecta sin enviar nada ya no retrasa a los demás.
 
 ### Excepciones
@@ -76,7 +78,6 @@ Pasos completos de la red en `docs/user-guide/conexion-lan-vpn.md`.
 
 ### Limitaciones conocidas
 
-- DEF-008 (abierto, aceptado, severidad media): si se inicia un segundo servidor con la misma carpeta `data/`, toma el socket del primero y marca sus trabajos como interrumpidos. Se evita iniciando un solo servidor por carpeta; la guía de diagnóstico explica cómo detectarlo.
 - El servicio no autentica personas ni cifra los mensajes: el acceso se limita por red de origen y el cifrado entre equipos lo da Tailscale (ADR-0008).
 - Solo se aceptan direcciones IPv4 de Tailscale (`100.x`); las IPv6 de Tailscale no están permitidas.
 - Un trabajo que terminó justo antes de una caída del servicio queda `FAILED` «interrumpido por reinicio» (ADR-0005).

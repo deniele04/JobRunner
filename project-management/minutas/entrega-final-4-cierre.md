@@ -21,7 +21,7 @@ Revisar la ejecución formal, cerrar la versión `v1.0.0` y preparar la demostra
 | Matriz de trazabilidad | Actualizada con la ejecución formal |
 | Operación entre dos equipos | `verif/results/20261123-remoto/` |
 | Excepciones | Sin verificación cruzada; TC-015 evaluado por un integrante; ningún Change Request (release notes de `v1.0.0`) |
-| Defectos abiertos | DEF-008, aceptado (severidad media) |
+| Defectos abiertos | Ninguno (DEF-008 cerrado en el PR #117) |
 
 ## Decisiones
 
