@@ -3,7 +3,7 @@
 **Versión:** 8 — entrega final (cierre)
 **Responsable del documento:** Daniel Alejandro Huerta Camberos
 
-> **Control de cambios (v7 → v8):** Cierre de la entrega final: Hitos 3, 4 y 5 completados, estado final de los cuatro bloques y de los riesgos 4, 8, 13 y 16. DEF-008 cerrado (PR #117). No hubo verificación cruzada; se declara como excepción en las release notes de `v1.0.0`.
+> **Control de cambios (v7 → v8):** Cierre de la entrega final: Hitos 3, 4 y 5 completados, estado final de los cuatro bloques y de los riesgos 4, 8, 13 y 16. DEF-008 cerrado (PR #117). TC-015 queda pendiente para evaluarlo con otro equipo. No hubo verificación cruzada (`docs/defectos-y-limitaciones.md`).
 >
 > **Control de cambios (v6 → v7):** Se actualiza el estado de los bloques con los PR #91, #92 y #101 a #103, y el de los riesgos 14 y 15.
 >
@@ -70,7 +70,7 @@ El trabajo se organiza en cuatro bloques, según la minuta de planeación de la 
 | | Cliente remoto (`--host`, `--port` y variables de entorno) | Integrado (PR #110) |
 | | Prueba de conexión entre dos equipos con Tailscale e instructivo | Integrado (PR #100 y PR #114) |
 | | DEF-005 y plan de verificación para la versión final | Integrado (PR #101 y PR #113) |
-| | Issues, cronograma y riesgos | Integrado. No se implementó ningún Change Request |
+| | Issues, cronograma, riesgos y CR-001 | Integrado. CR-001 (token compartido) analizado y aplazado (`docs/change-requests/`) |
 | 2 — Funciones | Lista de acceso (`--allow`) y rechazo de interfaces públicas | Integrado (PR #90) |
 | | Versión del protocolo (`v`) | Integrado (PR #91) |
 | | Cierre controlado con TCP | Integrado (PR #92) |
@@ -85,8 +85,10 @@ El trabajo se organiza en cuatro bloques, según la minuta de planeación de la 
 | | README y guía de usuario | Integrado (PR #110 y PR #111) |
 | 4 — Entrega | Evidencia entre dos equipos y su revisor | Integrado (PR #114 y PR #122) |
 | | DEF-008: un solo servicio por carpeta de datos | Integrado (PR #117) |
-| | Evaluación de la guía (TC-015), ejecución formal, release notes, participación y `v1.0.0` | Integrado con esta versión del cronograma |
-| | Verificación cruzada | No realizada (excepción en las release notes); carpeta y plantilla en el PR #116 |
+| | Guía de la ejecución final y `candidata.sh` | Integrado (PR #123) |
+| | Ejecución formal en WSL, release notes, participación y `v1.0.0` | Integrado con esta versión del cronograma (ejecución previa en Linux en el PR #124) |
+| | Evaluación de la guía por otra persona (TC-015) | Pendiente: con otro equipo después de la entrega (excepción en las release notes) |
+| | Verificación cruzada | No realizada (`docs/defectos-y-limitaciones.md`); carpeta y plantilla en el PR #116 |
 
 ## Riesgos identificados
 
@@ -99,7 +101,7 @@ El trabajo se organiza en cuatro bloques, según la minuta de planeación de la 
 | 5 | Entornos de desarrollo distintos (Windows, macOS, Linux) | Media | Medio | Distribución Linux declarada; uso de WSL o VM; verificación formal siempre desde un clon limpio en Linux; clonar el repositorio dentro de la carpeta personal de WSL (`~`) y no en `/mnt/c`, donde el socket Unix no funciona | Diego Armando Durán Hernández | Mitigado: TC-014 desde un clon limpio |
 | 6 | Cobertura de pruebas insuficiente antes de cada hito | Media | Alto | Criterios de aceptación ejecutables en cada Issue; `verify.sh` con los casos del Avance 2 corrido antes de cada integración a `main` | Diego Armando Durán Hernández | Mitigado: matriz de trazabilidad del Avance 2 |
 | 7 | Disponibilidad limitada de algún integrante | Media | Medio | Redistribuir tareas con al menos 3 días de aviso; ningún módulo con un solo conocedor | Diego Armando Durán Hernández | En seguimiento |
-| 8 | El Change Request del cliente llega en un momento de alta carga | Media | Medio | Reservar capacidad en las semanas 9 y 10; análisis de impacto antes de implementar | Daniel Alejandro Huerta Camberos | Cerrado: no se implementó ningún Change Request en `v1.0.0` |
+| 8 | El Change Request del cliente llega en un momento de alta carga | Media | Medio | Reservar capacidad en las semanas 9 y 10; análisis de impacto antes de implementar | Daniel Alejandro Huerta Camberos | Cerrado: el CR-001 se analizó al cierre y se aplazó para después de `v1.0.0` |
 | 9 | El servidor termina ante una desconexión del cliente o un mensaje inválido | Media | Alto | Atrapar los errores de cada conexión; regla de desconexión del ADR-0007; prueba de robustez TC-019 | Josué Said Delgadillo Gutiérrez | Cerrado: INC-001 corregido en el PR #51; TC-019 |
 | 10 | Estados incoherentes por solicitudes concurrentes, duplicadas o cancelaciones | Media | Alto | Atención secuencial y transiciones validadas (ADR-0006 y ADR-0007); revisar el estado real antes de cancelar; pruebas TC-017 y TC-018 | Juan José Rentería Haro | Mitigado: TC-017 y TC-018 |
 | 11 | Pérdida o corrupción de trabajos al reiniciar o ante una falla | Media | Alto | Transacciones de SQLite; al arrancar, los trabajos interrumpidos se marcan y su grupo de procesos se termina (ADR-0005); pruebas TC-007 y TC-022 | Josué Said Delgadillo Gutiérrez | Mitigado: TC-007 y TC-022 |
@@ -128,4 +130,4 @@ El trabajo se organiza en cuatro bloques, según la minuta de planeación de la 
 - TC-010, TC-011, TC-012, TC-013 y TC-023 dependen de que las funciones de red estén integradas.
 - La evidencia entre dos equipos depende de la prueba de conexión con Tailscale y del cliente remoto.
 - La guía de usuario y el README finales dependen de los comandos del cliente remoto, `output` y `health`.
-- El tag `v1.0.0` depende de la ejecución formal final y de la respuesta a la verificación cruzada.
+- El tag `v1.0.0` depende de la ejecución formal final.

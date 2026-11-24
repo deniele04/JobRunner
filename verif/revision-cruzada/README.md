@@ -23,7 +23,7 @@ Aquí queda el registro de lo que encuentra el **otro equipo** al verificar JobR
 
 | VC | Issue | Módulo | Responsable | Respuesta | Regresión | Estado |
 |---|---|---|---|---|---|---|
-| — | — | — | — | — | — | Todavía no se recibe la verificación cruzada |
+| — | — | — | — | — | — | No se realizó verificación cruzada (ver `docs/defectos-y-limitaciones.md`) |
 
 Verificación (Diego) mantiene esta tabla al día y avisa de los defectos sin respuesta.
 

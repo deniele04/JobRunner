@@ -21,7 +21,7 @@ Registro único de los defectos encontrados en JobRunner, su estado, y las limit
 
 ## Defectos de la verificación cruzada
 
-En `v1.0.0` **no se realizó verificación cruzada** con otro equipo, así que no hay defectos VC-NN. Se declara como excepción en las release notes de `v1.0.0`. En su lugar, la versión se verificó con la ejecución formal de `verify.sh`, la prueba entre equipos por VPN (`verif/results/20261123-remoto/`) y la evaluación de la guía de usuario por un integrante que no la escribió (TC-015).
+En `v1.0.0` **no se realizó verificación cruzada** con otro equipo, así que no hay defectos VC-NN. En su lugar, la versión se verificó con la ejecución formal de `verify.sh`, y la prueba entre equipos por VPN (`verif/results/20261123-remoto/`). La evaluación de la guía de usuario (TC-015) queda pendiente para hacerla con otro equipo.
 
 Si en una versión posterior se hace, cada defecto que reporte el otro equipo se registra como Issue `[Defecto] VC-NN`, con su análisis, la respuesta, la corrección o justificación y las pruebas de regresión ejecutadas (plan de verificación, sección 12).
 

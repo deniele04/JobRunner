@@ -46,7 +46,7 @@ Pasos completos de la red en `docs/user-guide/conexion-lan-vpn.md`.
 
 - Ejecución formal: `verif/results/<<RUN-ID>>/` sobre el commit `<<COMMIT>>`, con `verify.sh` en WSL.
 - <<N UNITARIAS>> pruebas unitarias y <<N INTEGRACIÓN>> de integración, todas en PASS.
-- Casos de prueba TC-001 a TC-026 e inspecciones INS-016, INS-017, INS-018 e INS-034 (RNF-16, RNF-17, RNF-18 y RNF-34); el estado de cada uno está en el `resumen.md` de la ejecución formal.
+- Casos de prueba TC-001 a TC-026 e inspecciones INS-016, INS-017, INS-018 e INS-034 (RNF-16, RNF-17, RNF-18 y RNF-34), todos en `PASS` salvo TC-015, que queda `BLOCKED` (ver Excepciones); el estado de cada uno está en el `resumen.md` de la ejecución formal.
 - Matriz de trazabilidad completa en `verif/verification-plan/matriz-trazabilidad.md`: los 30 RF y los 34 RNF con su caso o inspección.
 - Operación entre dos equipos por la VPN Tailscale en `verif/results/20261123-remoto/` (servidor y cliente en computadoras distintas; pruebas P1 a P6 en PASS, salvo P4, que no aplicó por haber un solo cliente). La evidencia se revisa con `verif/scripts/revisar_evidencia_remota.py 20261123` (`verif/revision-cruzada/EVIDENCIA-REMOTA.md`).
 - Revisión de zombis y huérfanos al final de las pruebas (`procesos.log`), también válida en WSL (DEF-005).
@@ -72,13 +72,12 @@ Pasos completos de la red en `docs/user-guide/conexion-lan-vpn.md`.
 
 | Excepción | Motivo | Qué se hizo en su lugar |
 |---|---|---|
-| No se realizó verificación cruzada con otro equipo (criterio 7 del plan de verificación) | <<MOTIVO>> | Ejecución formal de `verify.sh`, prueba entre equipos por VPN y evaluación de la guía por un integrante que no la escribió |
-| TC-015 (RNF-23) lo evaluó un integrante del equipo, no una persona externa | No hubo una persona externa disponible | La evaluó un integrante que no participó en la guía de usuario ni en el README, sin ayuda de los demás (`verif/manual/TC-015.md`) |
-| No se implementó ningún Change Request | No se implementó ningún cambio solicitado en esta versión | — |
+| TC-015 queda `BLOCKED` (RF-17, RNF-21 y RNF-23): falta la evaluación manual de la guía por una persona ajena a ella | No se coordinó a tiempo una persona de otro equipo para evaluarla | Su parte automática pasa (ayuda, códigos de salida y mensajes de error). Diego coordina la evaluación con otro equipo después de la entrega (`verif/manual/TC-015.md`) |
+| El Change Request [CR-001](change-requests/CR-001-token-compartido.md) (token compartido) no se implementó | Se analizó al cierre: cambiaba el protocolo y obligaba a repetir la ejecución formal y la prueba entre dos equipos | Análisis de impacto en el CR-001; queda aplazado y como limitación |
 
 ### Limitaciones conocidas
 
-- El servicio no autentica personas ni cifra los mensajes: el acceso se limita por red de origen y el cifrado entre equipos lo da Tailscale (ADR-0008).
+- El servicio no autentica personas ni cifra los mensajes: el acceso se limita por red de origen y el cifrado entre equipos lo da Tailscale (ADR-0008). El token compartido está analizado y aplazado ([CR-001](change-requests/CR-001-token-compartido.md)).
 - Solo se aceptan direcciones IPv4 de Tailscale (`100.x`); las IPv6 de Tailscale no están permitidas.
 - Un trabajo que terminó justo antes de una caída del servicio queda `FAILED` «interrumpido por reinicio» (ADR-0005).
 - La lista completa, con su justificación, está en `docs/defectos-y-limitaciones.md`.

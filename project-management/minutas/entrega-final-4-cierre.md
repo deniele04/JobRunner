@@ -15,12 +15,13 @@ Revisar la ejecución formal, cerrar la versión `v1.0.0` y preparar la demostra
 
 | Punto | Resultado |
 |---|---|
-| Ejecución formal | `verif/results/<<RUN-ID>>/` sobre el commit `<<COMMIT>>`, en WSL |
+| Ejecución formal | `verif/results/<<RUN-ID>>/` sobre el commit `<<COMMIT>>`, en WSL (Daniel). La ejecución `20261123` del PR #124 fue previa y en Linux |
 | Pruebas | <<N UNITARIAS>> unitarias y <<N INTEGRACIÓN>> de integración en PASS |
-| Casos e inspecciones | TC-001 a TC-026 e INS-016, INS-017, INS-018 e INS-034 según el `resumen.md` de la ejecución formal |
+| Casos e inspecciones | TC-001 a TC-026 e INS-016, INS-017, INS-018 e INS-034 en PASS, salvo TC-015 en BLOCKED |
 | Matriz de trazabilidad | Actualizada con la ejecución formal |
 | Operación entre dos equipos | `verif/results/20261123-remoto/` |
-| Excepciones | Sin verificación cruzada; TC-015 evaluado por un integrante; ningún Change Request (release notes de `v1.0.0`) |
+| Excepciones | TC-015 en BLOCKED hasta evaluarlo con otro equipo; CR-001 (token compartido) analizado y aplazado (release notes de `v1.0.0`) |
+| Verificación cruzada | No se hizo; se habla directamente con el profesor (`docs/defectos-y-limitaciones.md`) |
 | Defectos abiertos | Ninguno (DEF-008 cerrado en el PR #117) |
 
 ## Decisiones
@@ -36,5 +37,6 @@ Revisar la ejecución formal, cerrar la versión `v1.0.0` y preparar la demostra
 | Acción | Responsable |
 |---|---|
 | Tag `v1.0.0` y Release | Daniel Alejandro Huerta Camberos |
+| Evaluación de TC-015 con una persona de otro equipo | Diego Armando Durán Hernández |
 | Tailscale encendido y probado en los equipos de la demostración | Quienes hagan la parte entre dos equipos |
 | Cada integrante repasa su módulo, su ADR, sus requisitos y sus casos (tabla de defensa de la minuta de planeación) | Todos |

@@ -25,22 +25,25 @@ Revisar los bloques 3 y 4, decidir cómo se cierran los puntos que no se pueden 
 | Carpeta y plantilla de la revisión cruzada | #116 | Integrado |
 | DEF-008: un solo servicio por carpeta de datos (candado `jobrunner.lock`) | #117 | Integrado |
 | Revisor y guía de la evidencia entre dos equipos | #122 | Integrado |
+| Guía de la ejecución final y revisión de la versión candidata (`candidata.sh`) | #123 | Integrado |
+| Ejecución `20261123` y matriz: 30 de 31 casos e inspecciones en PASS y TC-015 en BLOCKED. Se hizo en Linux, no en WSL | #124 | Integrado |
 
 ## Decisiones
 
 | # | Decisión | Detalle |
 |---|---|---|
 | 1 | Modo de red de WSL | Tailscale instalado dentro de WSL. Funcionó en la prueba entre equipos (`verif/results/20261123-remoto/configuracion.txt`) |
-| 2 | Verificación cruzada | No se realiza con otro equipo en `v1.0.0`. Se declara como excepción en las release notes y en `docs/defectos-y-limitaciones.md`; la versión se respalda con la ejecución formal, la prueba entre equipos y la evaluación de la guía |
-| 3 | Evaluación de la guía de usuario (TC-015, RNF-23) | La hace un integrante que no participó en la guía de usuario ni en el README, sin ayuda de los demás, y la registra en `verif/manual/TC-015.md`. Se declara en las release notes que no fue una persona externa |
+| 2 | Verificación cruzada | No se realiza con otro equipo en `v1.0.0`. Se registra en `docs/defectos-y-limitaciones.md` y se habla directamente con el profesor; la versión se respalda con la ejecución formal y la prueba entre equipos |
+| 3 | Evaluación de la guía de usuario (TC-015, RNF-23) | Queda pendiente para hacerla con una persona de otro equipo después de la entrega. TC-015 queda `BLOCKED` y se declara como excepción en las release notes, con Diego como responsable |
 | 4 | DEF-008 | Se corrige antes de la ejecución formal (PR #117), para que la corrección y su prueba de regresión entren en la evidencia final |
-| 5 | Versión candidata | Es el commit de `main` después de integrar el registro de TC-015. Sobre ese commit se hace la ejecución formal en WSL |
+| 5 | Ejecución formal | La ejecución `20261123` se hizo en Linux y no en WSL, así que Daniel repite la ejecución formal en WSL sobre el commit del PR de cierre, con `main` integrado. Esa es la que respalda `v1.0.0` |
+| 6 | Change Request | CR-001: token compartido como segunda capa de acceso (decisión abierta del ADR-0008). Se hace su análisis de impacto y se aplaza para después de `v1.0.0`, porque cambiaba el protocolo y obligaba a repetir la ejecución formal y la prueba entre dos equipos (`docs/change-requests/CR-001-token-compartido.md`) |
 
 ## Acciones
 
 | Acción | Responsable |
 |---|---|
-| Evaluación de la guía de usuario y registro en `verif/manual/TC-015.md` | Integrante que no escribió la guía ni el README |
-| Ejecución formal de `verify.sh` en WSL sobre la versión candidata | Diego Armando Durán Hernández |
+| Coordinar con otro equipo la evaluación de la guía de usuario (`verif/manual/TC-015.md`) | Diego Armando Durán Hernández |
+| Ejecución formal de `verify.sh` en WSL | Daniel Alejandro Huerta Camberos |
 | Release notes `v1.0.0`, participación, cronograma final, tag `v1.0.0` y Release | Daniel Alejandro Huerta Camberos |
 | Ensayo de la demostración final | Todos |

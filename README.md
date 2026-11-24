@@ -120,7 +120,7 @@ Para buscar procesos zombis y huérfanos tras una prueba: `verif/scripts/proceso
 - [x] Comandos `output` (salida de un trabajo) y `health` (resumen de salud)
 - [x] Operación verificada entre dos equipos por VPN (`verif/results/20261123-remoto/`)
 
-No se implementó ningún Change Request ni se hizo verificación cruzada con otro equipo; las excepciones de `v1.0.0` están en las [release notes](docs/release-notes.md).
+Las excepciones de `v1.0.0` están en las [release notes](docs/release-notes.md). El Change Request [CR-001](docs/change-requests/CR-001-token-compartido.md) (token compartido) se analizó y se aplazó. No se hizo verificación cruzada con otro equipo (ver [defectos y limitaciones](docs/defectos-y-limitaciones.md)).
 
 **Fuera de alcance:** interfaz web, acceso por Internet público, autenticación de usuarios y ejecución distribuida (ver Project Brief).
 
@@ -136,7 +136,7 @@ No se implementó ningún Change Request ni se hizo verificación cruzada con ot
 │   ├── technical-guide/      # Arquitectura, protocolo, estados
 │   ├── decisions/            # ADR (registros de decisiones)
 │   ├── ai-usage/             # Registros de uso de IA y AI-LOG
-│   ├── change-requests/      # Solicitudes de cambio del cliente
+│   ├── change-requests/      # Solicitudes de cambio y su análisis de impacto (CR-001)
 │   ├── incidents/            # Incidentes y su resolución
 │   ├── defectos-y-limitaciones.md
 │   └── release-notes.md
