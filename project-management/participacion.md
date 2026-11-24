@@ -16,9 +16,9 @@ Resumen de lo que aportó cada integrante a JobRunner, desde el Avance 1 hasta l
 | Integrante | PR integrados (total) | PR integrados (entrega final) | Aprobaciones dadas a PR de otros | Registros de uso de IA |
 |---|---|---|---|---|
 | Daniel Alejandro Huerta Camberos | 12 | 3 | 37 | IA-001, IA-010, IA-019 |
-| Josué Said Delgadillo Gutiérrez | 20 | 11 | 27 | IA-002 a IA-009, IA-011 a IA-018, IA-020 |
-| Juan José Rentería Haro | 7 | 1 | 40 | <<IA-021>> |
-| Diego Armando Durán Hernández | 10 | 4 | 36 | <<IA-022>> |
+| Josué Said Delgadillo Gutiérrez | 20 | 11 | 27 | IA-002 a IA-009, IA-011 a IA-018, IA-020, IA-021 |
+| Juan José Rentería Haro | 7 | 1 | 40 | — |
+| Diego Armando Durán Hernández | 10 | 4 | 36 | — |
 
 Cada PR necesitó la aprobación de los otros tres integrantes. Los números de PR no miden el tamaño del trabajo: un PR puede ser un documento corto o un módulo completo.
 

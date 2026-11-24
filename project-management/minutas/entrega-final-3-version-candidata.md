@@ -38,6 +38,5 @@ Revisar los bloques 3 y 4, decidir cómo se cierran los puntos que no se pueden 
 |---|---|
 | Evaluación de la guía de usuario y registro en `verif/manual/TC-015.md` | Integrante que no escribió la guía ni el README |
 | Ejecución formal de `verify.sh` en WSL sobre la versión candidata | Diego Armando Durán Hernández |
-| Registros de uso de IA pendientes (siguientes números libres del AI-LOG) | Juan José Rentería Haro y Diego Armando Durán Hernández |
 | Release notes `v1.0.0`, participación, cronograma final, tag `v1.0.0` y Release | Daniel Alejandro Huerta Camberos |
 | Ensayo de la demostración final | Todos |
