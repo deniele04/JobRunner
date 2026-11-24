@@ -96,6 +96,7 @@ Debe imprimir `ok` y el número de trabajos por estado.
 
 | Lo que ves | Qué hacer |
 |---|---|
+| `Error: ya hay un servicio JobRunner usando la carpeta ...` | Otro servicio sigue vivo sobre la misma carpeta de datos (`pgrep -af jobrunner.server`). Detenlo con Ctrl+C, o usa otra carpeta con otro socket |
 | `Address already in use` | `ss -ltnp \| grep <puerto>` muestra quién lo usa. Si es un servidor viejo, detenlo; si no, usa otro puerto |
 | `Cannot assign requested address` | La IP de `--listen` no es de este equipo. Usa la de `tailscale ip -4` o `hostname -I` |
 | `no se puede escuchar en ...` o `red no permitida` | El servidor rechazó una dirección pública o `0.0.0.0` a propósito. Ver la [guía de usuario](guia-de-usuario.md#al-iniciar-el-servicio-con-red) |
