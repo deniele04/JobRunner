@@ -51,7 +51,7 @@ Opciones del servicio:
 | `--max-jobs` | Cuántos trabajos se ejecutan al mismo tiempo | 3 |
 | `--queue-size` | Cuántos trabajos pueden esperar en la cola | 10 |
 | `--listen [HOST:PUERTO]` | Además del socket Unix, escucha por TCP para clientes de otros equipos. Sin valor usa `127.0.0.1:7070`. Sin esta opción no se abre ningún puerto | Desactivado |
-| `--allow RED` | Red de origen permitida por TCP, en CIDR (se puede repetir). Solo con `--listen` | Solo `127.0.0.1` y `::1` |
+| `--allow RED` | Red de origen permitida por TCP, en CIDR (se puede repetir). Con `--allow` solo se aceptan las redes indicadas: para conectarte también por TCP desde el mismo equipo, agrega `--allow 127.0.0.1`. El socket local no pasa por esta lista. Solo con `--listen` | Solo `127.0.0.1` y `::1` |
 
 Para atender a otro equipo, ver la [conexión entre dos equipos](conexion-lan-vpn.md). Nunca abras puertos en el router: JobRunner solo se usa en `localhost`, en una red local privada o en una VPN.
 
@@ -59,7 +59,7 @@ Si ya se ejecutan `--max-jobs` trabajos, los nuevos esperan en la cola (`QUEUED`
 
 Los trabajos se guardan en `data/jobrunner.db`. Si el servicio se reinicia, el historial se conserva: los trabajos que estaban en `QUEUED` vuelven a la cola y los que estaban en `RUNNING` quedan en `FAILED` con el motivo «interrumpido por reinicio».
 
-Para detener el servicio, presiona **Ctrl+C** en esa terminal.
+Para detener el servicio, presiona **Ctrl+C** en esa terminal (o envía `SIGTERM`). El cierre es controlado: deja de aceptar conexiones y cierra las abiertas, libera el puerto TCP, cancela los trabajos en ejecución, conserva la cola para el siguiente arranque y elimina el socket. Un segundo Ctrl+C fuerza el cierre inmediato.
 
 ## 4. Usar el cliente
 
@@ -223,6 +223,8 @@ El servicio registra cada evento en `data/jobrunner.log`. El formato, los tipos 
 
 `royito` termina con código **0** si la operación se hizo (un trabajo `FAILED` también es una operación hecha), **1** si el servicio la rechazó o no se pudo conectar, y **2** si el comando se escribió mal. Ante un error, la respuesta JSON sale en la salida normal y en la salida de errores aparece una línea `Error al <operación>: <causa>. Que hacer: <acción>.`
 
+### Al usar el cliente
+
 | Situación | Lo que responde | Qué hacer |
 |---|---|---|
 | El servicio no está iniciado (local) | `Error: no se pudo conectar al servidor en data/jobrunner.sock. Esta corriendo ./scripts/run.sh?` | Iniciar el servicio (sección 3) |
@@ -242,10 +244,30 @@ El servicio registra cada evento en `data/jobrunner.log`. El formato, los tipos 
 | `submit` sin comando | `the following arguments are required: argv` | Escribir el comando después de `--` |
 | Opciones sin `--` (por ejemplo `submit ls -l`) | `unrecognized arguments: -l` | Escribir `--` antes del comando |
 
+### Al iniciar el servicio con red
+
+El servicio se niega a arrancar y explica por qué:
+
+| Situación | Lo que responde | Qué hacer |
+|---|---|---|
+| `--listen 0.0.0.0:7070` | `no se puede escuchar en 0.0.0.0: abriria el servicio a cualquier red; usa una direccion privada o la de Tailscale` | Usar la IP privada o la de Tailscale |
+| `--listen` con IP pública | `no se puede escuchar en ... no es privada; usa loopback, 10.x, 172.16-31.x, 192.168.x o 100.64-127.x (Tailscale)` | Igual que arriba |
+| `--listen` sin puerto | `direccion invalida: ... (usa HOST:PUERTO)` | Escribir `HOST:PUERTO`, por ejemplo `127.0.0.1:7070` |
+| Puerto mayor a 65535 | `puerto fuera de rango: ...` | Usar un puerto válido, por ejemplo 7070 |
+| `--allow 0.0.0.0/0` | `red no permitida: 0.0.0.0/0 abriria el servicio a cualquier origen` | Permitir solo la IP del cliente (`/32`) o una red privada |
+| `--allow` con red pública | `red no permitida: ... no es privada (...)` | Igual que arriba |
+| `--allow` mal escrito | `red invalida: ... (usa CIDR, p. ej. 192.168.1.0/24)` | Escribir la red en CIDR |
+| `--allow` sin `--listen` | `--allow solo tiene efecto con --listen` | Agregar `--listen` |
+| La IP de `--listen` no es de este equipo | `Error: no se pudo abrir el servicio: [Errno 99] Cannot assign requested address` | Usar la IP que muestra `tailscale ip -4` o `hostname -I` en ese equipo |
+| El puerto ya está en uso | `Error: no se pudo abrir el servicio: [Errno 98] Address already in use` | Cerrar el otro programa o usar otro puerto |
+
+Si algo falla durante la operación, sigue la [guía de diagnóstico](diagnostico.md).
+
 ## 9. Problemas conocidos
 
-Se actualizan en las release notes de cada versión.
+Se actualizan en las release notes de cada versión. La lista completa, con su estado, está en [defectos-y-limitaciones.md](../defectos-y-limitaciones.md).
 
 - El acceso en red no autentica ni cifra: solo se limita por la red de origen (`--allow`). Úsalo en `localhost`, en una red privada o en una VPN, nunca expuesto a Internet.
 - Un trabajo que terminó justo antes de una caída del servicio queda como `FAILED` «interrumpido por reinicio», porque su resultado no alcanzó a guardarse.
 - Una solicitud de más de 64 KiB se rechaza, y una conexión que no envía nada durante 30 segundos se cierra; mientras tanto no retrasa a los demás clientes.
+- Solo se aceptan direcciones IPv4 de Tailscale (`100.x`); las IPv6 de Tailscale no están permitidas.
