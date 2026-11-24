@@ -54,6 +54,56 @@ estado_pruebas() {
   echo "$resultado"
 }
 
+# El peor de varios estados: FAIL, si no BLOCKED, si no PASS.
+combinar() {
+  local e resultado="PASS"
+  for e in "$@"; do
+    case "$e" in
+      FAIL) echo "FAIL"; return ;;
+      PASS) ;;
+      *) resultado="BLOCKED" ;;
+    esac
+  done
+  echo "$resultado"
+}
+
+# Estado de un caso cuyas pruebas viven en un archivo test_tcNNN_*.py: todas las pruebas de
+# ese archivo deben pasar. Sin archivo todavía el caso queda BLOCKED. Sirve para los casos que
+# otra persona del equipo está escribiendo y cuyos nombres de prueba aún no se conocen.
+estado_archivo() {
+  awk -F'\t' -v pre="^$1" '
+    $2 ~ pre { n++; if ($1 == "FAIL") f++; else if ($1 != "PASS" && $1 != "XFAIL") b++ }
+    END { if (n == 0) print "BLOCKED"; else if (f > 0) print "FAIL"; else if (b > 0) print "BLOCKED"; else print "PASS" }
+  ' "$OUT/unit-resultados.tsv" 2>/dev/null
+}
+
+# Combina el estado de las pruebas automáticas (1.er argumento) con una evidencia manual que
+# debe existir: un registro de la verificación hecha por una persona o una carpeta de
+# resultados de otra máquina. Si las pruebas pasan pero falta la evidencia, el caso es BLOCKED.
+con_evidencia() {
+  local estado="$1" patron="$2" f
+  [ "$estado" = "PASS" ] || { echo "$estado"; return; }
+  for f in $patron; do [ -e "$f" ] && { echo "PASS"; return; }; done
+  echo "BLOCKED"
+}
+
+# Estado de un caso verificado a mano (usabilidad documental): se lee de su registro en
+# verif/manual/TC-NNN.md. Solo es PASS o FAIL si dice quién lo evaluó y dónde está la evidencia;
+# con el registro sin llenar o incompleto el caso queda BLOCKED.
+estado_manual() {
+  local f="verif/manual/$1.md"
+  [ -f "$f" ] || { echo "BLOCKED"; return; }
+  awk -F'|' '
+    function limpio(s) { gsub(/^[ \t*]+|[ \t*]+$/, "", s); return s }
+    limpio($2) == "Estado"    { estado = limpio($3) }
+    limpio($2) == "Evaluó"    { quien = limpio($3) }
+    limpio($2) == "Evidencia" { donde = limpio($3) }
+    END {
+      if ((estado == "PASS" || estado == "FAIL") && quien != "" && donde != "") print estado
+      else print "BLOCKED"
+    }' "$f"
+}
+
 # 2. TC-014: construcción desde un clon limpio, siguiendo el README.
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
@@ -147,7 +197,21 @@ tc009="$(estado_pruebas \
   test_el_estado_final_de_un_trabajo_ya_terminado_no_se_reescribe \
   test_escala_a_sigkill_si_el_trabajo_ignora_sigterm \
   test_forzar_envia_sigkill_de_inmediato \
-  test_el_resultado_del_cierre_queda_guardado)"
+  test_el_resultado_del_cierre_queda_guardado \
+  test_ctrl_c_libera_el_puerto_y_no_quedan_conexiones_en_escucha \
+  test_sigterm_tambien_libera_el_puerto \
+  test_las_conexiones_abiertas_se_cierran_al_cerrar \
+  test_el_cierre_de_la_red_no_espera_a_que_mueran_los_trabajos \
+  test_trabajos_enviados_por_tcp_se_cancelan_sin_huerfanos \
+  test_se_conserva_la_cola_de_los_trabajos_enviados_por_tcp \
+  test_se_puede_reiniciar_en_el_mismo_puerto_de_inmediato_con_clientes_conectados \
+  test_una_solicitud_a_medias_no_crea_trabajos \
+  test_el_segundo_ctrl_c_fuerza_el_cierre_con_tcp_abierto \
+  test_la_bitacora_registra_el_cierre_de_la_red \
+  test_sin_listen_no_se_registra_puerto_tcp \
+  test_cerrar_cierra_las_conexiones_abiertas_y_devuelve_cuantas_eran \
+  test_cerrar_libera_el_puerto_y_ya_no_acepta_conexiones \
+  test_cerrar_sin_conexiones_devuelve_cero_y_se_puede_repetir)"
 tc016="$(estado_pruebas \
   test_cola_llena_rechaza_y_no_registra_el_trabajo \
   test_el_rechazo_no_afecta_a_los_trabajos_aceptados \
@@ -202,77 +266,104 @@ tc025="$(estado_pruebas \
   test_comando_inexistente_registra_un_error \
   test_no_registra_los_argumentos_del_trabajo)"
 
-# Casos de la entrega final (U3): operación remota, salud y configuración, ayuda y errores.
-tc010="$(estado_pruebas \
-  test_submit_por_tcp_y_por_unix_dan_la_misma_respuesta \
-  test_status_de_un_trabajo_da_lo_mismo_por_los_dos_transportes \
-  test_list_es_identico_por_los_dos_transportes \
-  test_output_es_identico_por_los_dos_transportes \
-  test_cancel_por_tcp_y_por_unix_dan_la_misma_respuesta_y_el_mismo_final \
-  test_cancelar_dos_veces_por_tcp_devuelve_el_estado_sin_error \
-  test_request_id_enviado_por_un_transporte_se_reconoce_en_el_otro \
-  test_lo_que_se_hace_por_un_transporte_se_ve_por_el_otro \
-  test_id_inexistente_en_status_cancel_y_output \
-  test_estado_desconocido_en_list \
-  test_cola_llena \
-  test_cancelar_un_trabajo_ya_terminado \
-  test_request_id_con_otro_comando \
-  test_submit_status_list_y_cancel_funcionan_con_host_y_puerto \
-  test_trabajo_fallido_por_tcp_sale_con_0 \
-  test_jobrunner_host_y_jobrunner_port \
-  test_output_devuelve_la_salida_por_unix_y_por_tcp \
+# Casos de la entrega final (Hitos 3 y 4). Los nombres de prueba vienen de Josué (red y protocolo)
+# y de Juan (cliente remoto, output y health); si alguien los cambia, se actualizan aquí.
+tc011="$(combinar \
+  "$(estado_archivo test_tc011_restriccion_acceso)" \
+  "$(estado_pruebas \
+  test_loopback_si_y_otro_origen_no \
+  test_el_rechazo_se_registra_con_la_ip_y_no_se_crea_trabajo \
+  test_el_servidor_sigue_atendiendo_despues_de_muchos_rechazos \
+  test_el_socket_unix_no_depende_de_allow \
+  test_el_resumen_de_inicio_muestra_los_origenes_permitidos \
+  test_allow_con_una_ip_deja_pasar_solo_a_esa \
+  test_allow_con_cidr_cubre_todo_el_rango \
+  test_allow_repetido_suma_redes \
+  test_un_cliente_permitido_puede_enviar_y_cancelar \
   test_listen_en_todas_las_interfaces_no_arranca \
-  test_listen_en_una_direccion_publica_no_arranca)"
-tc013="$(estado_pruebas \
-  test_health_informa_los_limites_configurados \
-  test_health_refleja_corriendo_en_cola_y_rechazados \
-  test_health_sigue_los_cambios_de_estado \
-  test_health_informa_version_tiempo_activo_y_base \
-  test_el_estado_de_health_sobrevive_al_reinicio_del_servicio \
-  test_sin_opciones_los_limites_son_3_y_10 \
-  test_max_jobs_1_ejecuta_de_uno_en_uno \
-  test_queue_size_0_rechaza_en_cuanto_no_hay_lugar_para_correr \
-  test_sin_listen_el_proceso_no_tiene_puertos_tcp_en_escucha \
-  test_con_listen_el_puerto_indicado_queda_abierto \
-  test_listen_sin_valor_usa_el_puerto_por_defecto_7070 \
-  test_al_cerrar_el_servicio_el_puerto_queda_libre \
-  test_max_jobs_menor_que_1 \
-  test_queue_size_negativo \
-  test_valores_que_no_son_numeros \
-  test_listen_que_abriria_el_servicio_a_cualquier_red \
-  test_allow_sin_listen \
-  test_health_por_unix_y_por_tcp \
-  test_health_cuenta_los_clientes_conectados \
-  test_health_refleja_los_trabajos_por_tcp \
-  test_los_accesos_rechazados_se_cuentan \
-  test_campos_y_limites \
-  test_refleja_los_trabajos_por_estado \
-  test_base_con_problemas_se_informa_sin_romper_health \
-  test_health_agrega_los_datos_de_red)"
-tc015="$(estado_pruebas \
-  test_la_ayuda_general_lista_los_comandos_y_las_opciones_de_red \
-  test_la_ayuda_general_explica_los_codigos_de_salida \
-  test_cada_comando_tiene_ayuda_con_su_nombre_y_una_descripcion \
-  test_la_ayuda_de_cada_comando_documenta_sus_opciones \
-  test_la_ayuda_no_necesita_el_servicio \
-  test_0_cuando_la_operacion_se_hizo \
-  test_0_aunque_el_trabajo_haya_fallado \
-  test_1_cuando_el_servicio_rechaza_la_operacion \
-  test_2_cuando_el_comando_esta_mal_escrito \
-  test_el_error_de_uso_nombra_los_comandos_validos \
-  test_cada_error_del_servicio_dice_operacion_causa_y_accion \
-  test_cancelar_un_trabajo_terminado \
-  test_output_fuera_de_rango \
-  test_request_id_invalido \
-  test_sin_servicio_local_dice_que_iniciar \
-  test_sin_servicio_remoto_dice_a_donde_y_que_revisar \
-  test_la_guia_explica_cada_comando \
-  test_la_guia_explica_cada_opcion_del_cliente_y_del_servicio \
-  test_la_guia_explica_los_codigos_de_salida_y_los_errores \
-  test_la_guia_explica_la_salud_campo_por_campo \
-  test_los_comandos_royito_de_los_ejemplos_son_validos \
-  test_lleva_operacion_causa_y_accion \
-  test_cada_error_conocido_tiene_su_accion)"
+  test_listen_en_una_direccion_publica_no_arranca \
+  test_allow_publico_o_abierto_no_arranca \
+  test_allow_mal_escrito_no_arranca \
+  test_allow_sin_listen_es_un_error_de_uso \
+  test_un_allow_invalido_gana_aunque_el_listen_sea_valido \
+  test_sin_listen_no_se_abre_ningun_puerto_tcp \
+  test_origen_no_permitido_se_cierra_sin_leer_y_se_cuenta \
+  test_el_socket_unix_no_pasa_por_la_lista_de_origenes \
+  test_un_rechazo_no_afecta_al_servicio \
+  test_origen_dentro_de_la_red_permitida_es_atendido \
+  test_por_defecto_solo_127_0_0_1_y_loopback_ipv6 \
+  test_una_ip_suelta_cuenta_como_red_de_un_solo_equipo \
+  test_ipv4_mapeada_en_ipv6_y_ambito_se_normalizan \
+  test_direccion_que_no_es_ip_no_se_permite \
+  test_redes_aceptables \
+  test_redes_rechazadas \
+  test_una_red_invalida_en_la_lista_impide_construirla \
+  test_direcciones_privadas_son_validas \
+  test_todas_las_interfaces_y_las_publicas_se_rechazan \
+  test_nombre_que_no_se_resuelve_se_rechaza)")"
+
+tc012="$(estado_pruebas \
+  test_responde_por_unix_y_por_tcp \
+  test_dos_solicitudes_en_una_conexion_se_responden_en_orden \
+  test_mensaje_fragmentado_se_reensambla \
+  test_cliente_conectado_sin_enviar_no_retrasa_a_los_demas \
+  test_lineas_en_blanco_se_ignoran \
+  test_solicitud_incompleta_al_cerrar_no_se_procesa \
+  test_respuesta_enorme_a_un_cliente_que_no_lee_no_bloquea_a_los_demas \
+  test_cliente_que_se_va_sin_leer_la_respuesta_no_tumba_la_red \
+  test_mensaje_sin_salto_de_linea_mayor_al_maximo_recibe_error_y_se_cierra \
+  test_linea_completa_mayor_al_maximo_tambien_se_rechaza \
+  test_mensaje_justo_en_el_maximo_si_se_procesa \
+  test_conexion_inactiva_se_cierra \
+  test_conexion_con_actividad_no_se_cierra \
+  test_dos_clientes_conectados_a_la_vez_reciben_respuesta_sin_esperarse \
+  test_varias_solicitudes_en_una_conexion_tcp \
+  test_mensaje_mayor_de_64_kib_recibe_error_y_el_servidor_sigue)"
+
+# TC-023 vive entero en un archivo (test_tc023_version_protocolo.py): cualquier prueba que se agregue cuenta.
+tc023="$(estado_archivo test_tc023_version_protocolo)"
+
+tc026="$(estado_pruebas \
+  test_los_500_trabajos_terminan_y_quedan_registrados \
+  test_500_trabajos_sobreviven_al_reinicio_con_todos_sus_metadatos \
+  test_cada_metadato_obligatorio_sigue_presente_tras_el_reinicio \
+  test_los_archivos_de_salida_siguen_ahi_tras_el_reinicio \
+  test_un_segundo_reinicio_no_cambia_nada \
+  test_status_por_id_responde_con_los_mismos_datos_tras_el_reinicio \
+  test_un_trabajo_nuevo_tras_el_reinicio_no_borra_los_anteriores \
+  test_el_almacen_guarda_y_recupera_500_trabajos_sin_perder_campos \
+  test_cada_estado_conserva_su_cantidad_tras_reabrir \
+  test_actualizar_500_veces_no_duplica_ni_pierde_registros \
+  test_500_trabajos_enviados_al_gestor_sobreviven_al_reinicio)"
+
+# TC-010 y TC-013 dependen de Juan (cliente remoto, `output` y `health`): mientras no exista
+# su test_tc010_*.py o su test_tc013_*.py el caso queda BLOCKED y no se da por verificado.
+# TC-010 es además una demostración: solo es PASS si existe la evidencia de la operación entre
+# dos equipos, verif/results/<run-id>-remoto/ (Josué y Diego).
+tc010="$(combinar \
+  "$(estado_pruebas \
+    test_por_tcp_se_envia_consulta_y_cancela_igual_que_por_unix \
+    test_un_cliente_permitido_puede_enviar_y_cancelar \
+    test_varias_solicitudes_en_una_conexion_tcp)" \
+  "$(estado_archivo test_tc010)")"
+tc010="$(con_evidencia "$tc010" "verif/results/*-remoto")"
+
+tc013="$(combinar \
+  "$(estado_pruebas \
+    test_direccion_invalida_no_arranca \
+    test_puerto_ocupado_no_arranca_y_no_deja_el_socket_unix \
+    test_el_bitacora_registra_el_puerto_tcp)" \
+  "$(estado_archivo test_tc013)")"
+
+# TC-015 es de usabilidad: la parte automática (ayuda y códigos de salida) más el registro manual
+# de una persona ajena a la guía, verif/manual/TC-015.md. Sin ese registro llenado queda BLOCKED.
+tc015="$(combinar \
+  "$(estado_pruebas \
+    test_la_ayuda_lleva_el_nombre_royito \
+    test_status_y_list_exitosos_terminan_con_codigo_0 \
+    test_status_de_id_inexistente_da_error_y_codigo_distinto_de_cero)" \
+  "$(estado_manual TC-015)")"
+[ -f verif/manual/TC-015.md ] && cp verif/manual/TC-015.md "$OUT/manual-TC-015.md"
 
 # La herramienta que detecta zombis y huérfanos también se verifica: si procesos.sh
 # fallara, el resultado «sin zombis ni huérfanos» no valdría (DEF-005).
@@ -287,6 +378,20 @@ procesos_sh="$(estado_pruebas \
   test_un_trabajo_en_ejecucion_no_es_un_huerfano \
   test_si_el_servidor_muere_de_golpe_el_trabajo_queda_huerfano \
   test_servidor_inactivo_no_deja_zombis)"
+
+# Inspecciones documentales de RNF-16, RNF-17, RNF-18 y RNF-34 (INS-016, INS-017, INS-018 e
+# INS-034): el criterio de cada una está en verif/inspecciones/ y el detalle queda en inspecciones.log.
+python3 verif/scripts/inspecciones.py --tsv "$OUT/inspecciones.tsv" > "$OUT/inspecciones.log" 2>&1
+ins_rc=$?
+estado_inspeccion() {
+  local e
+  e="$(awk -F'\t' -v id="$1" '$1 == id { print $2 }' "$OUT/inspecciones.tsv" 2>/dev/null)"
+  echo "${e:-BLOCKED}"
+}
+ins016="$(estado_inspeccion INS-016)"
+ins017="$(estado_inspeccion INS-017)"
+ins018="$(estado_inspeccion INS-018)"
+ins034="$(estado_inspeccion INS-034)"
 
 # 4. Las pruebas no deben dejar zombis ni huérfanos (RNF-30, RNF-33).
 sleep 1
@@ -310,10 +415,12 @@ conocidos="$(awk -F'\t' '$1 == "XFAIL" { n++ } END { print n + 0 }' "$OUT/unit-r
   echo "| TC-007 | $tc007 | unittest.log, unit-resultados.tsv |"
   echo "| TC-008 | $tc008 | unittest.log, unit-resultados.tsv |"
   echo "| TC-009 | $tc009 | unittest.log, unit-resultados.tsv, procesos.log |"
-  echo "| TC-010 | $tc010 | unittest.log, unit-resultados.tsv |"
+  echo "| TC-010 | $tc010 | unittest.log. Si es BLOCKED falta verif/results/<run-id>-remoto/ (evidencia entre dos equipos, Josué y Diego) o falla alguna prueba |"
+  echo "| TC-011 | $tc011 | unittest.log, unit-resultados.tsv (acceso por red probado en 127.0.0.1) |"
+  echo "| TC-012 | $tc012 | unittest.log, unit-resultados.tsv |"
   echo "| TC-013 | $tc013 | unittest.log, unit-resultados.tsv |"
   echo "| TC-014 | $tc014 | tc-014-clon-limpio.log |"
-  echo "| TC-015 | $tc015 | unittest.log, unit-resultados.tsv |"
+  echo "| TC-015 | $tc015 | unittest.log, manual-TC-015.md. Si es BLOCKED falta llenar el registro de la persona evaluadora |"
   echo "| TC-016 | $tc016 | unittest.log, unit-resultados.tsv |"
   echo "| TC-017 | $tc017 | unittest.log, unit-resultados.tsv |"
   echo "| TC-018 | $tc018 | unittest.log, unit-resultados.tsv |"
@@ -321,8 +428,14 @@ conocidos="$(awk -F'\t' '$1 == "XFAIL" { n++ } END { print n + 0 }' "$OUT/unit-r
   echo "| TC-020 | $tc020 | unittest.log, unit-resultados.tsv |"
   echo "| TC-021 | $tc021 | unittest.log, unit-resultados.tsv |"
   echo "| TC-022 | $tc022 | unittest.log, unit-resultados.tsv |"
+  echo "| TC-023 | $tc023 | unittest.log, unit-resultados.tsv |"
   echo "| TC-024 | $tc024 | unittest.log, unit-resultados.tsv |"
   echo "| TC-025 | $tc025 | unittest.log, unit-resultados.tsv |"
+  echo "| TC-026 | $tc026 | unittest.log, unit-resultados.tsv |"
+  echo "| INS-016 | $ins016 | inspecciones.log (RNF-16). Si es BLOCKED falta seguridad.md (Josué) |"
+  echo "| INS-017 | $ins017 | inspecciones.log (RNF-17) |"
+  echo "| INS-018 | $ins018 | inspecciones.log (RNF-18) |"
+  echo "| INS-034 | $ins034 | inspecciones.log (RNF-34) |"
   echo "| Sin zombis ni huérfanos tras las pruebas | $limpieza | procesos.log |"
   echo "| procesos.sh detecta zombis y huérfanos, también adoptados por otro proceso (DEF-005) | $procesos_sh | unittest.log, unit-resultados.tsv |"
   echo
@@ -338,4 +451,5 @@ status=0
 [ "$unit_rc" -ne 0 ] && status=1
 [ "$tc014" = "FAIL" ] && status=1
 [ "$limpieza" = "FAIL" ] && status=1
+[ "$ins_rc" -ne 0 ] && status=1
 exit "$status"
