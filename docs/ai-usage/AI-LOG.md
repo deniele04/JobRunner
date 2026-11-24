@@ -28,14 +28,15 @@ La columna «Revisado en» indica el Pull Request en que el equipo revisó y apr
 | [IA-016](IA-016-cierre-controlado-con-tcp.md) | 21/11/2026 | Josué Said Delgadillo Gutiérrez | Cierre controlado con TCP | 4 | PR #92 |
 | [IA-017](IA-017-casos-tc011-tc012-tc023.md) | 21/11/2026 | Josué Said Delgadillo Gutiérrez | Casos TC-011, TC-012 y TC-023 y corrección de `--allow` | 4 | PR #102 |
 | [IA-018](IA-018-guia-protocolo-v1-y-seguridad.md) | 22/11/2026 | Josué Said Delgadillo Gutiérrez | Guía técnica del protocolo v1 y de seguridad | 4 | PR #103 |
-| [IA-019](IA-019-planeacion-y-documentacion-entrega-final.md) | 23/11/2026 | Daniel Alejandro Huerta Camberos | Planeación de la entrega final, revisión de PR y documentación de usuario, defectos y diagnóstico | 3 y 4 | PR de este registro |
+| [IA-019](IA-019-planeacion-y-documentacion-entrega-final.md) | 23/11/2026 | Daniel Alejandro Huerta Camberos | Planeación de la entrega final, revisión de PR y documentación de usuario, defectos y diagnóstico | 3 y 4 | PR #108 y PR de cierre de `v1.0.0` |
+| [IA-020](IA-020-evidencia-prueba-vpn.md) | 23/11/2026 | Josué Said Delgadillo Gutiérrez | Guía y revisión de la evidencia de la prueba por VPN | 4 | PR #114 |
 
 ## Resumen por integrante
 
 | Integrante | Registros |
 |---|---|
 | Daniel Alejandro Huerta Camberos | IA-001, IA-010, IA-019 |
-| Josué Said Delgadillo Gutiérrez | IA-002 a IA-009, IA-011 a IA-018 |
+| Josué Said Delgadillo Gutiérrez | IA-002 a IA-009, IA-011 a IA-018, IA-020 |
 | Juan José Rentería Haro | — |
 | Diego Armando Durán Hernández | — |
 
