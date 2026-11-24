@@ -31,13 +31,14 @@ La columna «Revisado en» indica el Pull Request en que el equipo revisó y apr
 | [IA-019](IA-019-planeacion-y-documentacion-entrega-final.md) | 23/11/2026 | Daniel Alejandro Huerta Camberos | Planeación de la entrega final, revisión de PR y documentación de usuario, defectos y diagnóstico | 3 y 4 | PR de este registro |
 | [IA-020](IA-020-evidencia-prueba-vpn.md) | 23/11/2026 | Josué Said Delgadillo Gutiérrez | Guía y revisión de la evidencia de la prueba por VPN | 4 |
 | [IA-021](IA-021-correccion-cancel-guia.md) | 23/11/2026 | Josué Said Delgadillo Gutiérrez | Corrección de la descripción de `cancel` en la guía del protocolo | 4 |
+| [IA-022](IA-022-candado-de-un-solo-servicio.md) | 23/11/2026 | Josué Said Delgadillo Gutiérrez | Candado de un solo servicio por carpeta (DEF-008) | 4 |
 
 ## Resumen por integrante
 
 | Integrante | Registros |
 |---|---|
 | Daniel Alejandro Huerta Camberos | IA-001, IA-010, IA-019 |
-| Josué Said Delgadillo Gutiérrez | IA-002 a IA-009, IA-011 a IA-018, IA-020, IA-021 |
+| Josué Said Delgadillo Gutiérrez | IA-002 a IA-009, IA-011 a IA-018, IA-020, IA-021, IA-022 |
 | Juan José Rentería Haro | — |
 | Diego Armando Durán Hernández | — |
 

@@ -1,4 +1,5 @@
 import argparse
+import fcntl
 import json
 import os
 import signal
@@ -164,6 +165,30 @@ def responder(manager, linea, red_servidor=None):
         return _con_version({"error": "error interno: " + str(e)})
 
 
+
+def _tomar_candado(directorio):
+    """Un solo servicio por carpeta de datos (DEF-008, RF-15, RNF-08).
+
+    Toma un candado exclusivo sobre `jobrunner.lock`. Si otro servicio vivo ya lo tiene, se
+    niega a arrancar SIN tocar el socket, la base ni los trabajos del primero. El sistema
+    libera el candado cuando el proceso termina, aunque muera de golpe (SIGKILL), asi que
+    nunca queda un candado viejo que impida arrancar.
+    """
+    ruta = directorio / "jobrunner.lock"
+    try:
+        archivo = open(ruta, "a+")
+    except OSError as e:
+        raise SystemExit("Error: no se pudo abrir " + str(ruta) + ": " + (e.strerror or str(e)))
+    try:
+        fcntl.flock(archivo, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        archivo.close()
+        raise SystemExit(
+            "Error: ya hay un servicio JobRunner usando la carpeta " + str(directorio) + ". "
+            "Detenlo antes de iniciar otro, o usa otra carpeta con otro socket."
+        )
+    return archivo
+
 def serve(socket_path=DEFAULT_SOCKET_PATH, max_jobs=DEFAULT_MAX_JOBS, queue_size=DEFAULT_QUEUE_SIZE,
           listen=None, allow=None):
     try:
@@ -172,6 +197,7 @@ def serve(socket_path=DEFAULT_SOCKET_PATH, max_jobs=DEFAULT_MAX_JOBS, queue_size
         raise SystemExit("Error: " + str(e))
     socket_path = Path(socket_path)
     socket_path.parent.mkdir(parents=True, exist_ok=True)
+    candado = _tomar_candado(socket_path.parent)   # antes de tocar el socket o la base
     if socket_path.exists():
         socket_path.unlink()
 
@@ -205,10 +231,10 @@ def serve(socket_path=DEFAULT_SOCKET_PATH, max_jobs=DEFAULT_MAX_JOBS, queue_size
         if socket_path.exists():
             socket_path.unlink()
         raise SystemExit("Error: no se pudo abrir el servicio: " + str(e))
-    print("JobRunner escuchando en " + str(socket_path))
+    print("JobRunner escuchando en " + str(socket_path), flush=True)
     if "tcp" in detalles:
         print("JobRunner escuchando en " + detalles["tcp"] + " (TCP); origenes permitidos: "
-              + detalles["permitidas"])
+              + detalles["permitidas"], flush=True)
     bitacora.evento("servicio_iniciado", **detalles)
 
     cierre = _Cierre()
@@ -224,7 +250,7 @@ def serve(socket_path=DEFAULT_SOCKET_PATH, max_jobs=DEFAULT_MAX_JOBS, queue_size
         # Cierre controlado (ADR-0006): 1) dejar de aceptar solicitudes, 2) cancelar los
         # RUNNING, 3) conservar los QUEUED, 4) registrar y eliminar el socket. Corre tambien
         # si el ciclo termina por un error, para no dejar hijos huerfanos.
-        print("\nDeteniendo JobRunner...")
+        print("\nDeteniendo JobRunner...", flush=True)
         cerradas = servidor_red.cerrar()   # sin conexiones nuevas, clientes cerrados, puertos libres
         bitacora.evento("red_cerrada", conexiones=cerradas, tcp=detalles.get("tcp", "-"))
         try:
@@ -237,6 +263,7 @@ def serve(socket_path=DEFAULT_SOCKET_PATH, max_jobs=DEFAULT_MAX_JOBS, queue_size
             if socket_path.exists():
                 socket_path.unlink()
             restaurar_senales()
+            candado.close()   # libera el candado al terminar el cierre
 
 
 def parse_args(argv=None):

@@ -188,6 +188,7 @@ Todo vive en el directorio del socket (por defecto `data/`):
 | Archivo | Contenido |
 |---|---|
 | `jobrunner.db` | Base SQLite con una fila por trabajo |
+| `jobrunner.lock` | Candado: solo un servicio puede usar una carpeta de datos a la vez (DEF-008). Un segundo servicio sobre la misma carpeta se niega a arrancar; el candado se libera solo cuando el servicio termina, incluso si muere de golpe |
 | `jobrunner.log` | Bitácora de eventos |
 | `<id>.out`, `<id>.err` | Salida estándar y de error de cada trabajo |
 
